@@ -1,0 +1,98 @@
+import logo from '../assets/Occasion.svg'
+import { Menu, Compass, CircleX, Grid2x2 } from 'lucide-react'
+import { NavLink } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { UseAuth } from '../context/UseAuth'
+import type { Profile } from '../interfaces'
+
+
+export default function Navbar() {
+    const [dropdown, setDropdown] = useState<boolean>(false);
+    const { user, getProfile } = UseAuth();
+    const [profile, setProfile] = useState<Profile | null>(null);
+
+    useEffect(() => {
+        console.log(user);
+        try {
+            getProfile().then(setProfile);
+        } catch (error) {
+            console.error(error);
+        }
+    }, [])
+    return (
+        <header>
+            <nav className="relative z-10 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
+                <NavLink to="/" className="flex items-center justify-between gap-2">
+                    <img src={logo} alt="logo" className="h-6 w-6" />
+                    <h2 className="text-xl text-accent-dark">Occasion</h2>
+                </NavLink>
+                <div className="hidden md:flex items-center gap-4 text-sm">
+                    <NavLink to="/" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                        {({ isActive }) => (
+                            <>
+                                <Compass
+                                    color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                    width={12}
+                                    height={12}
+                                />
+                                Explore
+                            </>
+                        )}
+                    </NavLink>
+                    <NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                        {({ isActive }) => (
+                            <>
+                                <Grid2x2
+                                    color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                    width={16}
+                                    height={16}
+                                />
+                                Dashboard
+                            </>
+                        )}
+                    </NavLink>
+                </div>
+                <div className="hidden md:flex items-center gap-4">
+                    <button className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</button>
+                    <NavLink to="/login" className="cursor-pointer">
+                        {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div>}
+                    </NavLink>
+                </div>
+                <button className="md:hidden block cursor-pointer" onClick={() => { setDropdown(prev => !prev); console.log(dropdown); }}>{!dropdown ? <Menu color={`var(--color-accent-dark)`} /> : <CircleX color={`var(--color-accent-dark)`} />}</button>
+                <div className={`${dropdown ? "block md:hidden" : "md:hidden hidden"} absolute top-full left-0 right-0 px-4 w-full bg-background border-t border-inputaccent/50`}>
+                    <div className="flex  flex-col items-end gap-4 w-full mt-8 h-screen">
+                        <NavLink to="/" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full"}>
+                            {({ isActive }) => (
+                                <>
+                                    <Compass
+                                        color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                        width={16}
+                                        height={16}
+                                    />
+                                    Explore
+                                </>
+                            )}
+                        </NavLink>
+                        <NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full"}>
+                            {({ isActive }) => (
+                                <>
+                                    <Grid2x2
+                                        color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                        width={16}
+                                        height={16}
+                                    />
+                                    Dashboard
+                                </>
+                            )}
+                        </NavLink>
+                        <button className="bg-accent text-white rounded-md px-4 py-2 w-full">+ New Event</button>
+                        <NavLink to="/login" className="flex items-center gap-4 w-full">
+                            {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div>}
+                            <span className="w-full">{profile ? profile.full_name : "Placeholder Name"}</span>
+                        </NavLink>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    )
+}
