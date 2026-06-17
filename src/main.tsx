@@ -7,6 +7,7 @@ import { supabase } from './api/SupabaseClient'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import About from './pages/About.tsx'
 
 const router = createBrowserRouter([
   {
@@ -17,23 +18,42 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
         loader: async () => {
-          const { data: featuredEvents, error } = await supabase
-            .from('featured_events')
-            .select('*')
+          const [
+            featuredEventsResult,
+            allEventsResult,
+            eventDatesResult,
+            ticketsResult,
+            collectivesResult
+          ] = await Promise.all([
+            supabase.from('featured_events').select('*'),
+            supabase.from('events').select('*'),
+            supabase.from('event_dates').select('*'),
+            supabase.from('tickets').select('*'),
+            supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`)
+          ]);
 
-          if (error) throw error
+          if (featuredEventsResult.error) throw featuredEventsResult.error;
+          if (allEventsResult.error) throw allEventsResult.error;
+          if (eventDatesResult.error) throw eventDatesResult.error;
+          if (ticketsResult.error) throw ticketsResult.error;
+          if (collectivesResult.error) throw collectivesResult.error;
 
-          const { data: allEvents, error: allEventsError } = await supabase
-            .from('events')
-            .select('*')
-
-          if (allEventsError) throw allEventsError
-          return { featuredEvents, allEvents }
+          return {
+            featuredEvents: featuredEventsResult.data,
+            allEvents: allEventsResult.data,
+            eventDates: eventDatesResult.data,
+            tickets: ticketsResult.data,
+            collectives: collectivesResult.data
+          };
         }
       },
       {
         path: '/login',
         element: <Login />
+      },
+      {
+        path: '/about',
+        element: <About />
       }
     ]
   },

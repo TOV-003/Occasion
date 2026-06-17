@@ -22,6 +22,45 @@ export interface Event {
 export interface EventDate {
     id: string;
     event_id: string;
-    date: Date;
+    date: string;
     created_at: string;
+}
+
+export interface Tickets {
+    id: string;
+    event_id: string;
+    user_id: string;
+    status: string;
+    created_at: string;
+}
+
+export interface Collective {
+    id: string;
+    owner_id: string;
+    name: string;
+    description: string;
+    guidelines: string;
+    auto_approve: boolean;
+    created_at: string;
+}
+
+export interface CollectiveMember {
+    id: string;
+    collective_id: string;
+    user_id: string;
+    role: 'owner' | 'admin' | 'member';
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
+}
+
+export interface CollectiveFollower {
+    id: string;
+    collective_id: string;
+    user_id: string;
+    created_at: string;
+}
+
+export interface CollectiveWithRelations extends Collective {
+    collective_members: CollectiveMember[];
+    collective_followers: CollectiveFollower[];
 }

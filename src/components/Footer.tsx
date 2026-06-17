@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Link } from 'react-router-dom';
 const Footer: React.FC = () => {
     const currentYear = new Date().getFullYear();
 
@@ -21,8 +21,8 @@ const Footer: React.FC = () => {
                     </p>
                 </div>
                 <div className="flex gap-6">
-                    <a href="#" className="hover:text-black transition">About</a>
-                    <a href="#" className="hover:text-black transition">Contact</a>
+                    <Link to="/about" className="hover:text-black transition">About</Link>
+                    <a href="mailto:victortoba03@gmail.com" className="hover:text-black transition">Contact</a>
                     <a
                         href="https://github.com/TOV-003"
                         target="_blank"

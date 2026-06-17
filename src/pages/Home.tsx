@@ -1,14 +1,13 @@
-import { Search, CalendarDays, MapPin, ChevronDown } from "lucide-react";
+import { Search, CalendarDays, MapPin, ChevronDown, Users, ChevronRight } from "lucide-react";
 import { useLoaderData } from 'react-router-dom'
 import { useState } from 'react';
 import Layout from '../Layout';
-import type { Event } from '../interfaces';
+import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
-    const { featuredEvents, allEvents } = useLoaderData();
-    console.log(featuredEvents);
-    console.log("All events: ", allEvents);
+    const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
+    console.log("Collectives: ", collectives);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -126,7 +125,7 @@ export default function Home() {
                     <h2 className="text-xl">All Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {allEvents.slice(0, 10).map((ev: Event) => (
-                            <div className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -144,18 +143,94 @@ export default function Home() {
                                         `}>
                                         {ev.category}
                                     </div>
-                                    <h2 className="text-lg font-semibold">{ev.title}</h2>
-                                    <p className="text-sm font-light text-inputaccent">
-                                        {ev.location}, {ev.city}
+                                    <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{ev.title}</h2>
+                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                        <MapPin size={15} />
+                                        <span>{ev.location}, {ev.city}</span>
                                     </p>
-                                    <p className="text-sm font-light text-inputaccent">
-                                        {ev.created_at}
+                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                        <CalendarDays size={15} />
+                                        {
+                                            eventDates
+                                                .filter((date: EventDate) => date.event_id === ev.id)
+                                                .map((date: EventDate, index: number, array: EventDate[]) => (
+                                                    <span key={date.id}>
+                                                        {new Date(date.date).toLocaleDateString('en-US', {
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                            timeZone: 'UTC',
+                                                        })}
+                                                        {index < array.length - 1 && ' / '}
+                                                    </span>
+                                                ))
+                                        }
                                     </p>
+                                    {(() => {
+                                        const registered = tickets.filter(
+                                            (ticket: Tickets) => ticket.event_id === ev.id && ticket.status === "approved"
+                                        ).length;
+                                        const maxAttendees = ev.max_attendees || 0;
+                                        const percentage = maxAttendees
+                                            ? Math.min((registered / maxAttendees) * 100, 100)
+                                            : 0;
+
+                                        return (
+                                            <div className="flex flex-col gap-1.5">
+                                                <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
+                                                    <Users size={15} />
+                                                    <span>{registered} / {ev.max_attendees}</span>
+                                                </p>
+                                                <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-accent transition-all duration-300"
+                                                        style={{ width: `${percentage}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         ))}
                     </div>
 
+                </div>
+                <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
+                    <div className="flex items-center w-full justify-between">
+                        <h2 className="text-xl">Collectives</h2>
+                        <p className="text-sm text-inputaccent">Groups & Organisations</p>
+                    </div>
+                    <div className="flex flex-wrap gap-6 w-full justify-center">
+                        {
+                            collectives.map((collective: CollectiveWithRelations) => (
+                                <div key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                                    <div className="flex flex-col gap-2 p-4">
+                                        <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-sqaure">
+                                            <span className="text-3xl font-light text-accent">{collective.name[0]}</span>
+                                        </div>
+                                        <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{collective.name}</h2>
+                                        <p className="text-sm font-light text-inputaccent flex flex-row gap-2">{collective.description}</p>
+                                        <div className="flex gap-2">
+                                            <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                                <Users size={15} />
+                                                <span>{collective.collective_members.length}</span>
+                                                Members
+                                            </p>
+                                            <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                                <Users size={15} />
+                                                <span>{collective.collective_followers.length}</span>
+                                                Followers
+                                            </p>
+                                        </div>
+                                        <div className="absolute top-4 right-4 group-hover:scale-140 transition-transform duration-300">
+                                            <ChevronRight color="var(--color-inputaccent)" size={15} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
                 </div>
             </main>
         </Layout>
