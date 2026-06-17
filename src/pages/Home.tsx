@@ -3,14 +3,17 @@ import { useLoaderData } from 'react-router-dom'
 import { useState, useMemo } from 'react';
 import Layout from '../Layout';
 import Fuse from 'fuse.js';
+import Skeleton from '../components/Skeleton';
 import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
+
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [showFeatured, setShowFeatured] = useState(true);
     const [filter, setFilter] = useState('');
     const [query, setQuery] = useState('');
+    const [loading, setLoading] = useState(true);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
+    console.log(allEvents);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -29,25 +32,37 @@ export default function Home() {
     const fuse = useMemo(() => new Fuse(allEvents, {
         keys: ['title', 'city', 'location'],
         threshold: 0.3,
-    }), []);
+    }), [allEvents]);
 
     const results = useMemo(() => {
-        if (!query.trim()) {
-            return allEvents;
-        }
-        return fuse.search(query).map(result => result.item);
-    }, [query, fuse]);
+        const events = query.trim()
+            ? fuse.search(query).map(result => result.item)
+            : allEvents;
+
+        return events.sort((a: Event, b: Event) => {
+            const getEarliest = (ev: Event) => {
+                if (!ev.event_dates || ev.event_dates.length === 0) {
+                    return '9999-12-31';
+                }
+                return ev.event_dates.map(d => d.date).sort()[0];
+            };
+            setLoading(false);
+            return getEarliest(a).localeCompare(getEarliest(b));
+        });
+    }, [query, fuse, allEvents]);
 
     const showCategory = (category: string) => {
         setSelectedCategory(category);
-        setShowFeatured(false);
         setFilter(category);
     }
 
     const showAll = () => {
         setSelectedCategory('All');
-        setShowFeatured(true);
         setFilter('');
+    }
+
+    if (loading) {
+        return <Skeleton variant="home" />;
     }
 
     return (
@@ -70,11 +85,7 @@ export default function Home() {
                                 placeholder="Search events,cities,locations..."
                                 className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground"
                                 value={query}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setShowFeatured(value.length === 0);
-                                    setQuery(value);
-                                }}
+                                onChange={(e) => setQuery(e.target.value)}
                             />
                         </div>
 
@@ -114,7 +125,7 @@ export default function Home() {
                     </div>
                 </div>
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
-                {showFeatured &&
+                {filter === '' && query === '' &&
                     <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                         <h2 className="text-xl">Featured</h2>
                         <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
@@ -123,7 +134,6 @@ export default function Home() {
                                     src={featuredEvents[randomNumber].event_banner_url}
                                     alt="featured event"
                                     fetchPriority="high"
-                                    loading="lazy"
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent via-60% to-black pointer-events-none" />
@@ -219,7 +229,7 @@ export default function Home() {
                                 </div>
                             </div>
                         ))}
-                        {filter && allEvents.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
+                        {filter && results.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
                             <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img

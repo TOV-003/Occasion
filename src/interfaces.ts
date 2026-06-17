@@ -17,6 +17,9 @@ export interface Event {
     max_attendees: number | null;
     auto_approve: boolean | null;
     created_at: string | null;
+    event_dates: {
+        date: string;
+    }[];
 }
 
 export interface EventDate {

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import AuthContextProvider from './context/AuthContext'
 import './index.css'
@@ -8,6 +8,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import About from './pages/About.tsx'
+import LoadingFallback from './components/LoadingFallback'
 
 const router = createBrowserRouter([
   {
@@ -72,7 +73,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthContextProvider>
-      <RouterProvider router={router} />
+      <Suspense fallback={<LoadingFallback />}>
+        <RouterProvider router={router} />
+      </Suspense>
     </AuthContextProvider>
   </StrictMode >,
 )
