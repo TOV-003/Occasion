@@ -74,32 +74,36 @@ const router = createBrowserRouter([
           const { id } = params;
           if (!id) throw new Error('Event ID required');
 
-          const { data, error } = await supabase
-            .from('events')
-            .select('*, event_dates(*)')
-            .eq('id', id)
-            .single();
+          const [eventResult, ticketsResult, collectiveLinkResult] = await Promise.all([
+            supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
+            supabase.from('tickets').select('*').eq('event_id', id).eq('status', 'approved'),
+            supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle()
+          ]);
 
-          if (error) throw error;
+          if (eventResult.error) throw eventResult.error;
+          if (!eventResult.data) throw new Response('Event not found', { status: 404 });
+          if (ticketsResult.error) throw ticketsResult.error;
+          if (collectiveLinkResult.error) throw collectiveLinkResult.error;
 
-          const { data: tickets, error: ticketsError } = await supabase
-            .from('tickets')
-            .select('*')
-            .eq('event_id', id)
-            .eq('status', 'approved')
+          let eventCollective = null;
+          const collectiveLink = collectiveLinkResult.data;
 
-          if (ticketsError) throw ticketsError;
+          if (collectiveLink) {
+            const { data: collective, error: collectiveError } = await supabase
+              .from('collectives')
+              .select(`*, collective_members (*), collective_followers (*)`)
+              .eq('id', collectiveLink.collective_id)
+              .single();
 
-          const { data: collective, error: collectiveError } = await supabase
-            .from('event_collectives')
-            .select('collective_id')
-            .eq('event_id', id)
-            .single();
+            if (collectiveError) throw collectiveError;
+            eventCollective = collective;
+          }
 
-          if (collectiveError) throw collectiveError;
-          if (!data) throw new Response('Event not found', { status: 404 });
-
-          return { event: data, tickets: tickets, collective: collective };
+          return {
+            event: eventResult.data,
+            tickets: ticketsResult.data,
+            eventCollective
+          };
         }
       }
     ]

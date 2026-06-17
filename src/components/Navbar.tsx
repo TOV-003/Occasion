@@ -88,7 +88,7 @@ export default function Navbar() {
                         <button className="bg-accent text-white rounded-md px-4 py-2 w-full">+ New Event</button>
                         <NavLink to="/login" className="flex items-center gap-4 w-full">
                             {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div>}
-                            <span className="w-full">{profile ? profile.full_name : "Placeholder Name"}</span>
+                            <span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span>
                         </NavLink>
                     </div>
                 </div>

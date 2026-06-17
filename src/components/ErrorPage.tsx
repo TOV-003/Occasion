@@ -29,7 +29,6 @@ export default function ErrorPage() {
         title = "Unauthorized";
         description = "Please log in to access this page.";
     } else if (error?.message) {
-        // Use custom error message if available
         description = error.message;
     }
 
