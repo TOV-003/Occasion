@@ -67,7 +67,7 @@ export default function Home() {
 
     return (
         <Layout>
-            <main className="flex flex-col gap-16 items-center lg:items-start  px-4 py-8 lg:px-16 lg:py-16">
+            <main className="flex flex-col gap-16 items-center lg:items-start  px-4 py-8 lg:px-64 lg:py-16">
                 <div className="flex flex-col items-center lg:items-start justify-end ">
                     <h1 className="text-2xl">So, What's the <span className="text-accent">Occasion</span>?</h1>
                     <p className="text-md font-light text-inputaccent">
