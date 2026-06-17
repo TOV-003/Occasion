@@ -1,5 +1,5 @@
 import { Search, CalendarDays, MapPin, Users, ChevronRight } from "lucide-react";
-import { useLoaderData } from 'react-router-dom'
+import { useLoaderData, Link } from 'react-router-dom'
 import { useState, useMemo } from 'react';
 import Layout from '../Layout';
 import Fuse from 'fuse.js';
@@ -13,7 +13,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
-    console.log(allEvents);
+    console.log(featuredEvents);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -126,7 +126,7 @@ export default function Home() {
                 </div>
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
                 {filter === '' && query === '' &&
-                    <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
+                    <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                         <h2 className="text-xl">Featured</h2>
                         <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
                             <div className="relative w-full aspect-square rounded-lg overflow-hidden">
@@ -154,13 +154,13 @@ export default function Home() {
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 }
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {!filter && results.slice(0, 10).map((ev: Event) => (
-                            <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -169,7 +169,7 @@ export default function Home() {
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                     />
                                 </div>
-                                <div className="flex flex-col gap-2 p-4">
+                                <div className="flex relative flex-col gap-2 p-4">
                                     <div className={`
                                         rounded-full px-3 py-1 text-xs font-medium w-fit
                                             ${categoryStyles[ev.category]
@@ -216,6 +216,10 @@ export default function Home() {
                                                 <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
                                                     <Users size={15} />
                                                     <span>{registered} / {ev.max_attendees}</span>
+                                                    {
+                                                        registered === ev.max_attendees &&
+                                                        <span className="text-xs bg-red-200 rounded-xl font-bold py-1 px-4 text-red-700">Full</span>
+                                                    }
                                                 </p>
                                                 <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
                                                     <div
@@ -227,10 +231,10 @@ export default function Home() {
                                         );
                                     })()}
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                         {filter && results.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
-                            <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -297,7 +301,7 @@ export default function Home() {
                                         );
                                     })()}
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
 

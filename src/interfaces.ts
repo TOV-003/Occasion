@@ -7,16 +7,16 @@ export interface Profile {
 
 export interface Event {
     id: string;
-    creator_id: string | null;
+    creator_id: string;
     title: string;
     category: string;
-    description: string | null;
+    description: string;
     city: string;
-    location: string | null;
-    banner_url: string | undefined;
-    max_attendees: number | null;
-    auto_approve: boolean | null;
-    created_at: string | null;
+    location: string;
+    banner_url: string;
+    max_attendees: number;
+    auto_approve: boolean;
+    created_at: string;
     event_dates: {
         date: string;
     }[];
@@ -66,4 +66,11 @@ export interface CollectiveFollower {
 export interface CollectiveWithRelations extends Collective {
     collective_members: CollectiveMember[];
     collective_followers: CollectiveFollower[];
+}
+
+export interface Event_collective {
+    event_id: string;
+    collective_id: string;
+    status: string;
+    created_at: string;
 }

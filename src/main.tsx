@@ -8,12 +8,15 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import About from './pages/About.tsx'
+import EventPage from './pages/EventPage'
+import ErrorPage from './components/ErrorPage'
 import LoadingFallback from './components/LoadingFallback'
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -63,6 +66,41 @@ const router = createBrowserRouter([
       {
         path: '/about',
         element: <About />
+      },
+      {
+        path: '/event/:id',
+        element: <EventPage />,
+        loader: async ({ params }) => {
+          const { id } = params;
+          if (!id) throw new Error('Event ID required');
+
+          const { data, error } = await supabase
+            .from('events')
+            .select('*, event_dates(*)')
+            .eq('id', id)
+            .single();
+
+          if (error) throw error;
+
+          const { data: tickets, error: ticketsError } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('event_id', id)
+            .eq('status', 'approved')
+
+          if (ticketsError) throw ticketsError;
+
+          const { data: collective, error: collectiveError } = await supabase
+            .from('event_collectives')
+            .select('collective_id')
+            .eq('event_id', id)
+            .single();
+
+          if (collectiveError) throw collectiveError;
+          if (!data) throw new Response('Event not found', { status: 404 });
+
+          return { event: data, tickets: tickets, collective: collective };
+        }
       }
     ]
   },
