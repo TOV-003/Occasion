@@ -32,7 +32,7 @@ export default function EventPage() {
                             <img
                                 src={event.banner_url}
                                 alt={event.title}
-                                className="w-full aspect-video object-cover"
+                                className="w-full aspect-square object-cover"
                             />
                         </div>
 
