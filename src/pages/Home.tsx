@@ -1,12 +1,14 @@
-import { Search, CalendarDays, MapPin, ChevronDown, Users, ChevronRight } from "lucide-react";
+import { Search, CalendarDays, MapPin, Users, ChevronRight } from "lucide-react";
 import { useLoaderData } from 'react-router-dom'
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '../Layout';
+import Fuse from 'fuse.js';
 import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [showFeatured, setShowFeatured] = useState(true);
     const [filter, setFilter] = useState('');
+    const [query, setQuery] = useState('');
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
@@ -23,6 +25,18 @@ export default function Home() {
         Family: { bg: 'bg-teal-200', text: 'text-teal-800' },
         Wellness: { bg: 'bg-emerald-200', text: 'text-emerald-800' },
     };
+
+    const fuse = useMemo(() => new Fuse(allEvents, {
+        keys: ['title', 'city', 'location'],
+        threshold: 0.3,
+    }), []);
+
+    const results = useMemo(() => {
+        if (!query.trim()) {
+            return allEvents;
+        }
+        return fuse.search(query).map(result => result.item);
+    }, [query, fuse]);
 
     const showCategory = (category: string) => {
         setSelectedCategory(category);
@@ -53,8 +67,14 @@ export default function Home() {
                             />
                             <input
                                 type="text"
-                                placeholder="Search events…"
+                                placeholder="Search events,cities,locations..."
                                 className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground"
+                                value={query}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setShowFeatured(value.length === 0);
+                                    setQuery(value);
+                                }}
                             />
                         </div>
 
@@ -67,26 +87,6 @@ export default function Home() {
                             <input
                                 type="date"
                                 className="bg-inputbg/30 border-inputaccent pl-9 pr-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring text-muted-foreground appearance-none"
-                            />
-                        </div>
-
-                        <div className="relative">
-                            <MapPin
-                                color="var(--color-inputaccent)"
-                                size={15}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />
-                            <select
-                                className="bg-inputbg/30 border-inputaccent pl-9 pr-8 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring text-muted-foreground appearance-none cursor-pointer"
-                            >
-                                <option value="">All cities</option>
-                                <option value="lagos">Lagos</option>
-                                <option value="abuja">Abuja</option>
-                                <option value="port-harcourt">Port Harcourt</option>
-                            </select>
-                            <ChevronDown
-                                size={13}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                             />
                         </div>
                     </div>
@@ -122,6 +122,8 @@ export default function Home() {
                                 <img
                                     src={featuredEvents[randomNumber].event_banner_url}
                                     alt="featured event"
+                                    fetchPriority="high"
+                                    loading="lazy"
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent via-60% to-black pointer-events-none" />
@@ -147,12 +149,13 @@ export default function Home() {
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
-                        {!filter && allEvents.slice(0, 10).map((ev: Event) => (
+                        {!filter && results.slice(0, 10).map((ev: Event) => (
                             <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
                                         alt={ev.title}
+                                        loading="lazy"
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                     />
                                 </div>
@@ -216,12 +219,13 @@ export default function Home() {
                                 </div>
                             </div>
                         ))}
-                        {allEvents.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
+                        {filter && allEvents.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
                             <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
                                         alt={ev.title}
+                                        loading="lazy"
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                     />
                                 </div>

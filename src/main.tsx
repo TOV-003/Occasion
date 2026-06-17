@@ -18,6 +18,8 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
         loader: async () => {
+          const today = new Date().toLocaleDateString('en-CA');
+
           const [
             featuredEventsResult,
             allEventsResult,
@@ -26,8 +28,14 @@ const router = createBrowserRouter([
             collectivesResult
           ] = await Promise.all([
             supabase.from('featured_events').select('*'),
-            supabase.from('events').select('*'),
-            supabase.from('event_dates').select('*'),
+            supabase
+              .from('events')
+              .select('*, event_dates!inner(date)')
+              .gte('event_dates.date', today),
+            supabase
+              .from('event_dates')
+              .select('*')
+              .gte('date', today),
             supabase.from('tickets').select('*'),
             supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`)
           ]);
