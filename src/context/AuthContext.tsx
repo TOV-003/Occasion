@@ -1,7 +1,7 @@
 import { AuthContext } from './AuthContextObject';
 import { supabase } from '../api/SupabaseClient';
 import type { User, AuthResponse } from '@supabase/supabase-js';
-import type { Profile, Event } from '../interfaces';
+import type { Profile } from '../interfaces';
 import { useEffect, useState, type ReactNode } from 'react';
 
 export default function AuthContextProvider({ children }: { children: ReactNode }) {
@@ -43,18 +43,9 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         return data;
     }
 
-    async function getfeaturedEvents(): Promise<Event[]> {
-        const { data, error } = await supabase
-            .from('featured_events')
-            .select('*')
-            .order('event_title')
-
-        if (error) throw error;
-        return data;
-    }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, getProfile, getfeaturedEvents }}>
+        <AuthContext.Provider value={{ user, login, logout, getProfile }}>
             {children}
         </AuthContext.Provider>
     );

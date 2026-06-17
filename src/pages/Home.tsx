@@ -2,11 +2,13 @@ import { Search, CalendarDays, MapPin, ChevronDown } from "lucide-react";
 import { useLoaderData } from 'react-router-dom'
 import { useState } from 'react';
 import Layout from '../Layout';
+import type { Event } from '../interfaces';
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
-    const { featuredEvents } = useLoaderData();
+    const { featuredEvents, allEvents } = useLoaderData();
     console.log(featuredEvents);
+    console.log("All events: ", allEvents);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -94,7 +96,7 @@ export default function Home() {
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">Featured</h2>
-                    <div className=" rounded-xl relative w-full h-fit aspect-square">
+                    <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
                         <div className="relative w-full aspect-square rounded-lg overflow-hidden">
                             <img
                                 src={featuredEvents[randomNumber].event_banner_url}
@@ -122,6 +124,38 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">All Events</h2>
+                    <div className="flex flex-wrap gap-6 w-full justify-center">
+                        {allEvents.slice(0, 10).map((ev: Event) => (
+                            <div className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                                <div className="relative w-full aspect-square overflow-hidden">
+                                    <img
+                                        src={ev.banner_url}
+                                        alt={ev.title}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2 p-4">
+                                    <div className={`
+                                        rounded-full px-3 py-1 text-xs font-medium w-fit
+                                            ${categoryStyles[ev.category]
+                                            ? `${categoryStyles[ev.category].bg} ${categoryStyles[ev.category].text}`
+                                            : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
+                                        }
+                                        `}>
+                                        {ev.category}
+                                    </div>
+                                    <h2 className="text-lg font-semibold">{ev.title}</h2>
+                                    <p className="text-sm font-light text-inputaccent">
+                                        {ev.location}, {ev.city}
+                                    </p>
+                                    <p className="text-sm font-light text-inputaccent">
+                                        {ev.created_at}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
             </main>
         </Layout>

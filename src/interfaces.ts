@@ -6,9 +6,22 @@ export interface Profile {
 }
 
 export interface Event {
+    id: string;
+    creator_id: string | null;
+    title: string;
+    category: string;
+    description: string | null;
+    city: string;
+    location: string | null;
+    banner_url: string | undefined;
+    max_attendees: number | null;
+    auto_approve: boolean | null;
+    created_at: string | null;
+}
+
+export interface EventDate {
+    id: string;
     event_id: string;
-    event_title: string;
-    event_banner_url: string;
-    event_category: string;
-    event_date: Date;
+    date: Date;
+    created_at: string;
 }
