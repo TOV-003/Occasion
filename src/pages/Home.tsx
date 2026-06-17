@@ -5,9 +5,10 @@ import Layout from '../Layout';
 import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [showFeatured, setShowFeatured] = useState(true);
+    const [filter, setFilter] = useState('');
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
-    console.log("Collectives: ", collectives);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -22,6 +23,19 @@ export default function Home() {
         Family: { bg: 'bg-teal-200', text: 'text-teal-800' },
         Wellness: { bg: 'bg-emerald-200', text: 'text-emerald-800' },
     };
+
+    const showCategory = (category: string) => {
+        setSelectedCategory(category);
+        setShowFeatured(false);
+        setFilter(category);
+    }
+
+    const showAll = () => {
+        setSelectedCategory('All');
+        setShowFeatured(true);
+        setFilter('');
+    }
+
     return (
         <Layout>
             <main className="flex flex-col gap-16 items-center lg:items-start  px-4 py-8 lg:px-16 lg:py-16">
@@ -80,7 +94,14 @@ export default function Home() {
                         {categories.map((cat) => (
                             <button
                                 key={cat}
-                                onClick={() => setSelectedCategory(cat)}
+                                onClick={
+                                    () => {
+                                        if (cat === 'All') {
+                                            showAll();
+                                            return;
+                                        }
+                                        showCategory(cat);
+                                    }}
                                 className={
                                     selectedCategory === cat
                                         ? 'bg-accent text-white px-2 py-0.5 rounded-2xl border border-accent-dark text-sm cursor-pointer'
@@ -93,38 +114,109 @@ export default function Home() {
                     </div>
                 </div>
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
-                <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
-                    <h2 className="text-xl">Featured</h2>
-                    <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
-                        <div className="relative w-full aspect-square rounded-lg overflow-hidden">
-                            <img
-                                src={featuredEvents[randomNumber].event_banner_url}
-                                alt="featured event"
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent via-60% to-black pointer-events-none" />
-                        </div>
-                        <div className="absolute bottom-5 left-5 md:bottom-10 md:left-10 text-white">
-                            <div className={`
+                {showFeatured &&
+                    <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
+                        <h2 className="text-xl">Featured</h2>
+                        <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
+                            <div className="relative w-full aspect-square rounded-lg overflow-hidden">
+                                <img
+                                    src={featuredEvents[randomNumber].event_banner_url}
+                                    alt="featured event"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent via-60% to-black pointer-events-none" />
+                            </div>
+                            <div className="absolute bottom-5 left-5 md:bottom-10 md:left-10 text-white">
+                                <div className={`
                                 rounded-full px-3 py-1 text-xs font-medium w-fit mt-1
                                     ${categoryStyles[featuredEvents[randomNumber].event_category]
-                                    ? `${categoryStyles[featuredEvents[randomNumber].event_category].bg} ${categoryStyles[featuredEvents[randomNumber].event_category].text}`
-                                    : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
-                                }
+                                        ? `${categoryStyles[featuredEvents[randomNumber].event_category].bg} ${categoryStyles[featuredEvents[randomNumber].event_category].text}`
+                                        : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
+                                    }
                                 `}>
-                                {featuredEvents[randomNumber].event_category}
+                                    {featuredEvents[randomNumber].event_category}
+                                </div>
+                                <h2 className="text-2xl font-bold">{featuredEvents[randomNumber].event_title}</h2>
+                                <p className="text-sm text-white">
+                                    {featuredEvents[randomNumber].event_date}
+                                </p>
                             </div>
-                            <h2 className="text-2xl font-bold">{featuredEvents[randomNumber].event_title}</h2>
-                            <p className="text-sm text-white">
-                                {featuredEvents[randomNumber].event_date}
-                            </p>
                         </div>
                     </div>
-                </div>
+                }
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
-                    <h2 className="text-xl">All Events</h2>
+                    <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
-                        {allEvents.slice(0, 10).map((ev: Event) => (
+                        {!filter && allEvents.slice(0, 10).map((ev: Event) => (
+                            <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                                <div className="relative w-full aspect-square overflow-hidden">
+                                    <img
+                                        src={ev.banner_url}
+                                        alt={ev.title}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2 p-4">
+                                    <div className={`
+                                        rounded-full px-3 py-1 text-xs font-medium w-fit
+                                            ${categoryStyles[ev.category]
+                                            ? `${categoryStyles[ev.category].bg} ${categoryStyles[ev.category].text}`
+                                            : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
+                                        }
+                                        `}>
+                                        {ev.category}
+                                    </div>
+                                    <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{ev.title}</h2>
+                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                        <MapPin size={15} />
+                                        <span>{ev.location}, {ev.city}</span>
+                                    </p>
+                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                        <CalendarDays size={15} />
+                                        {
+                                            eventDates
+                                                .filter((date: EventDate) => date.event_id === ev.id)
+                                                .map((date: EventDate, index: number, array: EventDate[]) => (
+                                                    <span key={date.id}>
+                                                        {new Date(date.date).toLocaleDateString('en-US', {
+                                                            month: 'long',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                            timeZone: 'UTC',
+                                                        })}
+                                                        {index < array.length - 1 && ' / '}
+                                                    </span>
+                                                ))
+                                        }
+                                    </p>
+                                    {(() => {
+                                        const registered = tickets.filter(
+                                            (ticket: Tickets) => ticket.event_id === ev.id && ticket.status === "approved"
+                                        ).length;
+                                        const maxAttendees = ev.max_attendees || 0;
+                                        const percentage = maxAttendees
+                                            ? Math.min((registered / maxAttendees) * 100, 100)
+                                            : 0;
+
+                                        return (
+                                            <div className="flex flex-col gap-1.5">
+                                                <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
+                                                    <Users size={15} />
+                                                    <span>{registered} / {ev.max_attendees}</span>
+                                                </p>
+                                                <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full bg-accent transition-all duration-300"
+                                                        style={{ width: `${percentage}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        ))}
+                        {allEvents.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
                             <div key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
