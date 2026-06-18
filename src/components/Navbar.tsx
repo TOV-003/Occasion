@@ -55,7 +55,7 @@ export default function Navbar() {
                 <div className="hidden md:flex items-center gap-4">
                     <button className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</button>
                     <NavLink to="/login" className="cursor-pointer">
-                        {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div>}
+                        {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full h-8 cursor-pointer text-white">Login</div>}
                     </NavLink>
                 </div>
                 <button className="md:hidden block cursor-pointer" onClick={() => { setDropdown(prev => !prev); console.log(dropdown); }}>{!dropdown ? <Menu color={`var(--color-accent-dark)`} /> : <CircleX color={`var(--color-accent-dark)`} />}</button>
