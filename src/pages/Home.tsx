@@ -314,7 +314,7 @@ export default function Home() {
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {
                             collectives.map((collective: CollectiveWithRelations) => (
-                                <div key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                                <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
                                     <div className="flex flex-col gap-2 p-4">
                                         <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-sqaure">
                                             <span className="text-3xl font-light text-accent">{collective.name[0]}</span>
@@ -337,7 +337,7 @@ export default function Home() {
                                             <ChevronRight color="var(--color-inputaccent)" size={15} />
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))
                         }
                     </div>
