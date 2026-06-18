@@ -3,6 +3,7 @@ import type { Event } from '../interfaces';
 import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info } from 'lucide-react';
 import Layout from '../Layout';
 import ShareButton from '../components/ShareButton';
+import { toast } from 'react-hot-toast';
 import type { Tickets, Event_collective, CollectiveWithRelations } from '../interfaces';
 
 export default function EventPage() {
@@ -16,6 +17,7 @@ export default function EventPage() {
     console.log("eventid", id);
     console.log("eventCollective", eventCollective);
 
+
     const isFull = tickets.length === event.max_attendees;
 
     return (
@@ -24,6 +26,7 @@ export default function EventPage() {
                 <Link
                     to="/"
                     className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
+                    onClick={() => toast.loading("Going back...", { duration: 1000 })}
                 >
                     <ChevronLeft size={16} />
                     Back to Explore

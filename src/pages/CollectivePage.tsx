@@ -2,6 +2,7 @@ import Layout from '../Layout';
 import { Link, useLocation, useLoaderData } from 'react-router-dom';
 import { ChevronLeft, Users, MapPin, CalendarDays, Plus, Grid3X3, List, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import type { CollectiveWithRelations, CollectiveMember, CollectiveFollower, Event, Tickets, Profile } from '../interfaces';
 
 
@@ -108,6 +109,7 @@ export default function CollectivePage() {
                         <Link
                             to={`/event/${fromEventId}`}
                             className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
+                            onClick={() => toast.loading("Going Back...", { duration: 1000 })}
                         >
                             <ChevronLeft size={16} />
                             Back to Previous Event
@@ -116,6 +118,7 @@ export default function CollectivePage() {
                         <Link
                             to="/"
                             className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
+                            onClick={() => toast.loading("Going Back...", { duration: 1000 })}
                         >
                             <ChevronLeft size={16} />
                             Back to Explore
@@ -132,15 +135,15 @@ export default function CollectivePage() {
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{collective.name}</h1>
                             <p className="text-gray-600 text-sm mt-0.5">{collective.description}</p>
                             <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                                <span className="flex items-center gap-1">
+                                <span className="flex flex-col md:flex-row items-center gap-1">
                                     <Users size={14} />
                                     {collectiveMembers.length} members
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex flex-col md:flex-row items-center gap-1">
                                     <Users size={14} />
                                     {collectiveFollowers.length} followers
                                 </span>
-                                <span className="flex items-center gap-1">
+                                <span className="flex flex-col md:flex-row items-center gap-1">
                                     <Calendar size={14} />
                                     {events.length} upcoming events
                                 </span>

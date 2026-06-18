@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Layout from '../Layout';
 import Fuse from 'fuse.js';
 import Skeleton from '../components/Skeleton';
+import { toast } from 'react-hot-toast';
 import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
 
 export default function Home() {
@@ -11,6 +12,8 @@ export default function Home() {
     const [filter, setFilter] = useState('');
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    const [visibleCount, setVisibleCount] = useState(10);
+    const [visibleCollectiveCount, setVisibleCollectiveCount] = useState(10);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
     console.log(featuredEvents);
@@ -54,12 +57,22 @@ export default function Home() {
     const showCategory = (category: string) => {
         setSelectedCategory(category);
         setFilter(category);
+        setVisibleCount(10);
     }
 
     const showAll = () => {
         setSelectedCategory('All');
         setFilter('');
+        setVisibleCount(10);
     }
+
+    const loadMore = () => {
+        setVisibleCount(prev => prev + 10);
+    };
+
+    const loadMoreCollectives = () => {
+        setVisibleCollectiveCount(prev => prev + 10);
+    };
 
     if (loading) {
         return <Skeleton variant="home" />;
@@ -73,8 +86,8 @@ export default function Home() {
                     <p className="text-md font-light text-inputaccent">
                         Curated events from collectives and independent organisers across the city.
                     </p>
-                    <div className="mt-6 flex flex-wrap gap-2 max-w-2xl justify-center">
-                        <div className="relative flex-1 min-w-45">
+                    <div className="mt-6 flex flex-wrap gap-2 w-full justify-center">
+                        <div className="relative flex-1 w-full">
                             <Search
                                 color="var(--color-inputaccent)"
                                 size={15}
@@ -83,21 +96,9 @@ export default function Home() {
                             <input
                                 type="text"
                                 placeholder="Search events,cities,locations..."
-                                className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground"
+                                className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="relative">
-                            <CalendarDays
-                                color="var(--color-inputaccent)"
-                                size={15}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                            />
-                            <input
-                                type="date"
-                                className="bg-inputbg/30 border-inputaccent pl-9 pr-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring text-muted-foreground appearance-none"
                             />
                         </div>
                     </div>
@@ -126,7 +127,7 @@ export default function Home() {
                 </div>
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
                 {filter === '' && query === '' &&
-                    <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
+                    <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
                         <h2 className="text-xl">Featured</h2>
                         <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
                             <div className="relative w-full aspect-square rounded-lg overflow-hidden">
@@ -159,8 +160,8 @@ export default function Home() {
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
-                        {!filter && results.slice(0, 10).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                        {!filter && results.slice(0, visibleCount).map((ev: Event) => (
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -233,8 +234,8 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
-                        {filter && results.filter((ev: Event) => ev.category === filter).slice(0, 10).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                        {filter && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -303,6 +304,7 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
+                        {results.length > visibleCount && <button onClick={loadMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
                     </div>
 
                 </div>
@@ -313,8 +315,8 @@ export default function Home() {
                     </div>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {
-                            collectives.map((collective: CollectiveWithRelations) => (
-                                <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            collectives.slice(0, visibleCollectiveCount).map((collective: CollectiveWithRelations) => (
+                                <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Collective...", { duration: 1000 })}>
                                     <div className="flex flex-col gap-2 p-4">
                                         <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-sqaure">
                                             <span className="text-3xl font-light text-accent">{collective.name[0]}</span>
@@ -340,6 +342,7 @@ export default function Home() {
                                 </Link>
                             ))
                         }
+                        {collectives.length > visibleCollectiveCount && <button onClick={loadMoreCollectives} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
                     </div>
                 </div>
             </main>
