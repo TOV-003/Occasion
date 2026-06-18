@@ -7,6 +7,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<{ user: User; session: Session | undefined; }>;
     logout: () => Promise<void>;
     getProfile: () => Promise<Profile>;
+    loginWithGoogle: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

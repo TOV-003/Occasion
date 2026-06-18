@@ -24,6 +24,16 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         return data;
     }
 
+    async function loginWithGoogle() {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/dashboard`
+            }
+        })
+        if (error) throw error
+    }
+
     async function logout() {
         await supabase.auth.signOut();
     }
@@ -45,7 +55,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
 
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, getProfile }}>
+        <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, getProfile }}>
             {children}
         </AuthContext.Provider>
     );
