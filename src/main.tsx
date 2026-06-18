@@ -11,6 +11,7 @@ import About from './pages/About.tsx'
 import EventPage from './pages/EventPage'
 import ErrorPage from './components/ErrorPage'
 import LoadingFallback from './components/LoadingFallback'
+import CollectivePage from './pages/CollectivePage.tsx'
 
 const router = createBrowserRouter([
   {
@@ -103,6 +104,95 @@ const router = createBrowserRouter([
             event: eventResult.data,
             tickets: ticketsResult.data,
             eventCollective
+          };
+        }
+      },
+      {
+        path: '/collective/:id',
+        element: <CollectivePage />,
+        loader: async ({ params }) => {
+          const { id } = params;
+          if (!id) throw new Error('Collective ID required');
+
+          const today = new Date().toLocaleDateString('en-CA');
+
+          const [
+            collectiveResult,
+            collectiveMembersResult,
+            collectiveFollowersResult,
+            collectiveEventsResult,
+          ] = await Promise.all([
+            supabase
+              .from('collectives')
+              .select('*, collective_members (*), collective_followers (*)')
+              .eq('id', id)
+              .single(),
+            supabase
+              .from('collective_members')
+              .select('*')
+              .eq('collective_id', id),
+            supabase
+              .from('collective_followers')
+              .select('*')
+              .eq('collective_id', id),
+            supabase
+              .from('event_collectives')
+              .select('event_id')
+              .eq('collective_id', id)
+              .eq('status', 'approved')
+          ]);
+
+          if (collectiveResult.error) throw collectiveResult.error;
+          if (collectiveMembersResult.error) throw collectiveMembersResult.error;
+          if (collectiveFollowersResult.error) throw collectiveFollowersResult.error;
+          if (collectiveEventsResult.error) throw collectiveEventsResult.error;
+
+          const userIds = collectiveMembersResult.data?.map(m => m.user_id) || [];
+          let memberProfiles: { id: string; full_name: string; avatar_url: string; bio?: string }[] = [];
+          if (userIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url, bio')
+              .in('id', userIds);
+            if (!profilesError) {
+              memberProfiles = profiles || [];
+            } else {
+              console.warn('Failed to fetch member profiles:', profilesError);
+            }
+          }
+
+          const eventIds = collectiveEventsResult.data?.map(ec => ec.event_id) || [];
+
+          let events = [];
+          let tickets = [];
+
+          if (eventIds.length > 0) {
+            const { data: eventsData, error: eventsError } = await supabase
+              .from('events')
+              .select('*, event_dates(*)')
+              .in('id', eventIds)
+              .gte('event_dates.date', today);
+
+            if (eventsError) throw eventsError;
+            events = eventsData || [];
+
+            const { data: ticketsData, error: ticketsError } = await supabase
+              .from('tickets')
+              .select('*')
+              .in('event_id', eventIds)
+              .eq('status', 'approved');
+
+            if (ticketsError) throw ticketsError;
+            tickets = ticketsData || [];
+          }
+
+          return {
+            collective: collectiveResult.data,
+            collectiveMembers: collectiveMembersResult.data,
+            collectiveFollowers: collectiveFollowersResult.data,
+            events,
+            tickets,
+            memberProfiles
           };
         }
       }

@@ -34,7 +34,7 @@ export default function ErrorPage() {
 
     return (
         <Layout>
-            <main className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-16 text-center">
+            <main className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-16 text-center h-screen">
                 <div className="max-w-md">
                     <div className="text-8xl font-light text-accent mb-4">{statusCode}</div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>

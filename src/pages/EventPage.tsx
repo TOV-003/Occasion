@@ -1,4 +1,4 @@
-import { useLoaderData, Link } from 'react-router-dom';
+import { useLoaderData, Link, useParams } from 'react-router-dom';
 import type { Event } from '../interfaces';
 import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info } from 'lucide-react';
 import Layout from '../Layout';
@@ -12,6 +12,9 @@ export default function EventPage() {
         collective: Event_collective[];
         eventCollective: CollectiveWithRelations | null;
     };
+    const { id } = useParams();
+    console.log("eventid", id);
+    console.log("eventCollective", eventCollective);
 
     const isFull = tickets.length === event.max_attendees;
 
@@ -23,7 +26,7 @@ export default function EventPage() {
                     className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
                 >
                     <ChevronLeft size={16} />
-                    Back to Events
+                    Back to Explore
                 </Link>
 
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
@@ -103,7 +106,11 @@ export default function EventPage() {
                         </div>
 
                         {eventCollective && (
-                            <div className="mt-4">
+                            <Link
+                                to={`/collective/${eventCollective.id}`}
+                                state={{ fromEvent: event.id }}
+                                className="mt-4"
+                            >
                                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Part of</h3>
                                 <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-inputaccent/20 shadow-sm hover:shadow-md transition-shadow">
                                     <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
@@ -120,7 +127,7 @@ export default function EventPage() {
                                         <span>{eventCollective.collective_members?.length || 0}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         )}
                     </div>
 

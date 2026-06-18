@@ -74,3 +74,10 @@ export interface Event_collective {
     status: string;
     created_at: string;
 }
+
+export interface Profile {
+    id: string;
+    full_name: string;
+    avatar_url: string;
+    bio: string
+}
