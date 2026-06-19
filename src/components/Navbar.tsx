@@ -3,6 +3,7 @@ import { Menu, Compass, CircleX, Grid2x2 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { UseAuth } from '../context/UseAuth'
+import { toast } from 'react-hot-toast'
 import type { Profile } from '../interfaces'
 
 
@@ -54,9 +55,9 @@ export default function Navbar() {
                 </div>
                 <div className="hidden md:flex items-center gap-4">
                     <button className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</button>
-                    <NavLink to="/login" className="cursor-pointer">
-                        {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-accent-dark rounded-md px-2 py-1 cursor-pointer text-white">Login</div>}
-                    </NavLink>
+                    <div className="cursor-pointer">
+                        {profile ? <NavLink to="/settings" onClick={() => { toast.loading("Loading Settings...", { duration: 1500 }) }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /></NavLink> : <NavLink to="/login" onClick={() => { toast.loading("Loading Login...", { duration: 1500 }) }}><div className="bg-accent-dark rounded-md px-2 py-1 cursor-pointer text-white">Login</div></NavLink>}
+                    </div>
                 </div>
                 <button className="md:hidden block cursor-pointer" onClick={() => { setDropdown(prev => !prev); console.log(dropdown); }}>{!dropdown ? <Menu color={`var(--color-accent-dark)`} /> : <CircleX color={`var(--color-accent-dark)`} />}</button>
                 <div className={`${dropdown ? "block md:hidden" : "md:hidden hidden"} absolute top-full left-0 right-0 px-4 w-full bg-background border-t border-inputaccent/50`}>
@@ -86,10 +87,10 @@ export default function Navbar() {
                             )}
                         </NavLink>
                         <button className="bg-accent text-white rounded-md px-4 py-2 w-full">+ New Event</button>
-                        <NavLink to="/login" className="flex items-center gap-4 w-full">
-                            {profile ? <img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /> : <div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div>}
-                            <span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span>
-                        </NavLink>
+                        <div className="flex items-center gap-4 w-full">
+                            {profile ? <NavLink to="/settings" onClick={() => { toast.loading("Loading Settings...", { duration: 1500 }) }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /></NavLink> : <NavLink to="/login" onClick={() => { toast.loading("Loading Login...", { duration: 1500 }) }}><div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div></NavLink>}
+                            <NavLink to={profile ? "/settings" : "/login"} onClick={() => { toast.loading(`Loading ${profile ? "Settings" : "Login"}...`, { duration: 1500 }) }}><span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span></NavLink>
+                        </div>
                     </div>
                 </div>
             </nav>

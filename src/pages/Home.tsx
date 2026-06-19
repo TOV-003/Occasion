@@ -17,7 +17,7 @@ export default function Home() {
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
     console.log(featuredEvents);
-    const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness'];
+    const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
         Nightlife: { bg: 'bg-purple-200', text: 'text-purple-800' },
@@ -127,7 +127,7 @@ export default function Home() {
                 </div>
                 <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
                 {filter === '' && query === '' &&
-                    <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
+                    <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                         <h2 className="text-xl">Featured</h2>
                         <div className=" rounded-xl relative w-full h-fit aspect-square shadow-lg shadow-accent-dark/20">
                             <div className="relative w-full aspect-square rounded-lg overflow-hidden">
@@ -161,7 +161,7 @@ export default function Home() {
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {!filter && results.slice(0, visibleCount).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -234,8 +234,9 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
-                        {filter && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1000 })}>
+                        {!filter && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
+                        {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -304,6 +305,7 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
+                        {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
                         {results.length > visibleCount && <button onClick={loadMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
                     </div>
 
@@ -316,7 +318,7 @@ export default function Home() {
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {
                             collectives.slice(0, visibleCollectiveCount).map((collective: CollectiveWithRelations) => (
-                                <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Collective...", { duration: 1000 })}>
+                                <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Collective...", { duration: 1500 })}>
                                     <div className="flex flex-col gap-2 p-4">
                                         <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-sqaure">
                                             <span className="text-3xl font-light text-accent">{collective.name[0]}</span>

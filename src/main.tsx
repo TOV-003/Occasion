@@ -12,6 +12,10 @@ import EventPage from './pages/EventPage'
 import ErrorPage from './components/ErrorPage'
 import LoadingFallback from './components/LoadingFallback'
 import CollectivePage from './pages/CollectivePage.tsx'
+import Settings from './pages/Settings.tsx'
+import Dashboard from './pages/Dashboard'
+
+
 
 const router = createBrowserRouter([
   {
@@ -193,6 +197,31 @@ const router = createBrowserRouter([
             events,
             tickets,
             memberProfiles
+          };
+        }
+      },
+      {
+        path: '/settings',
+        element: <Settings />,
+      },
+      {
+        path: '/dashboard',
+        element: <Dashboard />,
+        loader: async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+
+          const userId = session?.user.id;
+
+          const { data: Profile, error: ProfileError } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, bio')
+            .eq('id', userId)
+            .single()
+
+          if (ProfileError) throw ProfileError;
+
+          return {
+            Profile: Profile
           };
         }
       }

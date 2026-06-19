@@ -96,9 +96,7 @@ export default function CollectivePage() {
 
     const location = useLocation();
     const fromEventId = location.state?.fromEvent as string | undefined;
-
     const [view, setView] = useState<"grid" | "list">("grid");
-
     const isOwner = false;
 
     return (
