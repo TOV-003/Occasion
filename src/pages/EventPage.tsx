@@ -1,17 +1,18 @@
 import { useLoaderData, Link, useParams } from 'react-router-dom';
 import type { Event } from '../interfaces';
-import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info } from 'lucide-react';
+import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import Layout from '../Layout';
 import ShareButton from '../components/ShareButton';
 import { toast } from 'react-hot-toast';
-import type { Tickets, Event_collective, CollectiveWithRelations } from '../interfaces';
+import type { Tickets, Event_collective, CollectiveWithRelations, Bookmarks } from '../interfaces';
 
 export default function EventPage() {
-    const { event, tickets, eventCollective } = useLoaderData() as {
+    const { event, tickets, eventCollective, bookmarks } = useLoaderData() as {
         event: Event;
         tickets: Tickets[];
         collective: Event_collective[];
         eventCollective: CollectiveWithRelations | null;
+        bookmarks: Bookmarks[];
     };
     const { id } = useParams();
     console.log("eventid", id);
@@ -34,12 +35,18 @@ export default function EventPage() {
 
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     <div className="lg:w-2/3 space-y-6">
-                        <div className="rounded-xl overflow-hidden shadow-lg">
+                        <div className="rounded-xl overflow-hidden shadow-lg relative">
                             <img
                                 src={event.banner_url}
                                 alt={event.title}
                                 className="w-full aspect-square object-cover"
                             />
+                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length > 0 && <div className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                <BookmarkCheck color="var(--color-accent)" size={20} />
+                            </div>}
+                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length === 0 && <div className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                <BookmarkOff color="var(--color-accent)" size={20} />
+                            </div>}
                         </div>
 
                         <div>
@@ -113,6 +120,7 @@ export default function EventPage() {
                                 to={`/collective/${eventCollective.id}`}
                                 state={{ fromEvent: event.id }}
                                 className="mt-4"
+                                onClick={() => toast.loading("Loading Collective...", { duration: 1500 })}
                             >
                                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Part of</h3>
                                 <div className="flex items-center gap-4 p-4 bg-white rounded-xl border border-inputaccent/20 shadow-sm hover:shadow-md transition-shadow">

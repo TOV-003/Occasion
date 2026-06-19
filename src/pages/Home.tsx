@@ -1,11 +1,11 @@
-import { Search, CalendarDays, MapPin, Users, ChevronRight } from "lucide-react";
+import { Search, CalendarDays, MapPin, Users, ChevronRight, BookmarkCheck, BookmarkOff } from "lucide-react";
 import { useLoaderData, Link } from 'react-router-dom'
 import { useState, useMemo } from 'react';
 import Layout from '../Layout';
 import Fuse from 'fuse.js';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
-import type { Event, EventDate, Tickets, CollectiveWithRelations } from '../interfaces';
+import type { Event, EventDate, Tickets, CollectiveWithRelations, Bookmarks } from '../interfaces';
 
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -15,7 +15,7 @@ export default function Home() {
     const [visibleCount, setVisibleCount] = useState(10);
     const [visibleCollectiveCount, setVisibleCollectiveCount] = useState(10);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
-    const { featuredEvents, allEvents, eventDates, tickets, collectives } = useLoaderData();
+    const { featuredEvents, allEvents, eventDates, tickets, collectives, bookmarks } = useLoaderData();
     console.log(featuredEvents);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
@@ -161,7 +161,7 @@ export default function Home() {
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {!filter && results.slice(0, visibleCount).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
+                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent relative" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
                                     <img
                                         src={ev.banner_url}
@@ -231,6 +231,10 @@ export default function Home() {
                                             </div>
                                         );
                                     })()}
+                                </div>
+                                <div className="absolute top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md cursor-pointer">
+                                    {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <BookmarkCheck color="var(--color-accent)" size={20} />}
+                                    {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <BookmarkOff color="var(--color-accent)" size={20} />}
                                 </div>
                             </Link>
                         ))}

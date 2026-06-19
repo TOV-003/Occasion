@@ -81,3 +81,10 @@ export interface Profile {
     avatar_url: string;
     bio: string
 }
+
+export interface Bookmarks {
+    id: string;
+    user_id: string;
+    event_id: string;
+    created_at: string;
+}

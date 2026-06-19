@@ -28,13 +28,15 @@ const router = createBrowserRouter([
         element: <Home />,
         loader: async () => {
           const today = new Date().toLocaleDateString('en-CA');
-
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user.id;
           const [
             featuredEventsResult,
             allEventsResult,
             eventDatesResult,
             ticketsResult,
-            collectivesResult
+            collectivesResult,
+            bookmarksResult
           ] = await Promise.all([
             supabase.from('featured_events').select('*'),
             supabase
@@ -46,7 +48,8 @@ const router = createBrowserRouter([
               .select('*')
               .gte('date', today),
             supabase.from('tickets').select('*'),
-            supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`)
+            supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`),
+            supabase.from('bookmarks').select('*').eq('user_id', userId)
           ]);
 
           if (featuredEventsResult.error) throw featuredEventsResult.error;
@@ -54,13 +57,15 @@ const router = createBrowserRouter([
           if (eventDatesResult.error) throw eventDatesResult.error;
           if (ticketsResult.error) throw ticketsResult.error;
           if (collectivesResult.error) throw collectivesResult.error;
+          if (bookmarksResult.error) throw bookmarksResult.error;
 
           return {
             featuredEvents: featuredEventsResult.data,
             allEvents: allEventsResult.data,
             eventDates: eventDatesResult.data,
             tickets: ticketsResult.data,
-            collectives: collectivesResult.data
+            collectives: collectivesResult.data,
+            bookmarks: bookmarksResult.data
           };
         }
       },
@@ -78,17 +83,20 @@ const router = createBrowserRouter([
         loader: async ({ params }) => {
           const { id } = params;
           if (!id) throw new Error('Event ID required');
-
-          const [eventResult, ticketsResult, collectiveLinkResult] = await Promise.all([
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user.id;
+          const [eventResult, ticketsResult, collectiveLinkResult, bookmarksResult] = await Promise.all([
             supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
             supabase.from('tickets').select('*').eq('event_id', id).eq('status', 'approved'),
-            supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle()
+            supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle(),
+            supabase.from('bookmarks').select('*').eq('event_id', id).eq('user_id', userId)
           ]);
 
           if (eventResult.error) throw eventResult.error;
           if (!eventResult.data) throw new Response('Event not found', { status: 404 });
           if (ticketsResult.error) throw ticketsResult.error;
           if (collectiveLinkResult.error) throw collectiveLinkResult.error;
+          if (bookmarksResult.error) throw bookmarksResult.error;
 
           let eventCollective = null;
           const collectiveLink = collectiveLinkResult.data;
@@ -107,7 +115,8 @@ const router = createBrowserRouter([
           return {
             event: eventResult.data,
             tickets: ticketsResult.data,
-            eventCollective
+            eventCollective,
+            bookmarks: bookmarksResult.data
           };
         }
       },
@@ -117,14 +126,16 @@ const router = createBrowserRouter([
         loader: async ({ params }) => {
           const { id } = params;
           if (!id) throw new Error('Collective ID required');
-
           const today = new Date().toLocaleDateString('en-CA');
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user.id;
 
           const [
             collectiveResult,
             collectiveMembersResult,
             collectiveFollowersResult,
             collectiveEventsResult,
+            bookmarksResult
           ] = await Promise.all([
             supabase
               .from('collectives')
@@ -143,13 +154,18 @@ const router = createBrowserRouter([
               .from('event_collectives')
               .select('event_id')
               .eq('collective_id', id)
-              .eq('status', 'approved')
+              .eq('status', 'approved'),
+            supabase
+              .from('bookmarks')
+              .select('*')
+              .eq('user_id', userId)
           ]);
 
           if (collectiveResult.error) throw collectiveResult.error;
           if (collectiveMembersResult.error) throw collectiveMembersResult.error;
           if (collectiveFollowersResult.error) throw collectiveFollowersResult.error;
           if (collectiveEventsResult.error) throw collectiveEventsResult.error;
+          if (bookmarksResult.error) throw bookmarksResult.error;
 
           const userIds = collectiveMembersResult.data?.map(m => m.user_id) || [];
           let memberProfiles: { id: string; full_name: string; avatar_url: string; bio?: string }[] = [];
@@ -196,7 +212,8 @@ const router = createBrowserRouter([
             collectiveFollowers: collectiveFollowersResult.data,
             events,
             tickets,
-            memberProfiles
+            memberProfiles,
+            bookmarks: bookmarksResult.data
           };
         }
       },

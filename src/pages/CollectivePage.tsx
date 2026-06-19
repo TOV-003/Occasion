@@ -1,9 +1,9 @@
 import Layout from '../Layout';
 import { Link, useLocation, useLoaderData } from 'react-router-dom';
-import { ChevronLeft, Users, MapPin, CalendarDays, Plus, Grid3X3, List, Calendar } from 'lucide-react';
+import { ChevronLeft, Users, MapPin, CalendarDays, Plus, Grid3X3, List, Calendar, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import type { CollectiveWithRelations, CollectiveMember, CollectiveFollower, Event, Tickets, Profile } from '../interfaces';
+import type { CollectiveWithRelations, CollectiveMember, CollectiveFollower, Event, Tickets, Profile, Bookmarks } from '../interfaces';
 
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -81,18 +81,16 @@ function MiniCalendar({ events }: { events: Event[] }) {
 }
 
 export default function CollectivePage() {
-    const { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles } = useLoaderData() as {
+    const { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles, bookmarks } = useLoaderData() as {
         collective: CollectiveWithRelations;
         collectiveMembers: CollectiveMember[];
         collectiveFollowers: CollectiveFollower[];
         events: Event[];
         tickets: Tickets[];
         memberProfiles: Profile[];
+        bookmarks: Bookmarks[];
     };
 
-    console.log("collective members", collectiveMembers);
-    console.log("collective followers", collectiveFollowers);
-    console.log("Member profiles", memberProfiles);
 
     const location = useLocation();
     const fromEventId = location.state?.fromEvent as string | undefined;
@@ -211,6 +209,12 @@ export default function CollectivePage() {
                                                     loading="lazy"
                                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                                 />
+                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                    <BookmarkCheck color="var(--color-accent)" size={20} />
+                                                </div>}
+                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                    <BookmarkOff color="var(--color-accent)" size={20} />
+                                                </div>}
                                             </div>
                                             <div className="p-4 space-y-2">
                                                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-accent transition-colors line-clamp-1">
@@ -310,6 +314,12 @@ export default function CollectivePage() {
                                                     {ev.event_dates && ev.event_dates.length > 1 && ` + ${ev.event_dates.length - 1} more`}
                                                 </p>
                                             </div>
+                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div className="cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                <BookmarkCheck color="var(--color-accent)" size={20} />
+                                            </div>}
+                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div className="group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                <BookmarkOff color="var(--color-accent)" size={20} />
+                                            </div>}
                                             <div className="text-xs text-gray-500">
                                                 {registered} / {ev.max_attendees}
                                             </div>
