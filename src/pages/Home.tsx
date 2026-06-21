@@ -16,7 +16,6 @@ export default function Home() {
     const [visibleCollectiveCount, setVisibleCollectiveCount] = useState(10);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const { featuredEvents, allEvents, eventDates, tickets, collectives, bookmarks } = useLoaderData();
-    console.log(featuredEvents);
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -80,7 +79,7 @@ export default function Home() {
 
     return (
         <Layout>
-            <main className="flex flex-col gap-16 items-center lg:items-start  px-4 py-8 lg:px-8 lg:py-12">
+            <main className="flex flex-col gap-16 items-center lg:items-start px-4 py-8 lg:px-8 lg:py-12 lg:max-w-6xl lg:mx-auto">
                 <div className="flex flex-col items-center lg:items-start justify-end ">
                     <h1 className="text-2xl">So, What's the <span className="text-accent">Occasion</span>?</h1>
                     <p className="text-md font-light text-inputaccent">
@@ -237,7 +236,7 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
-                        {!filter && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
+                        {results.length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
                         {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
                             <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
@@ -307,7 +306,7 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
-                        {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
+                        {filter && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
                         {results.length > visibleCount && <button onClick={loadMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
                     </div>
 

@@ -16,7 +16,6 @@ export default function Dashboard() {
         Attending: Event[];
         CollectiveList: CollectiveWithRelations[];
     };
-    console.log("CollectiveList", CollectiveList);
     const navigate = useNavigate();
     const [view, setView] = useState<'attending' | 'hosting' | 'collectives' | 'history'>('attending');
     const categoryStyles: Record<string, { bg: string; text: string }> = {
@@ -32,6 +31,14 @@ export default function Dashboard() {
         Family: { bg: 'bg-teal-200', text: 'text-teal-800' },
         Wellness: { bg: 'bg-emerald-200', text: 'text-emerald-800' },
     };
+    const pastTickets = Tickets.filter(ticket => {
+        const event = Attending.find(e => e.id === ticket.event_id);
+        return event && event.event_dates?.some(d => new Date(d.date).toISOString().slice(0, 10) < new Date().toISOString().slice(0, 10));
+    });
+    const currentTickets = Tickets.filter(ticket => {
+        const event = Attending.find(e => e.id === ticket.event_id);
+        return event && event.event_dates?.some(d => new Date(d.date).toISOString().slice(0, 10) > new Date().toISOString().slice(0, 10));
+    });
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -53,7 +60,7 @@ export default function Dashboard() {
 
     return (
         <Layout>
-            <main className="flex flex-col gap-4 items-center px-4 py-8 lg:px-8 lg:py-12">
+            <main className="flex flex-col gap-4 items-center px-4 py-8 lg:px-8 lg:py-12 lg:max-w-6xl lg:mx-auto">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-20 w-full">
                     <img src={Profile.avatar_url} alt="Profile Avatar" className="rounded-full w-32 h-32" />
                     <div className="flex flex-col gap-4 items-center  md:items-start">
@@ -66,7 +73,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2 w-full bg-inputaccent/20 rounded-xl px-4 py-2">
                         <Ticket color="var(--color-accent-dark)" size={24} />
                         <div className="flex flex-col items-">
-                            <h1 className="text-lg text-accent-dark font-medium">{Tickets.length}</h1>
+                            <h1 className="text-lg text-accent-dark font-medium">{currentTickets.length}</h1>
                             <h2 className="text-sm font-light text-inputaccent">Tickets</h2>
                         </div>
                     </div>
@@ -87,20 +94,20 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2 w-full bg-inputaccent/20 rounded-xl px-4 py-2">
                         <Ticket color="var(--color-accent-dark)" size={24} />
                         <div className="flex flex-col items-">
-                            <h1 className="text-lg text-accent-dark font-medium">{Tickets.length}</h1>
+                            <h1 className="text-lg text-accent-dark font-medium">{pastTickets.length}</h1>
                             <h2 className="text-sm font-light text-inputaccent">Past Events</h2>
                         </div>
                     </div>
                 </div>
-                <div>
-                    <hr className="border-inputaccent/50 w-screen" />
+                <div className="flex flex-col items-center px-4 md:px-12 lg:px-20 w-full lg:max-w-6xl">
+                    <hr className="border-inputaccent/50" />
                     <div className="flex items-center gap-4 w-full px-4 lg:px-10">
                         <button className={`${view === 'attending' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setAttendingView}>Attending</button>
                         <button className={`${view === 'hosting' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setHostingView}>Hosting</button>
                         <button className={`${view === 'collectives' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setCollectivesView}>Collectives</button>
                         <button className={`${view === 'history' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setHistoryView}>History</button>
                     </div>
-                    <hr className="border-inputaccent/50 w-screen" />
+                    <hr className="border-inputaccent/50 w-screen overflow-x-hidden" />
                 </div>
                 <div className="flex flex-col gap-1 items-center px-4 md:px-12 lg:px-20 w-full">
                     <div className="flex justify-between items-center w-full">
@@ -137,8 +144,8 @@ export default function Dashboard() {
                     </div>
                     {view === 'attending' && (
                         <div className="flex flex-col gap-4 items-center w-full">
-                            {Tickets.length > 0 ? (
-                                Tickets.map(ticket => {
+                            {currentTickets.length > 0 ? (
+                                currentTickets.map(ticket => {
                                     const event = Attending.find(e => e.id === ticket.event_id);
 
                                     return (
@@ -336,7 +343,67 @@ export default function Dashboard() {
                             </div>
                         )
                     )}
-                </div >
+                    {view === 'history' && (
+                        <div className="flex flex-col gap-4 items-center w-full">
+                            {pastTickets.length > 0 ? (
+                                pastTickets.map(ticket => {
+                                    const event = Attending.find(e => e.id === ticket.event_id);
+                                    return (
+                                        <div key={ticket.id} className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-3 items-start sm:items-center w-full bg-inputaccent/20 rounded-xl p-3 sm:p-2 transition-transform duration-300 hover:scale-100 sm:hover:scale-105">
+                                            <div className="flex items-center gap-3 w-full">
+                                                <Link to={`/event/${event?.id}`} className="shrink-0" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
+                                                    {event?.banner_url && (
+                                                        <img
+                                                            src={event.banner_url}
+                                                            alt={event.title}
+                                                            className="w-16 sm:w-24 aspect-square rounded-lg object-cover"
+                                                        />
+                                                    )}
+                                                </Link>
+                                                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                                                    <h2 className="font-light text-base sm:text-lg truncate">{event?.title}</h2>
+                                                    <div className="flex flex-wrap items-center gap-1 text-xs sm:text-sm text-gray-600">
+                                                        <span className="truncate max-w-30 sm:max-w-none">{event?.location}</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {event?.event_dates?.map((dateObj, index) => (
+                                                                <span key={index} className="text-xs sm:text-sm whitespace-nowrap">
+                                                                    {new Date(dateObj.date).toLocaleDateString('en-US', {
+                                                                        month: 'short',
+                                                                        day: 'numeric',
+                                                                        year: 'numeric'
+                                                                    })}
+                                                                    {index < event.event_dates.length - 1 && <span className="mx-0.5">•</span>}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className={`self-start sm:self-center rounded-lg px-2 py-1 font-semibold text-xs sm:text-sm opacity-70 bg-gray-400 text-gray-800`}>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="flex flex-col items-center justify-center gap-3 w-full bg-inputaccent/10 rounded-xl p-8 sm:p-12 text-center">
+                                    <div className="text-5xl sm:text-6xl mb-2">📆</div>
+                                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-700">No past events</h3>
+                                    <p className="text-sm sm:text-base text-gray-500 max-w-sm">
+                                        You haven't attended any events yet. Your history will appear here once you've been to an event.
+                                    </p>
+                                    <Link
+                                        to="/"
+                                        className="mt-2 inline-flex items-center gap-2 px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+                                    >
+                                        Browse Events
+                                        <span className="text-lg">→</span>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </main >
         </Layout >
     )
