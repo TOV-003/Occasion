@@ -4,7 +4,7 @@ import AuthContextProvider from './context/AuthContext'
 import './index.css'
 import App from './App.tsx'
 import { supabase } from './api/SupabaseClient'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom'
 import type { Event, CollectiveWithRelations } from './interfaces'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -225,6 +225,9 @@ const router = createBrowserRouter([
         loader: async () => {
           const { data: { session } } = await supabase.auth.getSession();
           const userId = session?.user.id;
+          if (!userId) {
+            throw redirect('/login');
+          }
           let Attending: Event[] = [];
           let CollectiveList: CollectiveWithRelations[] = [];
           const [Profile, Tickets, Events, Collectives] = await Promise.all([
