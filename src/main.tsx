@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { supabase } from './api/SupabaseClient'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import type { Event, CollectiveWithRelations } from './interfaces'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import About from './pages/About.tsx'
@@ -226,19 +227,62 @@ const router = createBrowserRouter([
         element: <Dashboard />,
         loader: async () => {
           const { data: { session } } = await supabase.auth.getSession();
-
           const userId = session?.user.id;
+          let Attending: Event[] = [];
+          let CollectiveList: CollectiveWithRelations[] = [];
+          const [Profile, Tickets, Events, Collectives] = await Promise.all([
+            supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url, bio')
+              .eq('id', userId)
+              .single(),
+            supabase
+              .from('tickets')
+              .select('*')
+              .eq('user_id', userId),
+            supabase
+              .from('events')
+              .select('*')
+              .eq('creator_id', userId),
+            supabase
+              .from('collective_members')
+              .select('*')
+              .eq('user_id', userId)
+          ]);
 
-          const { data: Profile, error: ProfileError } = await supabase
-            .from('profiles')
-            .select('id, full_name, avatar_url, bio')
-            .eq('id', userId)
-            .single()
+          if (Profile.error) throw Profile.error;
+          if (Tickets.error) throw Tickets.error;
+          if (Events.error) throw Events.error;
+          if (Collectives.error) throw Collectives.error;
 
-          if (ProfileError) throw ProfileError;
+          const eventIds = Tickets.data?.map(t => t.event_id) || [];
+          if (eventIds.length > 0) {
+            const { data: events, error } = await supabase
+              .from('events')
+              .select('*, event_dates(*)')
+              .in('id', eventIds);
 
+            if (!error) {
+              Attending = events || [];
+            }
+          }
+          const collectiveIds = Collectives.data?.map(c => c.collective_id) || [];
+          if (collectiveIds.length > 0) {
+            const { data: collectives, error } = await supabase
+              .from('collectives')
+              .select('*, collective_members (*), collective_followers (*)')
+              .in('id', collectiveIds);
+            if (!error) {
+              CollectiveList = collectives || [];
+            }
+          }
           return {
-            Profile: Profile
+            Profile: Profile.data,
+            Tickets: Tickets.data,
+            Events: Events.data,
+            Collectives: Collectives.data,
+            Attending,
+            CollectiveList
           };
         }
       }

@@ -206,7 +206,6 @@ export default function CollectivePage() {
                                                 <img
                                                     src={ev.banner_url}
                                                     alt={ev.title}
-                                                    loading="lazy"
                                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                                 />
                                                 {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
