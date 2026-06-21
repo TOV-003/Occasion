@@ -50,7 +50,7 @@ const router = createBrowserRouter([
               .gte('date', today),
             supabase.from('tickets').select('*'),
             supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`),
-            supabase.from('bookmarks').select('*').eq('user_id', userId)
+            userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
           ]);
 
           if (featuredEventsResult.error) throw featuredEventsResult.error;
@@ -90,7 +90,7 @@ const router = createBrowserRouter([
             supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
             supabase.from('tickets').select('*').eq('event_id', id).eq('status', 'approved'),
             supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle(),
-            supabase.from('bookmarks').select('*').eq('event_id', id).eq('user_id', userId)
+            userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
           ]);
 
           if (eventResult.error) throw eventResult.error;
@@ -156,10 +156,7 @@ const router = createBrowserRouter([
               .select('event_id')
               .eq('collective_id', id)
               .eq('status', 'approved'),
-            supabase
-              .from('bookmarks')
-              .select('*')
-              .eq('user_id', userId)
+            userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
           ]);
 
           if (collectiveResult.error) throw collectiveResult.error;
