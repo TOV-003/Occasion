@@ -25,12 +25,7 @@ export default function Login() {
     }
 
     async function handleGoogleLogin() {
-        await loginWithGoogle()
-            .then(() => {
-                toast.success('Logged in successfully!');
-                navigate('/settings');
-            })
-
+        await loginWithGoogle();
     }
 
     return (
