@@ -9,6 +9,9 @@ interface AuthContextType {
     getProfile: () => Promise<Profile>;
     loginWithGoogle: () => Promise<void>;
     profile: Profile | null;
+    updateProfile: (bio: string) => Promise<Profile>;
+    deleteAccount: () => Promise<void>;
+    authloading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

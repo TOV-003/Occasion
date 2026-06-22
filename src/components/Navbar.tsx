@@ -1,7 +1,7 @@
 import logo from '../assets/Occasion.svg'
 import { Menu, Compass, CircleX, Grid2x2, Boxes } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UseAuth } from '../context/UseAuth'
 import { toast } from 'react-hot-toast'
 
@@ -9,6 +9,15 @@ import { toast } from 'react-hot-toast'
 export default function Navbar() {
     const [dropdown, setDropdown] = useState<boolean>(false);
     const { profile } = UseAuth();
+    const [rerender, setRerender] = useState<boolean>(true);
+
+    useEffect(() => {
+        function set() {
+            setRerender(e => !e)
+        }
+        set()
+        console.log(rerender)
+    }, [profile])
 
 
     return (
