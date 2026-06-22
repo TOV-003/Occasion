@@ -20,6 +20,7 @@ export interface Event {
     event_dates: {
         date: string;
     }[];
+    approved_ticket_count: number;
 }
 
 export interface EventDate {

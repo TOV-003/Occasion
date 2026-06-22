@@ -28,44 +28,21 @@ const router = createBrowserRouter([
         index: true,
         element: <Home />,
         loader: async () => {
-          const today = new Date().toLocaleDateString('en-CA');
           const { data: { session } } = await supabase.auth.getSession();
           const userId = session?.user.id;
           const [
             featuredEventsResult,
-            allEventsResult,
-            eventDatesResult,
-            ticketsResult,
-            collectivesResult,
             bookmarksResult
           ] = await Promise.all([
             supabase.from('featured_events').select('*'),
-            supabase
-              .from('events')
-              .select('*, event_dates!inner(date)')
-              .gte('event_dates.date', today),
-            supabase
-              .from('event_dates')
-              .select('*')
-              .gte('date', today),
-            supabase.from('tickets').select('*'),
-            supabase.from('collectives').select(`*,collective_members (*),collective_followers (*)`),
             userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
           ]);
 
           if (featuredEventsResult.error) throw featuredEventsResult.error;
-          if (allEventsResult.error) throw allEventsResult.error;
-          if (eventDatesResult.error) throw eventDatesResult.error;
-          if (ticketsResult.error) throw ticketsResult.error;
-          if (collectivesResult.error) throw collectivesResult.error;
           if (bookmarksResult.error) throw bookmarksResult.error;
 
           return {
             featuredEvents: featuredEventsResult.data,
-            allEvents: allEventsResult.data,
-            eventDates: eventDatesResult.data,
-            tickets: ticketsResult.data,
-            collectives: collectivesResult.data,
             bookmarks: bookmarksResult.data
           };
         }

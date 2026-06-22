@@ -1,11 +1,12 @@
 import { Search, CalendarDays, MapPin, Users, ChevronRight, BookmarkCheck, BookmarkOff } from "lucide-react";
 import { useLoaderData, Link } from 'react-router-dom'
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { supabase } from '../api/SupabaseClient';
 import Layout from '../Layout';
 import Fuse from 'fuse.js';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
-import type { Event, EventDate, Tickets, CollectiveWithRelations, Bookmarks } from '../interfaces';
+import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
 
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -15,7 +16,9 @@ export default function Home() {
     const [visibleCount, setVisibleCount] = useState(10);
     const [visibleCollectiveCount, setVisibleCollectiveCount] = useState(10);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
-    const { featuredEvents, allEvents, eventDates, tickets, collectives, bookmarks } = useLoaderData();
+    const [allEvents, setAllEvents] = useState<Event[]>([]);
+    const [collectives, setCollectives] = useState<CollectiveWithRelations[]>([]);
+    const { featuredEvents = [], bookmarks = [] } = useLoaderData();
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -30,6 +33,32 @@ export default function Home() {
         Family: { bg: 'bg-teal-200', text: 'text-teal-800' },
         Wellness: { bg: 'bg-emerald-200', text: 'text-emerald-800' },
     };
+
+    async function fetchAllEvents(): Promise<Event[]> {
+        const { data, error } = await supabase
+            .from('events_with_counts')
+            .select('*')
+        console.log("fetchded event data", data);
+        if (error) throw error;
+        return data as Event[];
+    }
+
+    async function fetchAllCollectives(): Promise<CollectiveWithRelations[]> {
+        const { data, error } = await supabase
+            .from('collectives')
+            .select('*, collective_members (*), collective_followers (*)');
+        console.log("fetchded collective data", data);
+        if (error) throw error;
+        return data;
+    }
+    useEffect(() => {
+        fetchAllEvents()
+            .then(setAllEvents)
+            .catch(console.error)
+        fetchAllCollectives()
+            .then(setCollectives)
+            .catch(console.error)
+    }, [])
 
     const fuse = useMemo(() => new Fuse(allEvents, {
         keys: ['title', 'city', 'location'],
@@ -186,25 +215,21 @@ export default function Home() {
                                     <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
                                         <CalendarDays size={15} />
                                         {
-                                            eventDates
-                                                .filter((date: EventDate) => date.event_id === ev.id)
-                                                .map((date: EventDate, index: number, array: EventDate[]) => (
-                                                    <span key={date.id}>
-                                                        {new Date(date.date).toLocaleDateString('en-US', {
-                                                            month: 'long',
-                                                            day: 'numeric',
-                                                            year: 'numeric',
-                                                            timeZone: 'UTC',
-                                                        })}
-                                                        {index < array.length - 1 && ' / '}
-                                                    </span>
-                                                ))
+                                            ev.event_dates.map((el, index, array) => (
+                                                <span key={index}>
+                                                    {new Date(el.date).toLocaleDateString('en-US', {
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                        timeZone: 'UTC',
+                                                    })}
+                                                    {index < array.length - 1 && ' / '}
+                                                </span>
+                                            ))
                                         }
                                     </p>
                                     {(() => {
-                                        const registered = tickets.filter(
-                                            (ticket: Tickets) => ticket.event_id === ev.id && ticket.status === "approved"
-                                        ).length;
+                                        const registered = ev.approved_ticket_count;
                                         const maxAttendees = ev.max_attendees || 0;
                                         const percentage = maxAttendees
                                             ? Math.min((registered / maxAttendees) * 100, 100)
@@ -264,25 +289,21 @@ export default function Home() {
                                     <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
                                         <CalendarDays size={15} />
                                         {
-                                            eventDates
-                                                .filter((date: EventDate) => date.event_id === ev.id)
-                                                .map((date: EventDate, index: number, array: EventDate[]) => (
-                                                    <span key={date.id}>
-                                                        {new Date(date.date).toLocaleDateString('en-US', {
-                                                            month: 'long',
-                                                            day: 'numeric',
-                                                            year: 'numeric',
-                                                            timeZone: 'UTC',
-                                                        })}
-                                                        {index < array.length - 1 && ' / '}
-                                                    </span>
-                                                ))
+                                            ev.event_dates.map((el, index, array) => (
+                                                <span key={index}>
+                                                    {new Date(el.date).toLocaleDateString('en-US', {
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                        timeZone: 'UTC',
+                                                    })}
+                                                    {index < array.length - 1 && ' / '}
+                                                </span>
+                                            ))
                                         }
                                     </p>
                                     {(() => {
-                                        const registered = tickets.filter(
-                                            (ticket: Tickets) => ticket.event_id === ev.id && ticket.status === "approved"
-                                        ).length;
+                                        const registered = ev.approved_ticket_count;
                                         const maxAttendees = ev.max_attendees || 0;
                                         const percentage = maxAttendees
                                             ? Math.min((registered / maxAttendees) * 100, 100)
