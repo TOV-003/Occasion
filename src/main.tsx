@@ -15,6 +15,7 @@ import LoadingFallback from './components/LoadingFallback'
 import CollectivePage from './pages/CollectivePage.tsx'
 import Settings from './pages/Settings.tsx'
 import Dashboard from './pages/Dashboard'
+import Collectives from './pages/Collectives'
 
 
 
@@ -262,6 +263,10 @@ const router = createBrowserRouter([
             CollectiveList
           };
         }
+      },
+      {
+        path: '/collectives',
+        element: <Collectives />
       }
     ]
   },

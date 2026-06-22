@@ -1,9 +1,8 @@
 import { Search, CalendarDays, MapPin, Users, ChevronRight, BookmarkCheck, BookmarkOff } from "lucide-react";
 import { useLoaderData, Link } from 'react-router-dom'
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { supabase } from '../api/SupabaseClient';
 import Layout from '../Layout';
-import Fuse from 'fuse.js';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
 import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
@@ -11,10 +10,15 @@ import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [filter, setFilter] = useState('');
+    const [inputValue, setInputValue] = useState('');
     const [query, setQuery] = useState('');
+    const debounceTimeoutRef = useRef<number | null>(null);
     const [loading, setLoading] = useState(true);
+    const [cursor, setCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [searching, setSearching] = useState(false);
     const [visibleCount, setVisibleCount] = useState(10);
-    const [visibleCollectiveCount, setVisibleCollectiveCount] = useState(10);
     const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
     const [allEvents, setAllEvents] = useState<Event[]>([]);
     const [collectives, setCollectives] = useState<CollectiveWithRelations[]>([]);
@@ -34,53 +38,111 @@ export default function Home() {
         Wellness: { bg: 'bg-emerald-200', text: 'text-emerald-800' },
     };
 
-    async function fetchAllEvents(): Promise<Event[]> {
-        const { data, error } = await supabase
+    async function fetchAllEvents(reset: boolean = false): Promise<void> {
+        if (reset) {
+            setSearching(true);
+        }
+        else {
+            setIsLoadingMore(true);
+        }
+
+        let supabaseQuery = supabase
             .from('events_with_counts')
             .select('*')
-        console.log("fetchded event data", data);
-        if (error) throw error;
-        return data as Event[];
-    }
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (filter && filter !== 'All') {
+            supabaseQuery = supabaseQuery.eq('category', filter);
+        }
+
+        if (query.trim()) {
+            supabaseQuery = supabaseQuery.or(
+                `title.ilike.%${query.trim()}%, city.ilike.%${query.trim()}%, location.ilike.%${query.trim()}%`
+            );
+        }
+
+        if (!reset && cursor) {
+            supabaseQuery = supabaseQuery.lt('created_at', cursor);
+        }
+
+        const { data, error } = await supabaseQuery;
+        if (error) {
+            console.error(error);
+            setLoading(false);
+            setSearching(false);
+            setIsLoadingMore(false);
+            return;
+        }
+
+        if (reset) {
+            setAllEvents(data || []);
+            setVisibleCount(data?.length || 0);
+        } else {
+            setAllEvents((prev) => [...prev, ...(data || [])]);
+            setVisibleCount((prev) => prev + (data?.length || 0));
+        }
+
+        if (data && data.length > 0) {
+            const lastItem = data[data.length - 1];
+            setCursor(lastItem.created_at);
+            setHasMore(data.length === 10);
+        } else {
+            setHasMore(false);
+        }
+
+        setLoading(false);
+        setIsLoadingMore(false);
+    };
 
     async function fetchAllCollectives(): Promise<CollectiveWithRelations[]> {
         const { data, error } = await supabase
             .from('collectives')
-            .select('*, collective_members (*), collective_followers (*)');
+            .select('*, collective_members (*), collective_followers (*)')
+            .order('created_at', { ascending: false })
+            .limit(10);
         console.log("fetchded collective data", data);
         if (error) throw error;
         return data;
     }
+
     useEffect(() => {
-        fetchAllEvents()
-            .then(setAllEvents)
-            .catch(console.error)
+        let isMounted = true;
+
+        const loadEvents = async () => {
+            if (isMounted) {
+                setAllEvents([]);
+                setCursor(null);
+                setHasMore(true);
+                setVisibleCount(0);
+            }
+            await fetchAllEvents(true);
+        };
+
+        loadEvents();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [query, filter]);
+    useEffect(() => {
         fetchAllCollectives()
             .then(setCollectives)
             .catch(console.error)
     }, [])
 
-    const fuse = useMemo(() => new Fuse(allEvents, {
-        keys: ['title', 'city', 'location'],
-        threshold: 0.3,
-    }), [allEvents]);
 
     const results = useMemo(() => {
-        const events = query.trim()
-            ? fuse.search(query).map(result => result.item)
-            : allEvents;
-
-        return events.sort((a: Event, b: Event) => {
+        // Server will already filter by category and search term.
+        // We only sort by earliest event date.
+        return [...allEvents].sort((a: Event, b: Event) => {
             const getEarliest = (ev: Event) => {
-                if (!ev.event_dates || ev.event_dates.length === 0) {
-                    return '9999-12-31';
-                }
+                if (!ev.event_dates || ev.event_dates.length === 0) return '9999-12-31';
                 return ev.event_dates.map(d => d.date).sort()[0];
             };
-            setLoading(false);
             return getEarliest(a).localeCompare(getEarliest(b));
         });
-    }, [query, fuse, allEvents]);
+    }, [allEvents]);
 
     const showCategory = (category: string) => {
         setSelectedCategory(category);
@@ -95,15 +157,43 @@ export default function Home() {
     }
 
     const loadMore = () => {
-        setVisibleCount(prev => prev + 10);
+        if (!isLoadingMore && hasMore) {
+            fetchAllEvents(false);
+        }
     };
 
-    const loadMoreCollectives = () => {
-        setVisibleCollectiveCount(prev => prev + 10);
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setInputValue(value);
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+            debounceTimeoutRef.current = null;
+        }
+
+        if (value.trim() === '') {
+            setQuery('');
+            return;
+        }
+
+        if (value.length >= 3) {
+            debounceTimeoutRef.current = setTimeout(() => {
+                setQuery(value.trim());
+            }, 300);
+        } else {
+            setQuery('');
+        }
     };
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
+
 
     if (loading) {
-        return <Skeleton variant="home" />;
+        return <Layout><Skeleton variant="home" /></Layout>;
     }
 
     return (
@@ -125,8 +215,8 @@ export default function Home() {
                                 type="text"
                                 placeholder="Search events,cities,locations..."
                                 className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground"
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
+                                value={inputValue}
+                                onChange={handleSearchChange}
                             />
                         </div>
                     </div>
@@ -261,7 +351,12 @@ export default function Home() {
                                 </div>
                             </Link>
                         ))}
-                        {results.length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
+                        {searching && results.length === 0 && (
+                            <p className="text-center text-sm text-gray-500">Loading events...</p>
+                        )}
+                        {!searching && results.length === 0 && (
+                            <p className="text-center text-sm text-gray-500">No events found</p>
+                        )}
                         {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
                             <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                 <div className="relative w-full aspect-square overflow-hidden">
@@ -328,7 +423,15 @@ export default function Home() {
                             </Link>
                         ))}
                         {filter && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
-                        {results.length > visibleCount && <button onClick={loadMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
+                        {hasMore && (
+                            <button
+                                onClick={loadMore}
+                                disabled={isLoadingMore}
+                                className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full"
+                            >
+                                {isLoadingMore ? 'Loading...' : 'Load more'}
+                            </button>
+                        )}
                     </div>
 
                 </div>
@@ -339,7 +442,7 @@ export default function Home() {
                     </div>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
                         {
-                            collectives.slice(0, visibleCollectiveCount).map((collective: CollectiveWithRelations) => (
+                            collectives.map((collective: CollectiveWithRelations) => (
                                 <Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Collective...", { duration: 1500 })}>
                                     <div className="flex flex-col gap-2 p-4">
                                         <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-sqaure">
@@ -366,7 +469,7 @@ export default function Home() {
                                 </Link>
                             ))
                         }
-                        {collectives.length > visibleCollectiveCount && <button onClick={loadMoreCollectives} className="text-center text-sm text-gray-500 hover:text-accent transition-colors">Load more</button>}
+                        <Link to="/collectives" className="text-center text-sm text-gray-500 hover:text-accent transition-colors w-full">View all Collectives</Link>
                     </div>
                 </div>
             </main>

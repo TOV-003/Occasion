@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 
 export default function AuthContextProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -14,6 +15,8 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
                 return session?.user ?? null;
             });
         });
+
+        getProfile().catch(console.error);
 
         return () => subscription.unsubscribe();
     }, []);
@@ -50,12 +53,13 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
             .eq('id', user.id)
             .single();
         if (error) throw error;
+        setProfile(data);
         return data;
     }
 
 
     return (
-        <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, getProfile }}>
+        <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, getProfile, profile }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,25 +1,16 @@
 import logo from '../assets/Occasion.svg'
-import { Menu, Compass, CircleX, Grid2x2 } from 'lucide-react'
+import { Menu, Compass, CircleX, Grid2x2, Boxes } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { UseAuth } from '../context/UseAuth'
 import { toast } from 'react-hot-toast'
-import type { Profile } from '../interfaces'
 
 
 export default function Navbar() {
     const [dropdown, setDropdown] = useState<boolean>(false);
-    const { user, getProfile } = UseAuth();
-    const [profile, setProfile] = useState<Profile | null>(null);
+    const { profile } = UseAuth();
 
-    useEffect(() => {
-        console.log(user);
-        try {
-            getProfile().then(setProfile);
-        } catch (error) {
-            console.error(error);
-        }
-    }, [])
+
     return (
         <header>
             <nav className="relative z-10 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
@@ -49,6 +40,18 @@ export default function Navbar() {
                                     height={16}
                                 />
                                 Dashboard
+                            </>
+                        )}
+                    </NavLink>
+                    <NavLink to="/collectives" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                        {({ isActive }) => (
+                            <>
+                                <Boxes
+                                    color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                    width={16}
+                                    height={16}
+                                />
+                                Collectives
                             </>
                         )}
                     </NavLink>
@@ -83,6 +86,18 @@ export default function Navbar() {
                                         height={16}
                                     />
                                     Dashboard
+                                </>
+                            )}
+                        </NavLink>
+                        <NavLink to="/collectives" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                            {({ isActive }) => (
+                                <>
+                                    <Boxes
+                                        color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"}
+                                        width={16}
+                                        height={16}
+                                    />
+                                    Collectives
                                 </>
                             )}
                         </NavLink>

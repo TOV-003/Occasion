@@ -7,7 +7,7 @@ interface SkeletonProps {
 export default function Skeleton({ variant = "home" }: SkeletonProps) {
     if (variant === "dashboard") {
         return (
-            <main className="flex flex-col gap-8 px-4 py-8 lg:px-8 lg:py-8">
+            <main className="flex flex-col gap-8 px-4 py-8 lg:px-8 lg:py-8 lg:max-w-6xl lg:mx-auto">
                 <div className="flex items-center justify-between">
                     <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
                     <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
@@ -60,7 +60,7 @@ export default function Skeleton({ variant = "home" }: SkeletonProps) {
     }
 
     return (
-        <main className="flex flex-col gap-16 items-center lg:items-start px-4 py-8 lg:px-16 lg:py-16">
+        <main className="flex flex-col gap-16 items-center lg:items-start px-4 py-8 lg:px-16 lg:py-16 lg:max-w-6xl lg:mx-auto">
             <div className="flex flex-col items-center lg:items-start justify-end w-full">
                 <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
                 <div className="h-5 w-96 bg-gray-200 rounded mt-2 animate-pulse" />
