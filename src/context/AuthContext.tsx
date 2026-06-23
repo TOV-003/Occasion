@@ -1,7 +1,7 @@
 import { AuthContext } from './AuthContextObject';
 import { supabase } from '../api/SupabaseClient';
 import type { User } from '@supabase/supabase-js';
-import type { Profile } from '../interfaces';
+import type { Profile, Event, EventFormData } from '../interfaces';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -87,9 +87,48 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         return data;
     };
 
+    async function uploadBanner(file: File): Promise<string> {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const filePath = `public/${fileName}`;
+
+        const { error } = await supabase.storage
+            .from('Banners')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false,
+            });
+
+        if (error) throw error;
+
+        const { data } = supabase.storage.from('Banners').getPublicUrl(filePath);
+        return data.publicUrl;
+    }
+
+    async function createEvent(event: EventFormData): Promise<Event> {
+        const { event_dates, ...eventPayload } = event;
+        const { data, error } = await supabase
+            .from('events')
+            .insert(eventPayload)
+            .select('*')
+            .single();
+
+        if (error) { toast.error("Failed to create event"); throw error; }
+        const dateRows = event_dates.map((date) => ({
+            event_id: data.id,
+            date,
+        }));
+
+        const { error: datesError } = await supabase
+            .from('event_dates')
+            .insert(dateRows);
+
+        if (datesError) { await supabase.from('events').delete().eq('id', data.id); toast.error("Failed to create event dates"); throw datesError; }
+        return data;
+    }
 
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent }}>
             {children}
         </AuthContext.Provider>
     );

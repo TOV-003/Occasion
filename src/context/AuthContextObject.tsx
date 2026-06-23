@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
-import type { Profile } from '../interfaces';
+import type { Profile, Event, EventFormData } from '../interfaces';
 
 interface AuthContextType {
     user: User | null;
@@ -12,6 +12,8 @@ interface AuthContextType {
     updateProfile: (bio: string) => Promise<Profile>;
     deleteAccount: () => Promise<void>;
     authloading: boolean;
+    uploadBanner: (file: File) => Promise<string>;
+    createEvent: (event: EventFormData) => Promise<Event>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

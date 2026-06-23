@@ -101,3 +101,13 @@ export interface EventFormData {
     auto_approve: boolean;
     banner_url: string;
 }
+
+export interface EventFormDataNoDates {
+    title: string;
+    category: string;
+    description: string;
+    city: string;
+    location: string;
+    max_attendees: number | null;
+    auto_approve: boolean;
+}

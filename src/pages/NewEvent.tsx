@@ -11,7 +11,7 @@ import CityCombobox from '../components/CityCombobox';
 export default function NewEvent() {
     const [unlimitedAttendees, setUnlimitedAttendees] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
-    const { user, authloading } = UseAuth();
+    const { user, authloading, createEvent, uploadBanner } = UseAuth();
     const navigate = useNavigate();
     const [bannerFile, setBannerFile] = useState<File | null>(null);
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
@@ -31,6 +31,13 @@ export default function NewEvent() {
     });
 
     useEffect(() => {
+        if (!authloading && !user) {
+            toast.error("Please login to create an event.");
+            navigate("/");
+        }
+    }, [user]);
+
+    useEffect(() => {
         console.log(formData);
     }, [formData])
 
@@ -40,9 +47,6 @@ export default function NewEvent() {
         }
     }, [bannerFile])
 
-    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    }
     const changeCategory = (category: string) => {
         setFormData({ ...formData, category });
     };
@@ -141,12 +145,68 @@ export default function NewEvent() {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    useEffect(() => {
-        if (!authloading && !user) {
-            toast.error("Please login to create an event.");
-            navigate("/");
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+
+        if (!formData.title) {
+            toast.error("Event title is required.");
+            return;
         }
-    }, [user]);
+        if (!formData.category) {
+            toast.error("Category is required.");
+            return;
+        }
+        if (!formData.description) {
+            toast.error("Description is required.");
+            return;
+        }
+        if (!formData.city) {
+            toast.error("City is required.");
+            return;
+        }
+        if (!formData.location) {
+            toast.error("Location is required.");
+            return;
+        }
+        if (formData.event_dates.length === 0) {
+            toast.error("At least one event date is required.");
+            return;
+        }
+        if (!bannerFile) {
+            toast.error("Please upload a banner image.");
+            return;
+        }
+
+        toast.success("All fields validated!");
+
+        const uploadToast = toast.loading("Uploading banner image...");
+        let uploadedUrl: string;
+        try {
+            uploadedUrl = await uploadBanner(bannerFile);
+            toast.success("Banner uploaded successfully!", { id: uploadToast });
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Upload failed.", { id: uploadToast });
+            return;
+        }
+
+        const createToast = toast.loading("Creating event...");
+        try {
+            const payload = {
+                ...formData,
+                banner_url: uploadedUrl,
+                max_attendees: formData.max_attendees,
+            };
+
+            const event = await createEvent(payload);
+            toast.success("Event created successfully!", { id: createToast });
+            navigate(`/event/${event.id}`);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to create event.", { id: createToast });
+        }
+    };
+
+
 
     const categories = [
         'Nightlife', 'Festival', 'Arts', 'Sports', 'Food',
@@ -187,7 +247,7 @@ export default function NewEvent() {
                                 <button
                                     key={cat}
                                     type="button"
-                                    className="px-3 py-1 rounded-full border border-inputaccent text-inputaccent text-sm font-light hover:border-accent hover:text-accent transition-colors"
+                                    className={formData.category !== cat ? "px-3 py-1 rounded-full border border-inputaccent text-inputaccent text-sm font-light hover:border-accent hover:text-accent transition-colors" : "px-3 py-1 rounded-full border border-inputaccent bg-accent text-white text-sm font-light transition-colors"}
                                     onClick={() => changeCategory(cat)}
                                 >
                                     {cat}
@@ -399,6 +459,7 @@ export default function NewEvent() {
                         <button
                             type="button"
                             className="border border-inputaccent text-inputaccent px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors"
+                            onClick={() => navigate('/')}
                         >
                             Cancel
                         </button>
