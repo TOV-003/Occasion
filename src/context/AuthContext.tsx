@@ -109,7 +109,10 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         const { event_dates, ...eventPayload } = event;
         const { data, error } = await supabase
             .from('events')
-            .insert(eventPayload)
+            .insert({
+                ...eventPayload,
+                creator_id: user?.id,
+            })
             .select('*')
             .single();
 

@@ -37,9 +37,6 @@ export default function NewEvent() {
         }
     }, [user]);
 
-    useEffect(() => {
-        console.log(formData);
-    }, [formData])
 
     useEffect(() => {
         if (bannerFile) {
@@ -147,7 +144,7 @@ export default function NewEvent() {
 
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
 
         if (!formData.title) {
             toast.error("Event title is required.");

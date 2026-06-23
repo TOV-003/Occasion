@@ -16,6 +16,7 @@ export default function Dashboard() {
         Attending: Event[];
         CollectiveList: CollectiveWithRelations[];
     };
+    console.log("events", Events);
     const navigate = useNavigate();
     const [view, setView] = useState<'attending' | 'hosting' | 'collectives' | 'history'>('attending');
     const categoryStyles: Record<string, { bg: string; text: string }> = {

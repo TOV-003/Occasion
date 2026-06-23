@@ -28,7 +28,7 @@ export default function Navbar() {
                     <h2 className="text-xl text-accent-dark">Occasion</h2>
                 </NavLink>
                 <div className="hidden md:flex items-center gap-4 text-sm">
-                    <NavLink to="/" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                    <NavLink to="/" onClick={() => toast.loading("Loading Explore Page...", { duration: 500 })} className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
                         {({ isActive }) => (
                             <>
                                 <Compass
@@ -40,7 +40,7 @@ export default function Navbar() {
                             </>
                         )}
                     </NavLink>
-                    <NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                    <NavLink to="/dashboard" onClick={() => toast.loading("Loading Dashboard...", { duration: 1500 })} className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
                         {({ isActive }) => (
                             <>
                                 <Grid2x2
@@ -52,7 +52,7 @@ export default function Navbar() {
                             </>
                         )}
                     </NavLink>
-                    <NavLink to="/collectives" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                    <NavLink to="/collectives" onClick={() => toast.loading("Loading Collectives...", { duration: 500 })} className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
                         {({ isActive }) => (
                             <>
                                 <Boxes

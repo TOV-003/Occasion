@@ -3,6 +3,7 @@ import type { Event } from '../interfaces';
 import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import Layout from '../Layout';
 import ShareButton from '../components/ShareButton';
+import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import type { Tickets, Event_collective, CollectiveWithRelations, Bookmarks } from '../interfaces';
 
@@ -14,12 +15,14 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
+    const { user } = UseAuth();
     const { id } = useParams();
     console.log("eventid", id);
     console.log("eventCollective", eventCollective);
 
 
     const isFull = tickets.length === event.max_attendees;
+    const isCreator = user?.id === event.creator_id;
 
     return (
         <Layout>
@@ -158,13 +161,13 @@ export default function EventPage() {
 
                             <button
                                 onClick={() => console.log('Register for event:', event.id)}
-                                disabled={isFull}
-                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull
+                                disabled={isFull || isCreator}
+                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     : 'bg-accent text-white hover:bg-accent-dark'
                                     }`}
                             >
-                                {isFull ? 'Fully Occupied' : 'Register for this event'}
+                                {isFull ? 'Fully Occupied' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
 
                             <p className="text-sm text-gray-500 flex items-start gap-2">
