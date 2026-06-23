@@ -89,3 +89,15 @@ export interface Bookmarks {
     event_id: string;
     created_at: string;
 }
+
+export interface EventFormData {
+    title: string;
+    category: string;
+    description: string;
+    city: string;
+    location: string;
+    event_dates: string[];
+    max_attendees: number | null;
+    auto_approve: boolean;
+    banner_url: string;
+}

@@ -1,6 +1,6 @@
 import logo from '../assets/Occasion.svg'
 import { Menu, Compass, CircleX, Grid2x2, Boxes } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { UseAuth } from '../context/UseAuth'
 import { toast } from 'react-hot-toast'
@@ -21,7 +21,7 @@ export default function Navbar() {
 
 
     return (
-        <header>
+        <header className="fixed bg-background/20 backdrop-blur-2xl w-full z-10">
             <nav className="relative z-10 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
                 <NavLink to="/" className="flex items-center justify-between gap-2">
                     <img src={logo} alt="logo" className="h-6 w-6" />
@@ -66,7 +66,7 @@ export default function Navbar() {
                     </NavLink>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
-                    <button className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</button>
+                    <Link to="/new-event" className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</Link>
                     <div className="cursor-pointer">
                         {profile ? <NavLink to="/settings" onClick={() => { toast.loading("Loading Settings...", { duration: 1500 }) }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /></NavLink> : <NavLink to="/login" onClick={() => { toast.loading("Loading Login...", { duration: 1500 }) }}><div className="bg-accent-dark rounded-md px-2 py-1 cursor-pointer text-white">Login</div></NavLink>}
                     </div>

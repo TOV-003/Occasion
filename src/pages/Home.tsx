@@ -198,7 +198,7 @@ export default function Home() {
 
     return (
         <Layout>
-            <main className="flex flex-col gap-16 items-center lg:items-start px-4 py-8 lg:px-8 lg:py-12 lg:max-w-6xl lg:mx-auto">
+            <main className="flex flex-col gap-16 items-center lg:items-start px-4 py-8 lg:px-8 lg:py-12 lg:max-w-6xl lg:mx-auto w-full">
                 <div className="flex flex-col items-center lg:items-start justify-end ">
                     <h1 className="text-2xl">So, What's the <span className="text-accent">Occasion</span>?</h1>
                     <p className="text-md font-light text-inputaccent">

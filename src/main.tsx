@@ -16,6 +16,7 @@ import CollectivePage from './pages/CollectivePage.tsx'
 import Settings from './pages/Settings.tsx'
 import Dashboard from './pages/Dashboard'
 import Collectives from './pages/Collectives'
+import NewEvent from './pages/NewEvent'
 
 
 
@@ -267,6 +268,10 @@ const router = createBrowserRouter([
       {
         path: '/collectives',
         element: <Collectives />
+      },
+      {
+        path: '/new-event',
+        element: <NewEvent />
       }
     ]
   },

@@ -349,9 +349,9 @@ export default function Dashboard() {
                                 pastTickets.map(ticket => {
                                     const event = Attending.find(e => e.id === ticket.event_id);
                                     return (
-                                        <div key={ticket.id} className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-3 items-start sm:items-center w-full bg-inputaccent/20 rounded-xl p-3 sm:p-2 transition-transform duration-300 hover:scale-100 sm:hover:scale-105">
+                                        <div key={ticket.id} className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-3 items-start sm:items-center w-full bg-inputaccent/20 rounded-xl p-3 sm:p-2">
                                             <div className="flex items-center gap-3 w-full">
-                                                <Link to={`/event/${event?.id}`} className="shrink-0" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
+                                                <div className="shrink-0" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                                                     {event?.banner_url && (
                                                         <img
                                                             src={event.banner_url}
@@ -359,7 +359,7 @@ export default function Dashboard() {
                                                             className="w-16 sm:w-24 aspect-square rounded-lg object-cover"
                                                         />
                                                     )}
-                                                </Link>
+                                                </div>
                                                 <div className="flex flex-col gap-1 min-w-0 flex-1">
                                                     <h2 className="font-light text-base sm:text-lg truncate">{event?.title}</h2>
                                                     <div className="flex flex-wrap items-center gap-1 text-xs sm:text-sm text-gray-600">
