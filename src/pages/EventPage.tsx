@@ -174,7 +174,7 @@ export default function EventPage() {
                                 {event.auto_approve ? (
                                     <>
                                         <CheckCircle size={16} className="mt-0.5 shrink-0 text-green-500" />
-                                        <span>Registration is automatic. You'll be confirmed immediately.</span>
+                                        <span>{!isCreator ? 'Registration is automatic. You\'ll be confirmed immediately.' : 'You are the host. Your spot is confirmed.'}</span>
                                     </>
                                 ) : (
                                     <>
@@ -204,6 +204,13 @@ export default function EventPage() {
                                 </button>
                             </div>
                         </div>
+                        {isCreator && (
+                            <div className="mt-20 bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900">Delist Event</h3>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
