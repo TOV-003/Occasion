@@ -145,8 +145,8 @@ export default function EventPage() {
                         )}
                     </div>
 
-                    <div className="lg:w-1/3 lg:sticky lg:top-8 self-start">
-                        <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5">
+                    <div className="lg:w-1/3 w-full lg:sticky lg:top-8 self-center lg:self-start flex flex-col gap-4 p-6 lg:p-0 items-center ">
+                        <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5 w-full">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900">Registration</h3>
                                 <span
@@ -205,7 +205,7 @@ export default function EventPage() {
                             </div>
                         </div>
                         {isCreator && (
-                            <div className="mt-20 bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5">
+                            <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5 w-full">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-lg font-semibold text-gray-900">Delist Event</h3>
                                 </div>

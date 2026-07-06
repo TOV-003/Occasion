@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
         <footer className="border-t border-gray-200 bg-white py-6 mt-10 flex-1">
             <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
                 <div className="text-center md:text-left">
-                    <p>© {currentYear} NestFind. All rights reserved.</p>
+                    <p>© {currentYear} Occasion. All rights reserved.</p>
                     <p className="mt-1">
                         Made with ❤️ by{' '}
                         <a

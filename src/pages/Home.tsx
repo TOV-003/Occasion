@@ -243,7 +243,7 @@ export default function Home() {
                         ))}
                     </div>
                 </div>
-                <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
+                <hr className="border-b-1/2 w-full self-center border-inputaccent/50" />
                 {filter === '' && query === '' &&
                     <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
                         <h2 className="text-xl">Featured</h2>

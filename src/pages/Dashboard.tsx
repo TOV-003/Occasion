@@ -108,7 +108,7 @@ export default function Dashboard() {
                         <button className={`${view === 'collectives' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setCollectivesView}>Collectives</button>
                         <button className={`${view === 'history' ? "py-4 border-b-2 border-accent" : "py-4 "} cursor-pointer`} onClick={setHistoryView}>History</button>
                     </div>
-                    <hr className="border-inputaccent/50 w-screen overflow-x-hidden" />
+                    <hr className="border-inputaccent/50 w-full overflow-x-hidden" />
                 </div>
                 <div className="flex flex-col gap-1 items-center px-4 md:px-12 lg:px-20 w-full">
                     <div className="flex justify-between items-center w-full">

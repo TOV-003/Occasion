@@ -142,7 +142,7 @@ export default function Collectives() {
                     </div>
                 </div>
 
-                <hr className="border-b-1/2 w-screen self-center border-inputaccent/50" />
+                <hr className="border-b-1/2 w-full self-center border-inputaccent/50" />
 
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <div className="flex items-center w-full justify-between">
