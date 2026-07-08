@@ -48,7 +48,8 @@ const router = createBrowserRouter([
             featuredEvents: featuredEventsResult.data,
             bookmarks: bookmarksResult.data
           };
-        }
+        },
+        hydrateFallbackElement: <LoadingFallback/>
       },
       {
         path: '/login',
@@ -99,7 +100,8 @@ const router = createBrowserRouter([
             eventCollective,
             bookmarks: bookmarksResult.data
           };
-        }
+        },
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/collective/:id',
@@ -193,7 +195,8 @@ const router = createBrowserRouter([
             memberProfiles,
             bookmarks: bookmarksResult.data
           };
-        }
+        },
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/settings',
@@ -264,7 +267,8 @@ const router = createBrowserRouter([
             Attending,
             CollectiveList
           };
-        }
+        },
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/collectives',

@@ -133,15 +133,15 @@ export default function Home() {
 
 
     const results = useMemo(() => {
-        // Server will already filter by category and search term.
-        // We only sort by earliest event date.
-        return [...allEvents].sort((a: Event, b: Event) => {
-            const getEarliest = (ev: Event) => {
-                if (!ev.event_dates || ev.event_dates.length === 0) return '9999-12-31';
-                return ev.event_dates.map(d => d.date).sort()[0];
-            };
-            return getEarliest(a).localeCompare(getEarliest(b));
-        });
+        return [...allEvents]
+            .filter((ev: Event) => ev.isActive)
+            .sort((a: Event, b: Event) => {
+                const getEarliest = (ev: Event) => {
+                    if (!ev.event_dates || ev.event_dates.length === 0) return '9999-12-31';
+                    return ev.event_dates.map(d => d.date).sort()[0];
+                };
+                return getEarliest(a).localeCompare(getEarliest(b));
+            });
     }, [allEvents]);
 
     const showCategory = (category: string) => {

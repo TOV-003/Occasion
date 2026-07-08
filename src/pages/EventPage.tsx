@@ -1,4 +1,4 @@
-import { useLoaderData, Link, useParams } from 'react-router-dom';
+import { useLoaderData, Link, useParams, useRevalidator } from 'react-router-dom';
 import type { Event } from '../interfaces';
 import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import Layout from '../Layout';
@@ -15,10 +15,24 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user } = UseAuth();
+    const { user, delistEvent } = UseAuth();
     const { id } = useParams();
+    const revalidator = useRevalidator();
     console.log("eventid", id);
     console.log("eventCollective", eventCollective);
+
+    async function handleDelist(id: string) {
+        try {
+            await delistEvent(id);
+        }
+        catch (error) {
+            console.error("Error delisting event:", error);
+            toast.error("Failed to delist event. Please try again.");
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
 
 
     const isFull = tickets.length === event.max_attendees;
@@ -209,6 +223,13 @@ export default function EventPage() {
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-lg font-semibold text-gray-900">Delist Event</h3>
                                 </div>
+                                <button
+                                    type="button"
+                                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-200 font-medium text-sm hover:bg-red-100 hover:border-red-300 scale-100 hover:scale-105 active:bg-red-200 transition-colors duration-150 cursor-pointer"
+                                    onClick={() => handleDelist(event.id)}
+                                >
+                                    Delist Event
+                                </button>
                             </div>
                         )}
                     </div>

@@ -28,7 +28,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         if (error) toast.error("Invalid email or password");
         if (error) throw error;
         return data;
-    }
+    };
 
     async function loginWithGoogle() {
         toast.loading("Logging in with Google...", { duration: 1500 });
@@ -37,12 +37,12 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
             options: { redirectTo: `${window.location.origin}/settings` }
         })
         if (error) throw error
-    }
+    };
 
     async function logout() {
         await supabase.auth.signOut();
         setProfile(null);
-    }
+    };
 
     const deleteAccount = async (): Promise<void> => {
         if (!user) throw new Error('No user logged in');
@@ -73,7 +73,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         if (error) throw error;
         setProfile(data);
         return data;
-    }
+    };
 
     const updateProfile = async (bio: string): Promise<Profile> => {
         const { data, error } = await supabase
@@ -103,7 +103,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
 
         const { data } = supabase.storage.from('Banners').getPublicUrl(filePath);
         return data.publicUrl;
-    }
+    };
 
     async function createEvent(event: EventFormData): Promise<Event> {
         const { event_dates, ...eventPayload } = event;
@@ -128,10 +128,22 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
 
         if (datesError) { await supabase.from('events').delete().eq('id', data.id); toast.error("Failed to create event dates"); throw datesError; }
         return data;
+    };
+
+    async function delistEvent(eventId: string): Promise<Event> {
+        const { data, error } = await supabase
+            .from('events')
+            .update({ isActive: false })
+            .eq('id', eventId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
     }
 
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent }}>
             {children}
         </AuthContext.Provider>
     );

@@ -14,6 +14,7 @@ interface AuthContextType {
     authloading: boolean;
     uploadBanner: (file: File) => Promise<string>;
     createEvent: (event: EventFormData) => Promise<Event>;
+    delistEvent: (eventId: string) => Promise<Event>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
