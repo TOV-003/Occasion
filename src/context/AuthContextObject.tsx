@@ -15,6 +15,8 @@ interface AuthContextType {
     uploadBanner: (file: File) => Promise<string>;
     createEvent: (event: EventFormData) => Promise<Event>;
     delistEvent: (eventId: string) => Promise<Event>;
+    relistEvent: (eventId: string) => Promise<Event | null>;
+    createTicket: (eventId: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

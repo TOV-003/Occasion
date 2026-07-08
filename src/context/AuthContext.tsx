@@ -131,6 +131,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     };
 
     async function delistEvent(eventId: string): Promise<Event> {
+        toast.loading("Delisting event...", { duration: 500 });
         const { data, error } = await supabase
             .from('events')
             .update({ isActive: false })
@@ -142,8 +143,59 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         return data;
     }
 
+    async function relistEvent(eventId: string): Promise<Event | null> {
+        const { data: eventCheck, error: fetchError } = await supabase
+            .from('events')
+            .select('event_dates(date)')
+            .eq('id', eventId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        const today = new Date().toISOString().split('T')[0];
+        const hasUpcomingDate = eventCheck?.event_dates?.some(
+            (d: { date: string }) => d.date >= today
+        );
+
+        if (!hasUpcomingDate) {
+            toast.error("Can't relist — the Event's dates have passed.");
+            return null;
+        }
+
+        toast.loading("Relisting event...", { duration: 500 });
+        const { data, error } = await supabase
+            .from('events')
+            .update({ isActive: true })
+            .eq('id', eventId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    }
+
+    async function createTicket(eventId: string): Promise<void> {
+        const { data: Event, error: EventError } = await supabase
+            .from('events_with_counts')
+            .select('*')
+            .eq('id', eventId)
+            .single();
+
+        if (EventError) throw new Error('Event not found');
+
+        const { error } = await supabase
+            .from('tickets')
+            .insert({ event_id: eventId, user_id: user?.id, status: Event.auto_approve ? 'approved' : 'pending' })
+            .select()
+            .single();
+
+        if (error) throw error;
+        toast.success("Ticket created successfully");
+    }
+
+
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket }}>
             {children}
         </AuthContext.Provider>
     );

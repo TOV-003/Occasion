@@ -15,7 +15,7 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user, delistEvent } = UseAuth();
+    const { user, delistEvent, relistEvent, createTicket } = UseAuth();
     const { id } = useParams();
     const revalidator = useRevalidator();
     console.log("eventid", id);
@@ -33,6 +33,42 @@ export default function EventPage() {
             revalidator.revalidate();
         }
     }
+
+    async function handleRelist(id: string) {
+        try {
+            const event = await relistEvent(id);
+            if (event) {
+                toast.success("Event relisted successfully");
+            }
+        }
+        catch (error) {
+            console.error("Error relisting event:", error);
+            toast.error("Failed to relist event. Please try again.");
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
+
+    async function handleCreateTicket(id: string) {
+        toast.loading("Creating ticket...", { duration: 1000 });
+        try {
+            await createTicket(id);
+            toast.success("Ticket created successfully");
+        }
+        catch (error) {
+            console.error("Error creating ticket:", error);
+            toast.error("Failed to create ticket. Please try again.");
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
+    function userHasTicketCheck() {
+        return tickets.some(t => t.user_id === user?.id && t.event_id === event.id);
+    }
+    const userHasTicket = userHasTicketCheck();
+    console.log("userHasTicket", userHasTicket);
 
 
     const isFull = tickets.length === event.max_attendees;
@@ -174,14 +210,14 @@ export default function EventPage() {
                             </div>
 
                             <button
-                                onClick={() => console.log('Register for event:', event.id)}
-                                disabled={isFull || isCreator}
-                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator
+                                onClick={() => handleCreateTicket(event.id)}
+                                disabled={isFull || isCreator || userHasTicket}
+                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator || userHasTicket
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-accent text-white hover:bg-accent-dark'
+                                    : 'bg-accent text-white hover:bg-accent-dark cursor-pointer'
                                     }`}
                             >
-                                {isFull ? 'Fully Occupied' : !isCreator ? 'Register for this event' : 'You are the Host'}
+                                {isFull ? 'Fully Occupied' : userHasTicket ? 'You have already Registered for this Event' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
 
                             <p className="text-sm text-gray-500 flex items-start gap-2">
@@ -210,27 +246,43 @@ export default function EventPage() {
                                     url={window.location.href}
                                     className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500"
                                 />
-                                <button
-                                    onClick={() => console.log('Join collective')}
-                                    className="text-sm text-accent hover:underline"
-                                >
-                                    Join collective
-                                </button>
+                                {eventCollective && (
+                                    <button
+                                        onClick={() => console.log('Join collective')}
+                                        className="text-sm text-accent hover:underline"
+                                    >
+                                        Join collective
+                                    </button>
+                                )}
                             </div>
                         </div>
                         {isCreator && (
-                            <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5 w-full">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-900">Delist Event</h3>
+                            event.isActive ?
+                                <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5 w-full">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-semibold text-gray-900">Delist Event</h3>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-200 font-medium text-sm hover:bg-red-100 hover:border-red-300 scale-100 hover:scale-105 active:bg-red-200 transition-colors duration-150 cursor-pointer"
+                                        onClick={() => handleDelist(event.id)}
+                                    >
+                                        Delist Event
+                                    </button>
                                 </div>
-                                <button
-                                    type="button"
-                                    className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-50 text-red-600 border border-red-200 font-medium text-sm hover:bg-red-100 hover:border-red-300 scale-100 hover:scale-105 active:bg-red-200 transition-colors duration-150 cursor-pointer"
-                                    onClick={() => handleDelist(event.id)}
-                                >
-                                    Delist Event
-                                </button>
-                            </div>
+                                :
+                                <div className="bg-white rounded-xl border border-inputaccent/20 p-6 shadow-sm space-y-5 w-full">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-semibold text-gray-900">Register for this event</h3>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-accent text-white border border-accent-dark font-medium text-sm hover:bg-accent-dark scale-100 hover:scale-105 active:bg-accent-dark transition-colors duration-150 cursor-pointer"
+                                        onClick={() => handleRelist(event.id)}
+                                    >
+                                        Relist Event
+                                    </button>
+                                </div>
                         )}
                     </div>
                 </div>

@@ -50,7 +50,7 @@ export default function Home() {
             .from('events_with_counts')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(10);
+            .limit(11); 
 
         if (filter && filter !== 'All') {
             supabaseQuery = supabaseQuery.eq('category', filter);
@@ -75,23 +75,26 @@ export default function Home() {
             return;
         }
 
+        const rows = data || [];
+        const hasExtra = rows.length > 10;
+        const pageItems = hasExtra ? rows.slice(0, 10) : rows;
+
         if (reset) {
-            setAllEvents(data || []);
-            setVisibleCount(data?.length || 0);
+            setAllEvents(pageItems);
+            setVisibleCount(pageItems.length);
         } else {
-            setAllEvents((prev) => [...prev, ...(data || [])]);
-            setVisibleCount((prev) => prev + (data?.length || 0));
+            setAllEvents((prev) => [...prev, ...pageItems]);
+            setVisibleCount((prev) => prev + pageItems.length);
         }
 
-        if (data && data.length > 0) {
-            const lastItem = data[data.length - 1];
+        if (pageItems.length > 0) {
+            const lastItem = pageItems[pageItems.length - 1];
             setCursor(lastItem.created_at);
-            setHasMore(data.length === 10);
-        } else {
-            setHasMore(false);
         }
+        setHasMore(hasExtra);
 
         setLoading(false);
+        setSearching(false);
         setIsLoadingMore(false);
     };
 
@@ -133,8 +136,14 @@ export default function Home() {
 
 
     const results = useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+
         return [...allEvents]
-            .filter((ev: Event) => ev.isActive)
+            .filter((ev: Event) => {
+                if (!ev.isActive) return false;
+                if (!ev.event_dates || ev.event_dates.length === 0) return false;
+                return ev.event_dates.some((d) => d.date >= today);
+            })
             .sort((a: Event, b: Event) => {
                 const getEarliest = (ev: Event) => {
                     if (!ev.event_dates || ev.event_dates.length === 0) return '9999-12-31';
