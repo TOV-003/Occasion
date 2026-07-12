@@ -15,7 +15,7 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user, delistEvent, relistEvent, createTicket } = UseAuth();
+    const { user, delistEvent, relistEvent, createTicket, joinCollective } = UseAuth();
     const { id } = useParams();
     const revalidator = useRevalidator();
     console.log("eventid", id);
@@ -64,6 +64,21 @@ export default function EventPage() {
             revalidator.revalidate();
         }
     }
+
+    async function handleJoinCollective(id: string) {
+        try {
+            await joinCollective(id);
+            toast.success("Joined collective successfully");
+        }
+        catch (error) {
+            console.error("Error joining collective:", error);
+            toast.error("Failed to join collective. Please try again.");
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
+
     function userHasTicketCheck() {
         return tickets.some(t => t.user_id === user?.id && t.event_id === event.id);
     }
@@ -244,12 +259,19 @@ export default function EventPage() {
                                     title={`Join me at ${event.title}!`}
                                     text={`${event.title} - ${event.location}, ${event.city}`}
                                     url={window.location.href}
-                                    className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500"
+                                    className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500 cursor-pointer"
                                 />
-                                {eventCollective && (
+                                {eventCollective && (user?.id === eventCollective.owner_id || eventCollective?.collective_members.some(el => el.user_id === user?.id)) && (
                                     <button
-                                        onClick={() => console.log('Join collective')}
-                                        className="text-sm text-accent hover:underline"
+                                        className="text-sm text-gray-500 cursor-not-allowed"
+                                    >
+                                        Already in this event's Collective
+                                    </button>
+                                )}
+                                {eventCollective && (user?.id !== eventCollective.owner_id && !eventCollective?.collective_members.some(el => el.user_id === user?.id)) && (
+                                    <button
+                                        onClick={() => handleJoinCollective(eventCollective.id)}
+                                        className="text-sm text-accent hover:underline cursor-pointer"
                                     >
                                         Join collective
                                     </button>

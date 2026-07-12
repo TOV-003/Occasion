@@ -98,7 +98,7 @@ export default function Navbar() {
                                 </>
                             )}
                         </NavLink>
-                        <NavLink to="/collectives" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20"}>
+                        <NavLink to="/collectives" className={({ isActive }) => isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full"}>
                             {({ isActive }) => (
                                 <>
                                     <Boxes

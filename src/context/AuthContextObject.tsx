@@ -17,6 +17,7 @@ interface AuthContextType {
     delistEvent: (eventId: string) => Promise<Event>;
     relistEvent: (eventId: string) => Promise<Event | null>;
     createTicket: (eventId: string) => Promise<void>;
+    joinCollective: (collectiveId: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

@@ -193,9 +193,31 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         toast.success("Ticket created successfully");
     }
 
+    async function joinCollective(collectiveId: string): Promise<void> {
+        toast.loading("Joining collective...", { duration: 500 });
+        let autoApprove = false;
+        const { data, error: collectiveError } = await supabase
+            .from('collectives')
+            .select('*')
+            .eq('id', collectiveId)
+            .single();
+        if (collectiveError) throw collectiveError;
+
+        if (data.auto_approve === true) {
+            autoApprove = true;
+            toast.success("Automatically approved to join collective");
+        }
+
+        const { error } = await supabase
+            .from('collective_members')
+            .insert({ collective_id: collectiveId, user_id: user?.id, role: 'member', status: autoApprove ? 'approved' : 'pending' });
+        if (error) throw error;
+    }
+
+
 
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket, joinCollective }}>
             {children}
         </AuthContext.Provider>
     );
