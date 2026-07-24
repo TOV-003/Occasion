@@ -3,6 +3,7 @@ import { Link, useLocation, useLoaderData } from 'react-router-dom';
 import { ChevronLeft, Users, MapPin, CalendarDays, Plus, Grid3X3, List, Calendar, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { UseAuth } from '../context/UseAuth';
 import type { CollectiveWithRelations, CollectiveMember, CollectiveFollower, Event, Tickets, Profile, Bookmarks } from '../interfaces';
 
 
@@ -91,11 +92,18 @@ export default function CollectivePage() {
         bookmarks: Bookmarks[];
     };
 
+    const { user } = UseAuth();
+    console.log('User:', user);
+    console.log('Collective Data:', { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles, bookmarks });
+
 
     const location = useLocation();
     const fromEventId = location.state?.fromEvent as string | undefined;
     const [view, setView] = useState<"grid" | "list">("grid");
-    const isOwner = false;
+
+    const isOwner = collective?.owner_id === user?.id;
+    const isFollower = collectiveFollowers.some(el => el.user_id === user?.id);
+    const isMember = collectiveMembers.some(el => el.user_id === user?.id);
 
     return (
         <Layout>
@@ -148,17 +156,20 @@ export default function CollectivePage() {
                     </div>
 
                     <div className="flex gap-2 shrink-0">
-                        {isOwner && (
+                        {isOwner || isMember && (
                             <Link
-                                to="/events/create"
+                                to="/new-event"
                                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm hover:bg-accent-dark transition-colors shadow-sm"
                             >
                                 <Plus size={16} />
                                 New event
                             </Link>
                         )}
-                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors">
-                            {isOwner ? "Manage members" : "Join collective"}
+                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer">
+                            {isOwner ? "Manage members" : isMember ? "Leave collective" : "Join collective"}
+                        </button>
+                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer">
+                            {isFollower ? "Follow Collective" : "UnfollowCollective"}
                         </button>
                     </div>
                 </div>

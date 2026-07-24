@@ -379,6 +379,11 @@ export default function NewEvent() {
                         </div>
                         <p className="text-xs text-inputaccent mt-1">Leave blank or toggle Unlimited for no capacity limit.</p>
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Event Collective
+                        </label>
+                    </div>
 
                     <div>
                         <button
