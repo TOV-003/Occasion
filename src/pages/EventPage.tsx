@@ -80,10 +80,16 @@ export default function EventPage() {
     }
 
     function userHasTicketCheck() {
-        return tickets.some(t => t.user_id === user?.id && t.event_id === event.id);
+        return tickets.some(t => t.user_id === user?.id && t.event_id === event.id && t.status === 'approved');
     }
     const userHasTicket = userHasTicketCheck();
     console.log("userHasTicket", userHasTicket);
+
+    function userTicketIsPending() {
+        return tickets.some(t => t.user_id === user?.id && t.event_id === event.id && t.status === 'pending');
+    }
+    const userTicketIsPendingCheck = userTicketIsPending();
+    console.log("userTicketIsPendingCheck", userTicketIsPendingCheck);
 
 
     const isFull = tickets.length === event.max_attendees;
@@ -226,13 +232,13 @@ export default function EventPage() {
 
                             <button
                                 onClick={() => handleCreateTicket(event.id)}
-                                disabled={isFull || isCreator || userHasTicket}
-                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator || userHasTicket
+                                disabled={isFull || isCreator || userHasTicket || userTicketIsPendingCheck}
+                                className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator || userHasTicket || userTicketIsPendingCheck
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     : 'bg-accent text-white hover:bg-accent-dark cursor-pointer'
                                     }`}
                             >
-                                {isFull ? 'Fully Occupied' : userHasTicket ? 'You have already Registered for this Event' : !isCreator ? 'Register for this event' : 'You are the Host'}
+                                {isFull ? 'Fully Occupied' : userHasTicket ? 'You have already Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
 
                             <p className="text-sm text-gray-500 flex items-start gap-2">

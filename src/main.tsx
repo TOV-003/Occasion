@@ -69,7 +69,7 @@ const router = createBrowserRouter([
           const userId = session?.user.id;
           const [eventResult, ticketsResult, collectiveLinkResult, bookmarksResult] = await Promise.all([
             supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
-            supabase.from('tickets').select('*').eq('event_id', id).eq('status', 'approved'),
+            supabase.from('tickets').select('*').eq('event_id', id).in('status', ['approved', 'pending']),
             supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle(),
             userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
           ]);
