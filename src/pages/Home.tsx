@@ -6,6 +6,9 @@ import Layout from '../Layout';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
 import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
+import { UseAuth } from "../context/UseAuth";
+import { useNavigate } from "react-router-dom";
+import { useRevalidator } from "react-router-dom";
 
 export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -23,6 +26,9 @@ export default function Home() {
     const [allEvents, setAllEvents] = useState<Event[]>([]);
     const [collectives, setCollectives] = useState<CollectiveWithRelations[]>([]);
     const { featuredEvents = [], bookmarks = [] } = useLoaderData();
+    const { user, AddBookmark } = UseAuth();
+    const navigate = useNavigate();
+    const revalidator = useRevalidator();
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
     const categoryStyles: Record<string, { bg: string; text: string }> = {
         All: { bg: 'bg-gray-200', text: 'text-gray-800' },
@@ -50,7 +56,7 @@ export default function Home() {
             .from('events_with_counts')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(11); 
+            .limit(11);
 
         if (filter && filter !== 'All') {
             supabaseQuery = supabaseQuery.eq('category', filter);
@@ -109,6 +115,26 @@ export default function Home() {
         return data;
     }
 
+    async function HandleBookMark(id: string | undefined) {
+        console.log("Bookmark Button Clicked!!!!!");
+        if (!user) {
+            navigate('/login');
+        }
+
+        if (id) {
+            try {
+                await AddBookmark(id);
+            }
+            catch (error) {
+                console.error("Error BookMarking event:", error);
+                toast.error("Failed to BookMark event. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+    }
+
     useEffect(() => {
         let isMounted = true;
 
@@ -128,6 +154,7 @@ export default function Home() {
             isMounted = false;
         };
     }, [query, filter]);
+
     useEffect(() => {
         fetchAllCollectives()
             .then(setCollectives)
@@ -354,10 +381,29 @@ export default function Home() {
                                         );
                                     })()}
                                 </div>
-                                <div className="absolute top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md cursor-pointer">
-                                    {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <BookmarkCheck color="var(--color-accent)" size={20} />}
-                                    {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <BookmarkOff color="var(--color-accent)" size={20} />}
-                                </div>
+                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 ? (
+                                    <div
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            HandleBookMark(ev.id);
+                                        }}
+                                        className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                    >
+                                        <BookmarkCheck color="var(--color-accent)" size={20} />
+                                    </div>
+                                ) : (
+                                    <div
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            HandleBookMark(ev.id);
+                                        }}
+                                        className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                    >
+                                        <BookmarkOff color="var(--color-accent)" size={20} />
+                                    </div>
+                                )}
                             </Link>
                         ))}
                         {searching && results.length === 0 && (

@@ -214,10 +214,45 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         if (error) throw error;
     }
 
+    async function AddBookmark(eventId: string): Promise<void> { 
+        if (!user) {
+            throw new Error('Not authenticated');
+        }
 
+        const { data: existing, error: selectError } = await supabase
+            .from('bookmarks')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('event_id', eventId)
+            .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        if (existing) {
+            const { error: deleteError } = await supabase
+                .from('bookmarks')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('id', existing.id);
+                
+            if (deleteError) throw deleteError;
+            toast.success('Removed bookmark');
+            return;
+        }
+
+        
+        const { error: insertError } = await supabase
+            .from('bookmarks')
+            .insert({ user_id: user.id, event_id: eventId })
+            .select()
+            .maybeSingle();
+
+        if (insertError) throw insertError;
+        toast.success('Added bookmark');
+    }
 
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket, joinCollective }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark }}>
             {children}
         </AuthContext.Provider>
     );

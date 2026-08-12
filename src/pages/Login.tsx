@@ -30,8 +30,7 @@ export default function Login() {
 
     return (
         <main className="flex min-h-screen w-full">
-            {/* Left side – Branding (hidden on mobile) */}
-            <div className="hidden lg:flex lg:w-1/2 bg-black text-white flex-col justify-center px-12 py-16">
+            <div className="hidden lg:flex lg:w-1/2 lg:justify-end bg-inputaccent text-white flex-col justify-center px-12 py-16">
                 <NavLink to="/" className="text-3xl font-bold text-accent mb-4">
                     Occasion
                 </NavLink>
@@ -45,7 +44,6 @@ export default function Login() {
                 </ul>
             </div>
 
-            {/* Right side – Login form */}
             <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-12">
                 <div className="w-full max-w-md space-y-6">
                     <div className="text-center">
@@ -86,7 +84,7 @@ export default function Login() {
 
                         <button
                             type="submit"
-                            className="w-full bg-accent text-white font-semibold py-3 rounded-lg hover:bg-accent-dark transition-colors shadow-sm"
+                            className="w-full cursor-pointer bg-accent text-white font-semibold py-3 rounded-lg hover:bg-accent-dark transition-colors shadow-sm"
                         >
                             Sign in
                         </button>
@@ -104,7 +102,7 @@ export default function Login() {
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg border border-inputaccent/30 transition-all shadow-sm hover:shadow-md"
+                        className="w-full cursor-pointer flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg border border-inputaccent/30 transition-all shadow-sm hover:shadow-md"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5">
                             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />

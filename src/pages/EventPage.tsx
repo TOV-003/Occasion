@@ -6,6 +6,7 @@ import ShareButton from '../components/ShareButton';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import type { Tickets, Event_collective, CollectiveWithRelations, Bookmarks } from '../interfaces';
+import { useNavigate } from 'react-router-dom';
 
 export default function EventPage() {
     const { event, tickets, eventCollective, bookmarks } = useLoaderData() as {
@@ -15,8 +16,9 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user, delistEvent, relistEvent, createTicket, joinCollective } = UseAuth();
+    const { user, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark } = UseAuth();
     const { id } = useParams();
+    const navigate = useNavigate();
     const revalidator = useRevalidator();
     console.log("eventid", id);
     console.log("eventCollective", eventCollective);
@@ -79,6 +81,26 @@ export default function EventPage() {
         }
     }
 
+    async function HandleBookMark(id: string | undefined) {
+        console.log("Bookmark Button Clicked!!!!!");
+        if (!user) {
+            navigate('/login');
+        }
+
+        if (id) {
+            try {
+                await AddBookmark(id);
+            }
+            catch (error) {
+                console.error("Error BookMarking event:", error);
+                toast.error("Failed to BookMark event. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+    }
+
     function userHasTicketCheck() {
         return tickets.some(t => t.user_id === user?.id && t.event_id === event.id && t.status === 'approved');
     }
@@ -109,18 +131,28 @@ export default function EventPage() {
 
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     <div className="lg:w-2/3 space-y-6">
-                        <div className="rounded-xl overflow-hidden shadow-lg relative">
+                        <div className="rounded-xl shadow-lg relative overflow-hidden">
                             <img
                                 src={event.banner_url}
                                 alt={event.title}
-                                className="w-full aspect-square object-cover"
+                                className="w-full aspect-square object-cover pointer-events-none"
                             />
-                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length > 0 && <div className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
-                                <BookmarkCheck color="var(--color-accent)" size={20} />
-                            </div>}
-                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length === 0 && <div className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
-                                <BookmarkOff color="var(--color-accent)" size={20} />
-                            </div>}
+                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length > 0 && (
+                                <div
+                                    onClick={() => HandleBookMark(event.id)}
+                                    className="absolute top-4 right-4 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                >
+                                    <BookmarkCheck color="var(--color-accent)" size={20} />
+                                </div>
+                            )}
+                            {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length === 0 && (
+                                <div
+                                    onClick={() => HandleBookMark(event.id)}
+                                    className="absolute top-4 right-4 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                >
+                                    <BookmarkOff color="var(--color-accent)" size={20} />
+                                </div>
+                            )}
                         </div>
 
                         <div>
