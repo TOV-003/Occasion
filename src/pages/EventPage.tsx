@@ -85,6 +85,7 @@ export default function EventPage() {
         console.log("Bookmark Button Clicked!!!!!");
         if (!user) {
             navigate('/login');
+            return;
         }
 
         if (id) {
@@ -270,7 +271,7 @@ export default function EventPage() {
                                     : 'bg-accent text-white hover:bg-accent-dark cursor-pointer'
                                     }`}
                             >
-                                {isFull ? 'Fully Occupied' : userHasTicket ? 'You have already Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
+                                {isFull ? 'Fully Occupied' : userHasTicket ? 'You have Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
 
                             <p className="text-sm text-gray-500 flex items-start gap-2">
@@ -299,14 +300,14 @@ export default function EventPage() {
                                     url={window.location.href}
                                     className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500 cursor-pointer"
                                 />
-                                {eventCollective && (user?.id === eventCollective.owner_id || eventCollective?.collective_members.some(el => el.user_id === user?.id)) && (
+                                {eventCollective && (user?.id === eventCollective.owner_id || eventCollective?.collective_members?.some(el => el.user_id === user?.id)) && (
                                     <button
                                         className="text-sm text-gray-500 cursor-not-allowed"
                                     >
                                         Already in this event's Collective
                                     </button>
                                 )}
-                                {eventCollective && (user?.id !== eventCollective.owner_id && !eventCollective?.collective_members.some(el => el.user_id === user?.id)) && (
+                                {eventCollective && (user?.id !== eventCollective.owner_id && !eventCollective?.collective_members?.some(el => el.user_id === user?.id)) && (
                                     <button
                                         onClick={() => handleJoinCollective(eventCollective.id)}
                                         className="text-sm text-accent hover:underline cursor-pointer"

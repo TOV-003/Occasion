@@ -34,7 +34,7 @@ export default function About() {
                     <div className="rounded-xl border border-inputaccent/20 bg-white p-6 shadow-sm transition hover:border-accent">
                         <h2 className="flex items-center gap-2 text-xl font-semibold">
                             <Heart size={22} className="text-accent" />
-                            Our Mission
+                            Mission
                         </h2>
                         <p className="mt-3 text-inputaccent">
                             To empower collectives and independent organisers to share their passion with the world, making every occasion memorable and accessible to everyone.
@@ -43,7 +43,7 @@ export default function About() {
                     <div className="rounded-xl border border-inputaccent/20 bg-white p-6 shadow-sm transition hover:border-accent">
                         <h2 className="flex items-center gap-2 text-xl font-semibold">
                             <Sparkles size={22} className="text-accent" />
-                            Our Vision
+                            Vision
                         </h2>
                         <p className="mt-3 text-inputaccent">
                             A vibrant community where every event becomes a shared story, bridging cultures, interests, and people across the city.

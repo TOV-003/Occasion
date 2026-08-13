@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
                 <div className="text-center md:text-left">
                     <p>© {currentYear} Occasion. All rights reserved.</p>
                     <p className="mt-1">
-                        Made with ❤️ by{' '}
+                        Developed by{' '}
                         <a
                             href="https://github.com/TOV-003"
                             target="_blank"

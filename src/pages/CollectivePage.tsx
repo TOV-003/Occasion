@@ -1,5 +1,5 @@
 import Layout from '../Layout';
-import { Link, useLocation, useLoaderData } from 'react-router-dom';
+import { Link, useLocation, useLoaderData, useRevalidator } from 'react-router-dom';
 import { ChevronLeft, Users, MapPin, CalendarDays, Plus, Grid3X3, List, Calendar, BookmarkCheck, BookmarkOff } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -92,7 +92,7 @@ export default function CollectivePage() {
         bookmarks: Bookmarks[];
     };
 
-    const { user } = UseAuth();
+    const { user, joinCollective, leaveCollective } = UseAuth();
     console.log('User:', user);
     console.log('Collective Data:', { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles, bookmarks });
 
@@ -100,10 +100,45 @@ export default function CollectivePage() {
     const location = useLocation();
     const fromEventId = location.state?.fromEvent as string | undefined;
     const [view, setView] = useState<"grid" | "list">("grid");
+    const [showAllMembers, setShowAllMembers] = useState(false);
+    const revalidator = useRevalidator();
 
     const isOwner = collective?.owner_id === user?.id;
     const isFollower = collectiveFollowers.some(el => el.user_id === user?.id);
     const isMember = collectiveMembers.some(el => el.user_id === user?.id);
+
+    async function handleJoinLeaveCollective() {
+        if (!user) {
+            toast.error("Please login to join or leave a collective.");
+            return;
+        }
+        if (isMember) {
+            toast.loading("Leaving collective...", { duration: 500 });
+            try {
+                await leaveCollective(collective.id);
+            }
+            catch (error) {
+                console.error("Error leaving collective:", error);
+                toast.error("Failed to leave collective. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+        else {
+            toast.loading("Joining collective...", { duration: 500 });
+            try {
+                await joinCollective(collective.id);
+            }
+            catch (error) {
+                console.error("Error joining collective:", error);
+                toast.error("Failed to join collective. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+    }
 
     return (
         <Layout>
@@ -165,11 +200,11 @@ export default function CollectivePage() {
                                 New event
                             </Link>
                         )}
-                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer">
+                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleJoinLeaveCollective}>
                             {isOwner ? "Manage members" : isMember ? "Leave collective" : "Join collective"}
                         </button>
                         <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer">
-                            {isFollower ? "Follow Collective" : "UnfollowCollective"}
+                            {isFollower ? "Follow Collective" : "Unfollow Collective"}
                         </button>
                     </div>
                 </div>
@@ -345,8 +380,8 @@ export default function CollectivePage() {
 
                         <div className="bg-white border border-inputaccent/20 rounded-xl p-4 shadow-sm">
                             <h3 className="text-sm font-medium text-gray-700 mb-3">Members</h3>
-                            <div className="space-y-2.5">
-                                {memberProfiles.slice(0, 5).map((m) => (
+                            <div className={`space-y-2.5 ${showAllMembers ? 'max-h-48 overflow-auto' : ''}`}>
+                                {(showAllMembers ? memberProfiles : memberProfiles.slice(0, 5)).map((m) => (
                                     <div key={m.id} className="flex items-center gap-2.5">
                                         <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
                                             {m.full_name.charAt(0).toUpperCase()}
@@ -357,10 +392,13 @@ export default function CollectivePage() {
                                     </div>
                                 ))}
                             </div>
-                            {collectiveMembers.length > 4 && (
-                                <p className="text-xs text-gray-400 mt-3">
-                                    +{collectiveMembers.length - 4} more members
-                                </p>
+                            {memberProfiles.length > 5 && (
+                                <button
+                                    onClick={() => setShowAllMembers((s) => !s)}
+                                    className="text-xs text-gray-400 mt-3 hover:underline"
+                                >
+                                    {showAllMembers ? 'Show less' : `+${memberProfiles.length - 5} more members`}
+                                </button>
                             )}
                         </div>
                     </div>

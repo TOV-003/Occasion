@@ -18,6 +18,7 @@ interface AuthContextType {
     relistEvent: (eventId: string) => Promise<Event | null>;
     createTicket: (eventId: string) => Promise<void>;
     joinCollective: (collectiveId: string) => Promise<void>;
+    leaveCollective: (collectiveId: string) => Promise<void>;
     AddBookmark: (eventId: string) => Promise<void>;
 }
 

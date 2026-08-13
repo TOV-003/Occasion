@@ -214,6 +214,17 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         if (error) throw error;
     }
 
+    async function leaveCollective(collectiveId: string): Promise<void> {
+        toast.loading("Leaving collective...", { duration: 500 });
+        const { error } = await supabase
+            .from('collective_members')
+            .delete()
+            .eq('collective_id', collectiveId)
+            .eq('user_id', user?.id);
+        if (error) throw error;
+    }
+
+
     async function AddBookmark(eventId: string): Promise<void> { 
         if (!user) {
             throw new Error('Not authenticated');
@@ -252,7 +263,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     }
 
     return (
-        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark }}>
+        <AuthContext.Provider value={{ user, authloading, login, loginWithGoogle, logout, getProfile, profile, updateProfile, deleteAccount, uploadBanner, createEvent, delistEvent, relistEvent, createTicket, joinCollective, leaveCollective, AddBookmark }}>
             {children}
         </AuthContext.Provider>
     );
