@@ -92,7 +92,7 @@ export default function CollectivePage() {
         bookmarks: Bookmarks[];
     };
 
-    const { user, joinCollective, leaveCollective } = UseAuth();
+    const { user, joinCollective, leaveCollective, followCollective, unfollowCollective } = UseAuth();
     console.log('User:', user);
     console.log('Collective Data:', { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles, bookmarks });
 
@@ -133,6 +133,39 @@ export default function CollectivePage() {
             catch (error) {
                 console.error("Error joining collective:", error);
                 toast.error("Failed to join collective. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+    }
+
+    async function handleFollowUnfollow() {
+        if (!user) {
+            toast.error("Please login to follow or unfollow a collective.");
+            return;
+        }
+        if (isFollower) {
+            toast.loading("Unfollowing collective...", { duration: 500 });
+            try {
+                await unfollowCollective(collective.id);
+            }
+            catch (error) {
+                console.error("Error unfollowing collective:", error);
+                toast.error("Failed to unfollow collective. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+        else {
+            toast.loading("Following collective...", { duration: 500 });
+            try {
+                await followCollective(collective.id);
+            }
+            catch (error) {
+                console.error("Error following collective:", error);
+                toast.error("Failed to follow collective. Please try again.");
             }
             finally {
                 revalidator.revalidate();
@@ -203,8 +236,8 @@ export default function CollectivePage() {
                         <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleJoinLeaveCollective}>
                             {isOwner ? "Manage members" : isMember ? "Leave collective" : "Join collective"}
                         </button>
-                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer">
-                            {isFollower ? "Follow Collective" : "Unfollow Collective"}
+                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleFollowUnfollow}>
+                            {isFollower ? "Unfollow Collective" : "Follow Collective"}
                         </button>
                     </div>
                 </div>

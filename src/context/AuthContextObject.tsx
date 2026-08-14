@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
-import type { Profile, Event, EventFormData } from '../interfaces';
+import type { Profile, Event, EventFormData, Collective } from '../interfaces';
 
 interface AuthContextType {
     user: User | null;
@@ -19,7 +19,11 @@ interface AuthContextType {
     createTicket: (eventId: string) => Promise<void>;
     joinCollective: (collectiveId: string) => Promise<void>;
     leaveCollective: (collectiveId: string) => Promise<void>;
+    followCollective: (collectiveId: string) => Promise<void>;
+    unfollowCollective: (collectiveId: string) => Promise<void>;
+    getUserCollectives: () => Promise<Collective[]>;
     AddBookmark: (eventId: string) => Promise<void>;
+    addEventToCollective: (eventId: string, collectiveId: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

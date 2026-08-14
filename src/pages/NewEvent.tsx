@@ -4,19 +4,21 @@ import { useState, useEffect, useRef } from 'react';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import type { EventFormData } from '../interfaces';
+import type { Collective, EventFormData } from '../interfaces';
 import cities from '../assets/cities_12k.json';
 import CityCombobox from '../components/CityCombobox';
 
 export default function NewEvent() {
     const [unlimitedAttendees, setUnlimitedAttendees] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
-    const { user, authloading, createEvent, uploadBanner } = UseAuth();
+    const { user, authloading, createEvent, uploadBanner, getUserCollectives, addEventToCollective } = UseAuth();
     const navigate = useNavigate();
     const [bannerFile, setBannerFile] = useState<File | null>(null);
     const [bannerPreview, setBannerPreview] = useState<string | null>(null);
     const [bannerError, setBannerError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [userCollectives, setUserCollectives] = useState<Collective[]>([]);
+    const [selectedCollectiveId, setSelectedCollectiveId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState<EventFormData>({
         title: '',
@@ -35,7 +37,26 @@ export default function NewEvent() {
             toast.error("Please login to create an event.");
             navigate("/");
         }
-    }, [user]);
+    }, [user, authloading]);
+
+    useEffect(() => {
+        if (authloading) return;
+        if (!user) return;
+
+        const fetchCollectives = async () => {
+            try {
+                const collectives = await getUserCollectives();
+                setUserCollectives(collectives);
+                console.log("Collectives fetched:", collectives);
+            }
+            catch (err) {
+                console.error("Error fetching user collectives:", err);
+                toast.error("Failed to fetch your collectives. Please try again later.");
+            }
+        };
+
+        void fetchCollectives();
+    }, [authloading, user]);
 
 
     useEffect(() => {
@@ -98,8 +119,6 @@ export default function NewEvent() {
 
     const handleImageChange = async (file: File) => {
         setBannerError(null);
-
-        // Validate type & size first
         if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
             setBannerError('Only JPEG, PNG, WebP, GIF images are allowed.');
             return;
@@ -197,10 +216,15 @@ export default function NewEvent() {
 
             const event = await createEvent(payload);
             toast.success("Event created successfully!", { id: createToast });
+            if (selectedCollectiveId) {
+                await addEventToCollective(event.id, selectedCollectiveId);
+            }
             navigate(`/event/${event.id}`);
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to create event.", { id: createToast });
         }
+
+
     };
 
 
@@ -383,6 +407,18 @@ export default function NewEvent() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Event Collective
                         </label>
+                        <div>
+                            <select
+                                value={selectedCollectiveId ?? ''}
+                                onChange={(e) => setSelectedCollectiveId(e.target.value || null)}
+                                className="w-full bg-inputbg/30 border border-inputaccent rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                            >
+                                <option value="">None (no collective)</option>
+                                {userCollectives.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div>
