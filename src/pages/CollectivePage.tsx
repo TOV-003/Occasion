@@ -188,12 +188,12 @@ export default function CollectivePage() {
                         </Link>
                     ) : (
                         <Link
-                            to="/"
+                            to="/collectives"
                             className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
                             onClick={() => toast.loading("Going Back...", { duration: 1000 })}
                         >
                             <ChevronLeft size={16} />
-                            Back to Explore
+                            Back to Collectives
                         </Link>
                     )}
                 </div>
