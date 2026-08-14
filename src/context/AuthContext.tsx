@@ -105,6 +105,24 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         return data.publicUrl;
     };
 
+    async function createCollective(collective: { name: string; description: string; guidelines: string; auto_approve: boolean; }): Promise<Collective> {
+        const { data, error } = await supabase
+            .from('collectives')
+            .insert({
+                ...collective,
+                owner_id: user?.id,
+            })
+            .select('*')
+            .single();
+
+        if (error) {
+            toast.error("Failed to create collective");
+            throw error;
+        }
+
+        return data;
+    }
+
     async function createEvent(event: EventFormData): Promise<Event> {
         const { event_dates, ...eventPayload } = event;
         const { data, error } = await supabase
@@ -376,29 +394,30 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
     }
 
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            authloading, 
-            login, 
-            loginWithGoogle, 
-            logout, 
-            getProfile, 
-            profile, 
-            updateProfile, 
-            deleteAccount, 
-            uploadBanner, 
-            createEvent, 
-            delistEvent, 
-            relistEvent, 
-            createTicket, 
-            joinCollective, 
-            leaveCollective, 
-            followCollective, 
-            unfollowCollective, 
-            getUserCollectives, 
+        <AuthContext.Provider value={{
+            user,
+            authloading,
+            login,
+            loginWithGoogle,
+            logout,
+            getProfile,
+            profile,
+            updateProfile,
+            deleteAccount,
+            uploadBanner,
+            createCollective,
+            createEvent,
+            delistEvent,
+            relistEvent,
+            createTicket,
+            joinCollective,
+            leaveCollective,
+            followCollective,
+            unfollowCollective,
+            getUserCollectives,
             AddBookmark,
             addEventToCollective
-             }}>
+        }}>
             {children}
         </AuthContext.Provider>
     );

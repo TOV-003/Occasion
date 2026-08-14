@@ -66,6 +66,7 @@ export default function Navbar() {
                     </NavLink>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
+                    <Link to="/new-collective" className="border border-accent text-accent rounded-md px-4 py-2 cursor-pointer text-sm hover:bg-accent/5">+ New Collective</Link>
                     <Link to="/new-event" className="bg-accent text-white rounded-md px-4 py-2 cursor-pointer text-sm">+ New Event</Link>
                     <div className="cursor-pointer">
                         {profile ? <NavLink to="/settings" onClick={() => { toast.loading("Loading Settings...", { duration: 1500 }) }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /></NavLink> : <NavLink to="/login" onClick={() => { toast.loading("Loading Login...", { duration: 1500 }) }}><div className="bg-accent-dark rounded-md px-2 py-1 cursor-pointer text-white">Login</div></NavLink>}
@@ -110,7 +111,8 @@ export default function Navbar() {
                                 </>
                             )}
                         </NavLink>
-                        <button className="bg-accent text-white rounded-md px-4 py-2 w-full">+ New Event</button>
+                        <Link to="/new-collective" className="border border-accent text-accent rounded-md px-4 py-2 w-full text-center">+ New Collective</Link>
+                        <Link to="/new-event" className="bg-accent text-white rounded-md px-4 py-2 w-full text-center">+ New Event</Link>
                         <div className="flex items-center gap-4 w-full">
                             {profile ? <NavLink to="/settings" onClick={() => { toast.loading("Loading Settings...", { duration: 1500 }) }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full" /></NavLink> : <NavLink to="/login" onClick={() => { toast.loading("Loading Login...", { duration: 1500 }) }}><div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div></NavLink>}
                             <NavLink to={profile ? "/settings" : "/login"} onClick={() => { toast.loading(`Loading ${profile ? "Settings" : "Login"}...`, { duration: 1500 }) }}><span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span></NavLink>

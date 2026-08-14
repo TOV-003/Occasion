@@ -17,6 +17,7 @@ import Settings from './pages/Settings.tsx'
 import Dashboard from './pages/Dashboard'
 import Collectives from './pages/Collectives'
 import NewEvent from './pages/NewEvent'
+import NewCollective from './pages/NewCollective'
 import UploadImageTest from './pages/UploadImageTest'
 
 
@@ -277,6 +278,10 @@ const router = createBrowserRouter([
       {
         path: '/new-event',
         element: <NewEvent />
+      },
+      {
+        path: '/new-collective',
+        element: <NewCollective />
       },
       {
         path: '/upload-image-test',

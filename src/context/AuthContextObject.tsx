@@ -13,6 +13,7 @@ interface AuthContextType {
     deleteAccount: () => Promise<void>;
     authloading: boolean;
     uploadBanner: (file: File) => Promise<string>;
+    createCollective: (collective: { name: string; description: string; guidelines: string; auto_approve: boolean; }) => Promise<Collective>;
     createEvent: (event: EventFormData) => Promise<Event>;
     delistEvent: (eventId: string) => Promise<Event>;
     relistEvent: (eventId: string) => Promise<Event | null>;

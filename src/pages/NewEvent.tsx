@@ -3,7 +3,7 @@ import Layout from '../Layout';
 import { useState, useEffect, useRef } from 'react';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { Collective, EventFormData } from '../interfaces';
 import cities from '../assets/cities_12k.json';
 import CityCombobox from '../components/CityCombobox';
@@ -11,6 +11,8 @@ import CityCombobox from '../components/CityCombobox';
 export default function NewEvent() {
     const [unlimitedAttendees, setUnlimitedAttendees] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
+    const location = useLocation();
+    const routeCollectiveId = location.state?.collectiveId as string | undefined;
     const { user, authloading, createEvent, uploadBanner, getUserCollectives, addEventToCollective } = UseAuth();
     const navigate = useNavigate();
     const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -47,7 +49,13 @@ export default function NewEvent() {
             try {
                 const collectives = await getUserCollectives();
                 setUserCollectives(collectives);
-                console.log("Collectives fetched:", collectives);
+
+                if (routeCollectiveId) {
+                    const match = collectives.find((collective) => collective.id === routeCollectiveId);
+                    if (match) {
+                        setSelectedCollectiveId(match.id);
+                    }
+                }
             }
             catch (err) {
                 console.error("Error fetching user collectives:", err);
@@ -56,7 +64,7 @@ export default function NewEvent() {
         };
 
         void fetchCollectives();
-    }, [authloading, user]);
+    }, [authloading, user, routeCollectiveId, getUserCollectives]);
 
 
     useEffect(() => {
