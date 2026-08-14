@@ -92,9 +92,7 @@ export default function CollectivePage() {
         bookmarks: Bookmarks[];
     };
 
-    const { user, joinCollective, leaveCollective, followCollective, unfollowCollective } = UseAuth();
-    console.log('User:', user);
-    console.log('Collective Data:', { collective, collectiveMembers, collectiveFollowers, events, tickets, memberProfiles, bookmarks });
+    const { user, joinCollective, leaveCollective, followCollective, unfollowCollective, AddBookmark } = UseAuth();
 
 
     const location = useLocation();
@@ -167,6 +165,26 @@ export default function CollectivePage() {
             catch (error) {
                 console.error("Error following collective:", error);
                 toast.error("Failed to follow collective. Please try again.");
+            }
+            finally {
+                revalidator.revalidate();
+            }
+        }
+    }
+
+    async function handleBookMark(id: string | undefined) {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        if (id) {
+            try {
+                await AddBookmark(id);
+            }
+            catch (error) {
+                console.error("Error bookmarking event:", error);
+                toast.error("Failed to bookmark event. Please try again.");
             }
             finally {
                 revalidator.revalidate();
@@ -291,10 +309,18 @@ export default function CollectivePage() {
                                                     alt={ev.title}
                                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                                 />
-                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleBookMark(ev.id);
+                                                }} className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
                                                     <BookmarkCheck color="var(--color-accent)" size={20} />
                                                 </div>}
-                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleBookMark(ev.id);
+                                                }} className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
                                                     <BookmarkOff color="var(--color-accent)" size={20} />
                                                 </div>}
                                             </div>
@@ -396,10 +422,18 @@ export default function CollectivePage() {
                                                     {ev.event_dates && ev.event_dates.length > 1 && ` + ${ev.event_dates.length - 1} more`}
                                                 </p>
                                             </div>
-                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div className="cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 && <div onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleBookMark(ev.id);
+                                            }} className="cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
                                                 <BookmarkCheck color="var(--color-accent)" size={20} />
                                             </div>}
-                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div className="group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleBookMark(ev.id);
+                                            }} className="group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
                                                 <BookmarkOff color="var(--color-accent)" size={20} />
                                             </div>}
                                             <div className="text-xs text-gray-500">
