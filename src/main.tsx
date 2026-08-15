@@ -21,7 +21,7 @@ import NewEvent from './pages/NewEvent'
 import NewCollective from './pages/NewCollective'
 import UploadImageTest from './pages/UploadImageTest'
 import ManageCollective from './pages/ManageCollective'
-
+import ManageEvent from './pages/ManageEvent'
 
 
 const router = createBrowserRouter([
@@ -329,6 +329,68 @@ const router = createBrowserRouter([
       {
         path: '/upload-image-test',
         element: <UploadImageTest />
+      },
+      {
+        path: '/manage-event/:id',
+        element: <ManageEvent />,
+        loader: async ({ params }) => {
+          const { id } = params;
+          if (!id) {
+            throw redirect('/dashboard');
+          }
+
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user.id;
+
+          if (!userId) {
+            throw redirect('/login');
+          }
+
+          const { data: event, error: eventError } = await supabase
+            .from('events')
+            .select('*, event_dates(*)')
+            .eq('id', id)
+            .single();
+
+          if (eventError) throw eventError;
+          if (!event) throw new Response('Event not found', { status: 404 });
+          if (event.creator_id !== userId) {
+            throw redirect(`/event/${id}`);
+          }
+
+          const { data: ticketRows, error: ticketRowsError } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('event_id', id)
+            .order('created_at', { ascending: false });
+
+          if (ticketRowsError) throw ticketRowsError;
+
+          const userIds = [...new Set((ticketRows ?? []).map((ticket) => ticket.user_id))];
+          let profiles: { id: string; full_name: string; avatar_url: string; bio?: string }[] = [];
+
+          if (userIds.length > 0) {
+            const { data: profileData, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url, bio')
+              .in('id', userIds);
+
+            if (profilesError) throw profilesError;
+            profiles = profileData ?? [];
+          }
+
+          const approvedTickets = (ticketRows ?? []).filter((ticket) => ticket.status === 'approved');
+          const pendingTickets = (ticketRows ?? []).filter((ticket) => ticket.status === 'pending');
+
+          return {
+            event,
+            tickets: ticketRows ?? [],
+            approvedTickets,
+            pendingTickets,
+            profiles,
+          };
+        },
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/manage-collective',
