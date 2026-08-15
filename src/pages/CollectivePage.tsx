@@ -253,9 +253,18 @@ export default function CollectivePage() {
                                 New event
                             </button>
                         )}
-                        <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleJoinLeaveCollective}>
-                            {isOwner ? "Manage Collective" : isMember ? "Leave collective" : "Join collective"}
-                        </button>
+                        {isOwner ? (
+                            <button
+                                className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer"
+                                onClick={() => navigate(`/manage-collective/${collective.id}`)}
+                            >
+                                Manage Collective
+                            </button>
+                        ) : (
+                            <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleJoinLeaveCollective}>
+                                {isMember ? "Leave collective" : "Join collective"}
+                            </button>
+                        )}
                         {!isOwner && (
                             <button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleFollowUnfollow}>
                                 {isFollower ? "Unfollow" : "Follow"}

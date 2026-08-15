@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { supabase } from './api/SupabaseClient'
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom'
-import type { Event, CollectiveWithRelations } from './interfaces'
+import type { Event, Collective, CollectiveWithRelations } from './interfaces'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import About from './pages/About.tsx'
@@ -13,12 +13,14 @@ import EventPage from './pages/EventPage'
 import ErrorPage from './components/ErrorPage'
 import LoadingFallback from './components/LoadingFallback'
 import CollectivePage from './pages/CollectivePage.tsx'
+import Profile from './pages/Profile'
 import Settings from './pages/Settings.tsx'
 import Dashboard from './pages/Dashboard'
 import Collectives from './pages/Collectives'
 import NewEvent from './pages/NewEvent'
 import NewCollective from './pages/NewCollective'
 import UploadImageTest from './pages/UploadImageTest'
+import ManageCollective from './pages/ManageCollective'
 
 
 
@@ -50,7 +52,7 @@ const router = createBrowserRouter([
             bookmarks: bookmarksResult.data
           };
         },
-        hydrateFallbackElement: <LoadingFallback/>
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/login',
@@ -200,6 +202,47 @@ const router = createBrowserRouter([
         hydrateFallbackElement: <LoadingFallback />
       },
       {
+        path: '/profile/:id',
+        element: <Profile />,
+        loader: async ({ params }) => {
+          const { id } = params;
+          if (!id) throw new Error('Profile ID required');
+
+          const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }] = await Promise.all([
+            supabase.from('profiles').select('*').eq('id', id).single(),
+            supabase.from('events').select('*, event_dates(*)').eq('creator_id', id).order('created_at', { ascending: false }),
+            supabase.from('collectives').select('*, collective_members (*), collective_followers (*)').eq('owner_id', id).order('created_at', { ascending: false }),
+            supabase.from('collective_members').select('collective_id').eq('user_id', id).eq('status', 'approved')
+          ]);
+
+          if (profileError) throw profileError;
+          if (eventsError) throw eventsError;
+          if (ownedError) throw ownedError;
+          if (memberRowsError) throw memberRowsError;
+
+          let memberCollectives: Collective[] = [];
+          const memberIds = (memberRows ?? []).map((row) => row.collective_id);
+          if (memberIds.length > 0) {
+            const { data: collectives, error: collectivesError } = await supabase
+              .from('collectives')
+              .select('*, collective_members (*), collective_followers (*)')
+              .in('id', memberIds)
+              .order('created_at', { ascending: false });
+
+            if (collectivesError) throw collectivesError;
+            memberCollectives = collectives ?? [];
+          }
+
+          return {
+            profile,
+            createdEvents: createdEvents ?? [],
+            ownedCollectives: ownedCollectives ?? [],
+            memberCollectives,
+          };
+        },
+        hydrateFallbackElement: <LoadingFallback />
+      },
+      {
         path: '/settings',
         element: <Settings />,
       },
@@ -286,6 +329,107 @@ const router = createBrowserRouter([
       {
         path: '/upload-image-test',
         element: <UploadImageTest />
+      },
+      {
+        path: '/manage-collective',
+        element: <ManageCollective />
+      },
+      {
+        path: '/manage-collective/:id',
+        element: <ManageCollective />,
+        loader: async ({ params }) => {
+          const { id } = params;
+          if (!id) {
+            throw redirect('/collectives');
+          }
+
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user.id;
+
+          if (!userId) {
+            throw redirect('/login');
+          }
+
+          const { data: collective, error: collectiveError } = await supabase
+            .from('collectives')
+            .select('*, collective_members (*), collective_followers (*)')
+            .eq('id', id)
+            .single();
+
+          if (collectiveError) throw collectiveError;
+          if (!collective) throw new Response('Collective not found', { status: 404 });
+          if (collective.owner_id !== userId) {
+            throw redirect(`/collective/${id}`);
+          }
+
+          const { data: linkedEvents, error: linkedEventsError } = await supabase
+            .from('event_collectives')
+            .select('*')
+            .eq('collective_id', id)
+            .order('created_at', { ascending: false });
+
+          if (linkedEventsError) throw linkedEventsError;
+
+          const { data: memberRows, error: memberRowsError } = await supabase
+            .from('collective_members')
+            .select('*')
+            .eq('collective_id', id)
+            .order('created_at', { ascending: false });
+
+          if (memberRowsError) throw memberRowsError;
+
+          const memberUserIds = (memberRows ?? []).map((member) => member.user_id);
+          let memberProfiles: { id: string; full_name: string; avatar_url: string; bio?: string }[] = [];
+
+          if (memberUserIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url, bio')
+              .in('id', memberUserIds);
+
+            if (profilesError) throw profilesError;
+            memberProfiles = profiles ?? [];
+          }
+
+          const eventIds = (linkedEvents ?? []).map((row) => row.event_id);
+          let events: Event[] = [];
+
+          if (eventIds.length > 0) {
+            const { data: eventsData, error: eventsError } = await supabase
+              .from('events')
+              .select('*, event_dates(*)')
+              .in('id', eventIds)
+              .order('created_at', { ascending: false });
+
+            if (eventsError) throw eventsError;
+            events = eventsData ?? [];
+          }
+
+          const approvedEvents = (linkedEvents ?? [])
+            .filter((row) => row.status === 'approved')
+            .map((row) => events.find((event) => event.id === row.event_id))
+            .filter((event): event is Event => Boolean(event));
+
+          const pendingEvents = (linkedEvents ?? [])
+            .filter((row) => row.status === 'pending')
+            .map((row) => events.find((event) => event.id === row.event_id))
+            .filter((event): event is Event => Boolean(event));
+
+          const approvedMembers = (memberRows ?? []).filter((member) => member.status === 'approved');
+          const pendingMembers = (memberRows ?? []).filter((member) => member.status === 'pending');
+
+          return {
+            collective,
+            approvedEvents,
+            pendingEvents,
+            approvedMembers,
+            pendingMembers,
+            memberProfiles,
+            members: memberRows ?? [],
+            followers: collective.collective_followers ?? [],
+          };
+        },
+        hydrateFallbackElement: <LoadingFallback />
       }
     ]
   },

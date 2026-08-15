@@ -167,6 +167,14 @@ export default function Settings() {
                 </div>
 
                 <div className="flex flex-wrap gap-4 mt-8">
+                    {user && (
+                        <button
+                            onClick={() => navigate(`/profile/${user.id}`)}
+                            className="bg-gray-200 text-gray-700 rounded-md px-6 py-2 hover:bg-gray-300 transition-colors shadow-sm cursor-pointer"
+                        >
+                            View public profile
+                        </button>
+                    )}
                     <button
                         onClick={handleLogout}
                         className="bg-accent text-white rounded-md px-6 py-2 hover:bg-accent-dark transition-colors shadow-sm cursor-pointer"
