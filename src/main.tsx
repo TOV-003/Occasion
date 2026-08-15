@@ -415,8 +415,9 @@ const router = createBrowserRouter([
             .map((row) => events.find((event) => event.id === row.event_id))
             .filter((event): event is Event => Boolean(event));
 
-          const approvedMembers = (memberRows ?? []).filter((member) => member.status === 'approved');
-          const pendingMembers = (memberRows ?? []).filter((member) => member.status === 'pending');
+          const visibleMemberRows = (memberRows ?? []).filter((member) => member.user_id !== collective.owner_id);
+          const approvedMembers = visibleMemberRows.filter((member) => member.status === 'approved');
+          const pendingMembers = visibleMemberRows.filter((member) => member.status === 'pending');
 
           return {
             collective,
@@ -425,7 +426,7 @@ const router = createBrowserRouter([
             approvedMembers,
             pendingMembers,
             memberProfiles,
-            members: memberRows ?? [],
+            members: visibleMemberRows,
             followers: collective.collective_followers ?? [],
           };
         },

@@ -1,7 +1,7 @@
 
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
 import Layout from '../Layout';
-import { Link, useLoaderData, useRevalidator } from 'react-router-dom';
+import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import type { CollectiveMember, CollectiveWithRelations, Event, Profile } from '../interfaces';
 import { supabase } from '../api/SupabaseClient';
@@ -17,7 +17,16 @@ export default function ManageCollective() {
         memberProfiles: Profile[];
     };
     const revalidator = useRevalidator();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
+
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+        navigate(`/collective/${collective.id}`);
+    };
 
     const approvalMode = collective.auto_approve ? 'Auto-approve' : 'Manual approval';
     const approvalTone = collective.auto_approve
@@ -197,13 +206,14 @@ export default function ManageCollective() {
         <Layout>
             <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:px-8 lg:py-12">
                 <div className="flex flex-col gap-4">
-                    <Link
-                        to={`/collective/${collective.id}`}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors"
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors"
                     >
                         <ArrowLeft size={16} />
-                        Back to collective
-                    </Link>
+                        Back to previous page
+                    </button>
 
                     <div className="flex flex-col gap-4 rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

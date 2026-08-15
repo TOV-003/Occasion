@@ -118,17 +118,25 @@ export default function EventPage() {
     const isFull = tickets.length === event.max_attendees;
     const isCreator = user?.id === event.creator_id;
 
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+        navigate('/');
+    };
+
     return (
         <Layout>
             <div className="container mx-auto px-4 py-8 lg:px-8 lg:py-12">
-                <Link
-                    to="/"
+                <button
+                    type="button"
+                    onClick={handleBack}
                     className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
-                    onClick={() => toast.loading("Going back...", { duration: 1000 })}
                 >
                     <ChevronLeft size={16} />
-                    Back to Explore
-                </Link>
+                    Back to previous page
+                </button>
 
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     <div className="lg:w-2/3 space-y-6">

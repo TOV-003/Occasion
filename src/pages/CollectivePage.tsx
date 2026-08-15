@@ -192,29 +192,32 @@ export default function CollectivePage() {
         }
     }
 
+    const handleBack = () => {
+        if (fromEventId) {
+            navigate(`/event/${fromEventId}`);
+            return;
+        }
+
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+
+        navigate('/collectives');
+    };
+
     return (
         <Layout>
             <div className="container mx-auto px-4 py-8 lg:px-8 lg:py-12">
                 <div>
-                    {fromEventId ? (
-                        <Link
-                            to={`/event/${fromEventId}`}
-                            className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
-                            onClick={() => toast.loading("Going Back...", { duration: 1000 })}
-                        >
-                            <ChevronLeft size={16} />
-                            Back to Previous Event
-                        </Link>
-                    ) : (
-                        <Link
-                            to="/collectives"
-                            className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
-                            onClick={() => toast.loading("Going Back...", { duration: 1000 })}
-                        >
-                            <ChevronLeft size={16} />
-                            Back to Collectives
-                        </Link>
-                    )}
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6"
+                    >
+                        <ChevronLeft size={16} />
+                        {fromEventId ? 'Back to previous event' : 'Back to previous page'}
+                    </button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-inputaccent/20">
