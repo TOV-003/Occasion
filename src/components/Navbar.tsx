@@ -21,8 +21,8 @@ export default function Navbar() {
 
 
     return (
-        <header className="fixed bg-background/20 backdrop-blur-2xl w-full z-10">
-            <nav className="relative z-10 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
+        <header className="fixed bg-background/20 backdrop-blur-2xl w-full z-20">
+            <nav className="relative z-20 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
                 <NavLink to="/" className="flex items-center justify-between gap-2">
                     <img src={logo} alt="logo" className="h-6 w-6" />
                     <h2 className="text-xl text-accent-dark">Occasion</h2>

@@ -2,6 +2,7 @@ import { CalendarDays, MapPin, Users, Plus } from 'lucide-react';
 import { Link, useLoaderData } from 'react-router-dom';
 import Layout from '../Layout';
 import type { Collective, Event, Profile as ProfileType } from '../interfaces';
+import { UseAuth } from '../context/UseAuth';
 
 export default function ProfilePage() {
     const { profile, createdEvents, ownedCollectives, memberCollectives } = useLoaderData() as {
@@ -10,6 +11,8 @@ export default function ProfilePage() {
         ownedCollectives: Collective[];
         memberCollectives: Collective[];
     };
+    const { user } = UseAuth();
+    const isOwnProfile = user?.id === profile.id;
 
     const allCollectives = [...ownedCollectives, ...memberCollectives.filter(
         (collective) => !ownedCollectives.some((owned) => owned.id === collective.id)
@@ -32,13 +35,15 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        <Link
-                            to="/settings"
-                            className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:bg-accent hover:text-white"
-                        >
-                            <Plus size={15} />
-                            View settings
-                        </Link>
+                        {isOwnProfile && (
+                            <Link
+                                to="/settings"
+                                className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:bg-accent hover:text-white"
+                            >
+                                <Plus size={15} />
+                                View settings
+                            </Link>
+                        )}
                     </div>
                 </div>
 

@@ -229,7 +229,7 @@ export default function Home() {
 
 
     if (loading) {
-        return <Layout><Skeleton variant="home" /></Layout>;
+        return <Layout><Skeleton variant="events" /></Layout>;
     }
 
     return (
@@ -388,7 +388,7 @@ export default function Home() {
                                             e.stopPropagation();
                                             HandleBookMark(ev.id);
                                         }}
-                                        className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                        className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
                                     >
                                         <BookmarkCheck color="var(--color-accent)" size={20} />
                                     </div>
@@ -399,7 +399,7 @@ export default function Home() {
                                             e.stopPropagation();
                                             HandleBookMark(ev.id);
                                         }}
-                                        className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                        className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
                                     >
                                         <BookmarkOff color="var(--color-accent)" size={20} />
                                     </div>

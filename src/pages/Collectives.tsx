@@ -113,7 +113,7 @@ export default function Collectives() {
     };
 
     if (loading && collectives.length === 0) {
-        return <Layout><Skeleton variant="home" /></Layout>;
+        return <Layout><Skeleton variant="collectives" /></Layout>;
     }
 
     return (

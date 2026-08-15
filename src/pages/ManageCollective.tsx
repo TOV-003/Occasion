@@ -71,9 +71,10 @@ export default function ManageCollective() {
     };
 
     const renderEventCard = (event: Event, status: 'approved' | 'pending') => (
-        <div
+        <Link
+            to={`/event/${event.id}`}
             key={event.id}
-            className="group rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md"
+            className="group block rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md"
         >
             <div className="flex flex-col sm:flex-row">
                 <div className="h-32 w-full shrink-0 overflow-hidden sm:w-40">
@@ -113,17 +114,25 @@ export default function ManageCollective() {
                     </div>
 
                     {status === 'pending' && (
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="mt-4 flex flex-wrap gap-2" onClick={(eventClick) => eventClick.stopPropagation()}>
                             <button
                                 type="button"
-                                onClick={() => handleEventDecision(event.id, 'approved')}
+                                onClick={(eventClick) => {
+                                    eventClick.preventDefault();
+                                    eventClick.stopPropagation();
+                                    handleEventDecision(event.id, 'approved');
+                                }}
                                 className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark"
                             >
                                 Approve
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleEventDecision(event.id, 'rejected')}
+                                onClick={(eventClick) => {
+                                    eventClick.preventDefault();
+                                    eventClick.stopPropagation();
+                                    handleEventDecision(event.id, 'rejected');
+                                }}
                                 className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600"
                             >
                                 Reject
@@ -132,7 +141,7 @@ export default function ManageCollective() {
                     )}
                 </div>
             </div>
-        </div>
+        </Link>
     );
 
     const renderMemberCard = (member: CollectiveMember, status: 'approved' | 'pending') => {

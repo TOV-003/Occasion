@@ -149,7 +149,7 @@ export default function EventPage() {
                             {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length > 0 && (
                                 <div
                                     onClick={() => HandleBookMark(event.id)}
-                                    className="absolute top-4 right-4 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                    className="absolute top-4 right-4 z-0 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
                                 >
                                     <BookmarkCheck color="var(--color-accent)" size={20} />
                                 </div>
@@ -157,7 +157,7 @@ export default function EventPage() {
                             {bookmarks.filter((b: Bookmarks) => b.event_id === event.id).length === 0 && (
                                 <div
                                     onClick={() => HandleBookMark(event.id)}
-                                    className="absolute top-4 right-4 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10"
+                                    className="absolute top-4 right-4 z-0 cursor-pointer group-hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
                                 >
                                     <BookmarkOff color="var(--color-accent)" size={20} />
                                 </div>

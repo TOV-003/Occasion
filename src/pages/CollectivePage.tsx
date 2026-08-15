@@ -101,6 +101,7 @@ export default function CollectivePage() {
     const [view, setView] = useState<"grid" | "list">("grid");
     const [showAllMembers, setShowAllMembers] = useState(false);
     const revalidator = useRevalidator();
+    const memberProfileMap = new Map(memberProfiles.map((profile) => [profile.id, profile]));
 
     const isOwner = collective?.owner_id === user?.id;
     const isFollower = collectiveFollowers.some(el => el.user_id === user?.id);
@@ -325,14 +326,14 @@ export default function CollectivePage() {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     handleBookMark(ev.id);
-                                                }} className="absolute top-4 right-4 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
+                                                }} className="absolute top-4 right-4 z-0 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
                                                     <BookmarkCheck color="var(--color-accent)" size={20} />
                                                 </div>}
                                                 {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     handleBookMark(ev.id);
-                                                }} className="absolute cursor-pointer top-4 right-4 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
+                                                }} className="absolute cursor-pointer top-4 right-4 z-0 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
                                                     <BookmarkOff color="var(--color-accent)" size={20} />
                                                 </div>}
                                             </div>
@@ -438,14 +439,14 @@ export default function CollectivePage() {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 handleBookMark(ev.id);
-                                            }} className="cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
+                                            }} className="z-0 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
                                                 <BookmarkCheck color="var(--color-accent)" size={20} />
                                             </div>}
                                             {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length === 0 && <div onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 handleBookMark(ev.id);
-                                            }} className="group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md z-10">
+                                            }} className="z-0 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
                                                 <BookmarkOff color="var(--color-accent)" size={20} />
                                             </div>}
                                             <div className="text-xs text-gray-500">
@@ -464,23 +465,37 @@ export default function CollectivePage() {
                         <div className="bg-white border border-inputaccent/20 rounded-xl p-4 shadow-sm">
                             <h3 className="text-sm font-medium text-gray-700 mb-3">Members</h3>
                             <div className={`space-y-2.5 ${showAllMembers ? 'max-h-48 overflow-auto' : ''}`}>
-                                {(showAllMembers ? memberProfiles : memberProfiles.slice(0, 5)).map((m) => (
-                                    <div key={m.id} className="flex items-center gap-2.5">
-                                        <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
-                                            {m.full_name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <span className="text-sm text-gray-800 flex-1">
-                                            User {m.full_name}
-                                        </span>
-                                    </div>
-                                ))}
+                                {(showAllMembers ? collectiveMembers : collectiveMembers.slice(0, 5)).map((member) => {
+                                    const profile = memberProfileMap.get(member.user_id);
+                                    const fullName = profile?.full_name || 'Member';
+                                    const initial = fullName.charAt(0).toUpperCase();
+                                    const isOwnerMember = collective.owner_id === member.user_id;
+
+                                    return (
+                                        <Link
+                                            key={member.id}
+                                            to={`/profile/${member.user_id}`}
+                                            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent/5"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
+                                                {initial}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-sm text-gray-800 truncate">{fullName}</div>
+                                                <div className="text-[10px] uppercase tracking-wide text-gray-500">
+                                                    {isOwnerMember ? 'Owner' : (member.role || 'Member')}
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             </div>
-                            {memberProfiles.length > 5 && (
+                            {collectiveMembers.length > 5 && (
                                 <button
                                     onClick={() => setShowAllMembers((s) => !s)}
                                     className="text-xs text-gray-400 mt-3 hover:underline"
                                 >
-                                    {showAllMembers ? 'Show less' : `+${memberProfiles.length - 5} more members`}
+                                    {showAllMembers ? 'Show less' : `+${collectiveMembers.length - 5} more members`}
                                 </button>
                             )}
                         </div>
