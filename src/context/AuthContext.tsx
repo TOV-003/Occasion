@@ -34,7 +34,7 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         toast.loading("Logging in with Google...", { duration: 1500 });
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: `${window.location.origin}/settings` }
+            options: { redirectTo: `${window.location.origin}/` }
         })
         if (error) throw error
     };
