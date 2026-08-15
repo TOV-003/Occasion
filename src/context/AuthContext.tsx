@@ -393,6 +393,68 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
 
     }
 
+    async function approveMember(memberId: string): Promise<void> {
+        const { error } = await supabase
+            .from('collective_members')
+            .update({ status: 'approved' })
+            .eq('id', memberId);
+
+        if (error) throw error;
+        toast.success('Member approved.');
+    }
+
+    async function rejectMember(memberId: string): Promise<void> {
+        const { error } = await supabase
+            .from('collective_members')
+            .update({ status: 'rejected' })
+            .eq('id', memberId);
+
+        if (error) throw error;
+        toast.success('Member rejected.');
+    }
+
+    async function approveCollectiveEvent(eventId: string, collectiveId: string): Promise<void> {
+        const { error } = await supabase
+            .from('event_collectives')
+            .update({ status: 'approved' })
+            .eq('collective_id', collectiveId)
+            .eq('event_id', eventId);
+
+        if (error) throw error;
+        toast.success('Event approved.');
+    }
+
+    async function rejectCollectiveEvent(eventId: string, collectiveId: string): Promise<void> {
+        const { error } = await supabase
+            .from('event_collectives')
+            .update({ status: 'rejected' })
+            .eq('collective_id', collectiveId)
+            .eq('event_id', eventId);
+
+        if (error) throw error;
+        toast.success('Event rejected.');
+    }
+
+    async function approveTicket(ticketId: string): Promise<void> {
+        const { error } = await supabase
+            .from('tickets')
+            .update({ status: 'approved' })
+            .eq('id', ticketId);
+
+        if (error) throw error;
+        toast.success('Ticket approved.');
+    }
+
+    async function rejectTicket(ticketId: string): Promise<void> {
+        const { error } = await supabase
+            .from('tickets')
+            .update({ status: 'rejected' })
+            .eq('id', ticketId);
+
+        if (error) throw error;
+        toast.success('Ticket rejected.');
+    }
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -416,7 +478,13 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
             unfollowCollective,
             getUserCollectives,
             AddBookmark,
-            addEventToCollective
+            addEventToCollective,
+            approveMember,
+            rejectMember,
+            approveCollectiveEvent,
+            rejectCollectiveEvent,
+            approveTicket,
+            rejectTicket
         }}>
             {children}
         </AuthContext.Provider>

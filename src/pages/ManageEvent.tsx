@@ -3,7 +3,7 @@ import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import type { Event, Tickets, Profile } from '../interfaces';
-import { supabase } from '../api/SupabaseClient';
+import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 
 export default function ManageEvent() {
@@ -15,6 +15,7 @@ export default function ManageEvent() {
         profiles: Profile[];
     };
 
+    const { approveTicket, rejectTicket } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details'>('tickets');
@@ -36,13 +37,11 @@ export default function ManageEvent() {
 
     const handleTicketDecision = async (ticketId: string, status: 'approved' | 'rejected') => {
         try {
-            const { error } = await supabase
-                .from('tickets')
-                .update({ status })
-                .eq('id', ticketId);
-
-            if (error) throw error;
-            toast.success(status === 'approved' ? 'Ticket approved.' : 'Ticket rejected.');
+            if (status === 'approved') {
+                await approveTicket(ticketId);
+            } else {
+                await rejectTicket(ticketId);
+            }
             revalidator.revalidate();
         } catch (error) {
             console.error('Error updating ticket status:', error);

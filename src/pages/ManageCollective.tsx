@@ -4,7 +4,7 @@ import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import type { CollectiveMember, CollectiveWithRelations, Event, Profile } from '../interfaces';
-import { supabase } from '../api/SupabaseClient';
+import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 
 export default function ManageCollective() {
@@ -16,6 +16,7 @@ export default function ManageCollective() {
         pendingMembers: CollectiveMember[];
         memberProfiles: Profile[];
     };
+    const { approveCollectiveEvent, rejectCollectiveEvent, approveMember, rejectMember } = UseAuth();
     const revalidator = useRevalidator();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
@@ -39,14 +40,11 @@ export default function ManageCollective() {
 
     const handleEventDecision = async (eventId: string, status: 'approved' | 'rejected') => {
         try {
-            const { error } = await supabase
-                .from('event_collectives')
-                .update({ status })
-                .eq('collective_id', collective.id)
-                .eq('event_id', eventId);
-
-            if (error) throw error;
-            toast.success(status === 'approved' ? 'Event approved.' : 'Event rejected.');
+            if (status === 'approved') {
+                await approveCollectiveEvent(eventId, collective.id);
+            } else {
+                await rejectCollectiveEvent(eventId, collective.id);
+            }
             revalidator.revalidate();
         } catch (error) {
             console.error('Error updating event status:', error);
@@ -56,13 +54,11 @@ export default function ManageCollective() {
 
     const handleMemberDecision = async (memberId: string, status: 'approved' | 'rejected') => {
         try {
-            const { error } = await supabase
-                .from('collective_members')
-                .update({ status })
-                .eq('id', memberId);
-
-            if (error) throw error;
-            toast.success(status === 'approved' ? 'Member approved.' : 'Member rejected.');
+            if (status === 'approved') {
+                await approveMember(memberId);
+            } else {
+                await rejectMember(memberId);
+            }
             revalidator.revalidate();
         } catch (error) {
             console.error('Error updating member status:', error);

@@ -25,6 +25,12 @@ interface AuthContextType {
     getUserCollectives: () => Promise<Collective[]>;
     AddBookmark: (eventId: string) => Promise<void>;
     addEventToCollective: (eventId: string, collectiveId: string) => Promise<void>;
+    approveMember: (memberId: string) => Promise<void>;
+    rejectMember: (memberId: string) => Promise<void>;
+    approveCollectiveEvent: (eventId: string, collectiveId: string) => Promise<void>;
+    rejectCollectiveEvent: (eventId: string, collectiveId: string) => Promise<void>;
+    approveTicket: (ticketId: string) => Promise<void>;
+    rejectTicket: (ticketId: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
