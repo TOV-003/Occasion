@@ -1,10 +1,11 @@
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
-import { useMemo, useState, useEffect } from 'react';
-import type { Event, Tickets, Profile, EventServiceStaff } from '../interfaces';
+import { useMemo, useState, useEffect, useRef } from 'react';
+import type { Event, Tickets, Profile, EventAccessStaff, EventServiceStaff } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../api/SupabaseClient';
 
 export default function ManageEvent() {
     const { event, approvedTickets, pendingTickets, tickets, profiles } = useLoaderData() as {
@@ -15,14 +16,22 @@ export default function ManageEvent() {
         profiles: Profile[];
     };
 
-    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, getServiceStaff, handleRemoveServiceStaff } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff'>('tickets');
     const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
+    const [accessStaff, setAccessStaff] = useState<EventAccessStaff[]>([]);
+    const [accessStaffProfiles, setAccessStaffProfiles] = useState<Record<string, Profile>>({});
     const [newServiceStaffName, setNewServiceStaffName] = useState('');
     const [newServiceStaffPhone, setNewServiceStaffPhone] = useState('');
     const [newServiceStaffRole, setNewServiceStaffRole] = useState('');
+    const [accessStaffSearch, setAccessStaffSearch] = useState('');
+    const [accessStaffSearchResults, setAccessStaffSearchResults] = useState<Profile[]>([]);
+    const [selectedAccessStaff, setSelectedAccessStaff] = useState<Profile | null>(null);
+    const [isAccessStaffSearching, setIsAccessStaffSearching] = useState(false);
+    const [isAssigningAccessStaff, setIsAssigningAccessStaff] = useState(false);
+    const accessStaffSearchRequest = useRef(0);
     console.log("Event ID:", event.id);
     console.log("Event Creator ID:", event.creator_id);
     console.log("User ID:", user?.id);
@@ -33,9 +42,33 @@ export default function ManageEvent() {
         console.log("Service Staff:", serviceStaff);
     }
 
+    const fetchAccessStaff = async () => {
+        const assignedAccessStaff = await getAccessStaff(event.id);
+        setAccessStaff(assignedAccessStaff);
+
+        const accessStaffUserIds = [...new Set(assignedAccessStaff.map((staff) => staff.user_id))];
+        if (accessStaffUserIds.length === 0) {
+            setAccessStaffProfiles({});
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, bio')
+            .in('id', accessStaffUserIds);
+
+        if (error) {
+            console.error('Error fetching access staff profiles:', error);
+            return;
+        }
+
+        setAccessStaffProfiles(Object.fromEntries((data ?? []).map((profile) => [profile.id, profile])));
+    };
+
     useEffect(() => {
         function fetchService() {
             fetchServiceStaff();
+            fetchAccessStaff();
         }
         fetchService();
     }, [event.id])
@@ -102,6 +135,65 @@ export default function ManageEvent() {
         } catch (error) {
             console.error('Error:', error);
             toast.error('Failed to remove service staff member.');
+        }
+    };
+
+    const handleAccessStaffSearch = async (searchValue: string) => {
+        const requestId = ++accessStaffSearchRequest.current;
+        setAccessStaffSearch(searchValue);
+        setSelectedAccessStaff(null);
+
+        const trimmedSearch = searchValue.trim();
+        if (!trimmedSearch) {
+            setAccessStaffSearchResults([]);
+            setIsAccessStaffSearching(false);
+            return;
+        }
+
+        setIsAccessStaffSearching(true);
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, bio')
+            .ilike('full_name', `%${trimmedSearch}%`)
+            .limit(8);
+
+        if (requestId !== accessStaffSearchRequest.current) return;
+
+        setIsAccessStaffSearching(false);
+
+        if (error) {
+            console.error('Error searching profiles:', error);
+            toast.error('Failed to search accounts.');
+            setAccessStaffSearchResults([]);
+            return;
+        }
+
+        setAccessStaffSearchResults(data ?? []);
+    };
+
+    const handleSelectAccessStaff = (profile: Profile) => {
+        accessStaffSearchRequest.current += 1;
+        setSelectedAccessStaff(profile);
+        setAccessStaffSearch(profile.full_name);
+        setAccessStaffSearchResults([]);
+    };
+
+    const handleAssignAccessStaff = async () => {
+        if (!selectedAccessStaff) return;
+
+        setIsAssigningAccessStaff(true);
+        try {
+            await HandleAddEventAccessStaff(event.id, selectedAccessStaff.id);
+            setSelectedAccessStaff(null);
+            setAccessStaffSearch('');
+            setAccessStaffSearchResults([]);
+            await fetchAccessStaff();
+            revalidator.revalidate();
+        } catch (error) {
+            console.error('Error assigning access staff:', error);
+            toast.error('Failed to assign access staff member.');
+        } finally {
+            setIsAssigningAccessStaff(false);
         }
     };
 
@@ -227,7 +319,7 @@ export default function ManageEvent() {
                         <button
                             type="button"
                             onClick={() => setActiveTab('tickets')}
-                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'tickets'
+                            className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'tickets'
                                 ? 'bg-accent text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                         >
@@ -236,7 +328,7 @@ export default function ManageEvent() {
                         <button
                             type="button"
                             onClick={() => setActiveTab('staff')}
-                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'staff'
+                            className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'staff'
                                 ? 'bg-accent text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                         >
@@ -245,7 +337,7 @@ export default function ManageEvent() {
                         <button
                             type="button"
                             onClick={() => setActiveTab('details')}
-                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'details'
+                            className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'details'
                                 ? 'bg-accent text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                         >
@@ -343,13 +435,100 @@ export default function ManageEvent() {
                             <div>
                                 <div className="mb-4 flex items-center justify-between">
                                     <h2 className="text-lg font-semibold text-gray-900">Access Staff</h2>
-                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
-                                        Coming soon
+                                    <span className="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                                        {accessStaff.length}
                                     </span>
                                 </div>
-                                <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                                    Access staff management will be available soon.
+                                <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
+                                    <label htmlFor="access-staff-search" className="mb-2 block text-sm font-medium text-gray-700">
+                                        Search for an account
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            id="access-staff-search"
+                                            type="search"
+                                            placeholder="Search by full name"
+                                            value={accessStaffSearch}
+                                            onChange={(e) => handleAccessStaffSearch(e.target.value)}
+                                            className="w-full rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                                        />
+
+                                        {(isAccessStaffSearching || accessStaffSearchResults.length > 0) && (
+                                            <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-inputaccent/20 bg-white shadow-lg">
+                                                {isAccessStaffSearching ? (
+                                                    <p className="px-3 py-2 text-sm text-gray-500">Searching accounts...</p>
+                                                ) : (
+                                                    accessStaffSearchResults.map((profile) => (
+                                                        <button
+                                                            key={profile.id}
+                                                            type="button"
+                                                            onClick={() => handleSelectAccessStaff(profile)}
+                                                            className="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-accent/10"
+                                                        >
+                                                            {profile.full_name}
+                                                        </button>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <p className="text-sm text-gray-600">
+                                            {selectedAccessStaff ? `Selected: ${selectedAccessStaff.full_name}` : 'Choose an account to give event access.'}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={handleAssignAccessStaff}
+                                            disabled={!selectedAccessStaff || isAssigningAccessStaff}
+                                            className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {isAssigningAccessStaff ? 'Assigning...' : 'Assign'}
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {accessStaff.length > 0 ? (
+                                    <div className="mt-4 space-y-2">
+                                        {accessStaff.map((staff) => {
+                                            const profile = accessStaffProfiles[staff.user_id];
+                                            const fullName = profile?.full_name || 'Unknown user';
+                                            const initials = fullName
+                                                .split(' ')
+                                                .map((part) => part[0])
+                                                .join('')
+                                                .slice(0, 2)
+                                                .toUpperCase();
+
+                                            return (
+                                                <div
+                                                    key={staff.id}
+                                                    className="flex items-center justify-between rounded-lg border border-inputaccent/20 bg-white p-4"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
+                                                            {initials}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">{fullName}</p>
+                                                            <p className="text-xs text-gray-500">Access staff</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="mt-4 rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                        No access staff assigned yet.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : activeTab === 'tickets' ? (

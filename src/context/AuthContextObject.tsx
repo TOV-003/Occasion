@@ -32,7 +32,7 @@ interface AuthContextType {
     approveTicket: (ticketId: string) => Promise<void>;
     rejectTicket: (ticketId: string) => Promise<void>;
     HandleAddEventServiceStaff: (eventId: string, staffOrCompanyName: string, phone: string, role: string) => Promise<void>;
-    HandleAddEventAccessStaff: (eventId: string, userId: string, creatorId: string) => Promise<void>;
+    HandleAddEventAccessStaff: (eventId: string, userId: string) => Promise<void>;
     getServiceStaff: (eventId: string) => Promise<EventServiceStaff[]>;
     getAccessStaff: (eventId: string) => Promise<EventAccessStaff[]>;
     handleRemoveServiceStaff: (staffId: string) => Promise<void>;
