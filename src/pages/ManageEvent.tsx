@@ -15,7 +15,7 @@ export default function ManageEvent() {
         profiles: Profile[];
     };
 
-    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, getServiceStaff } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, getServiceStaff, handleRemoveServiceStaff } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff'>('tickets');
@@ -94,6 +94,16 @@ export default function ManageEvent() {
         }
     };
 
+    const handleRemoveEventServiceStaff = async (staffId: string) => {
+        try {
+            await handleRemoveServiceStaff(staffId);
+            revalidator.revalidate();
+            await fetchServiceStaff();
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Failed to remove service staff member.');
+        }
+    };
 
     const renderTicketCard = (ticket: Tickets, status: 'approved' | 'pending') => {
         const profile = profileMap.get(ticket.user_id);
@@ -294,7 +304,7 @@ export default function ManageEvent() {
                                         <button
                                             type="button"
                                             onClick={handleAddServiceStaff}
-                                            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                                            className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
                                         >
                                             Add
                                         </button>
@@ -315,7 +325,8 @@ export default function ManageEvent() {
                                                 </div>
                                                 <button
                                                     type="button"
-                                                    className="rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                                    className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                                    onClick={() => handleRemoveEventServiceStaff(staff.id)}
                                                 >
                                                     Remove
                                                 </button>

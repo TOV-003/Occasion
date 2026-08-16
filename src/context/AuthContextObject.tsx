@@ -35,6 +35,7 @@ interface AuthContextType {
     HandleAddEventAccessStaff: (eventId: string, userId: string, creatorId: string) => Promise<void>;
     getServiceStaff: (eventId: string) => Promise<EventServiceStaff[]>;
     getAccessStaff: (eventId: string) => Promise<EventAccessStaff[]>;
+    handleRemoveServiceStaff: (staffId: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
