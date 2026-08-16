@@ -22,19 +22,23 @@ export default function ManageEvent() {
     const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
     const [newServiceStaffName, setNewServiceStaffName] = useState('');
     const [newServiceStaffPhone, setNewServiceStaffPhone] = useState('');
+    const [newServiceStaffRole, setNewServiceStaffRole] = useState('');
     console.log("Event ID:", event.id);
     console.log("Event Creator ID:", event.creator_id);
     console.log("User ID:", user?.id);
     console.log("Event Name:", event.title);
+    const fetchServiceStaff = async () => {
+        const serviceStaff = await getServiceStaff(event.id);
+        setServiceStaff(serviceStaff);
+        console.log("Service Staff:", serviceStaff);
+    }
 
     useEffect(() => {
-        const fetchServiceStaff = async () => {
-            const serviceStaff = await getServiceStaff(event.id);
-            setServiceStaff(serviceStaff);
-            console.log("Service Staff:", serviceStaff);
+        function fetchService() {
+            fetchServiceStaff();
         }
-        fetchServiceStaff();
-    }, [])
+        fetchService();
+    }, [event.id])
 
     const handleBack = () => {
         if (window.history.length > 1) {
@@ -66,8 +70,8 @@ export default function ManageEvent() {
     };
 
     const handleAddServiceStaff = async () => {
-        if (!newServiceStaffName.trim() || !newServiceStaffPhone.trim()) {
-            toast.error('Please enter both name and phone.');
+        if (!newServiceStaffName.trim() || !newServiceStaffPhone.trim() || !newServiceStaffRole.trim()) {
+            toast.error('Please enter all fields.');
             return;
         }
 
@@ -76,12 +80,14 @@ export default function ManageEvent() {
                 event.id,
                 newServiceStaffName.trim(),
                 newServiceStaffPhone.trim(),
-                'service'
+                newServiceStaffRole.trim()
             );
 
-            revalidator.revalidate();
             setNewServiceStaffName('');
             setNewServiceStaffPhone('');
+            setNewServiceStaffRole('');
+            await fetchServiceStaff();
+            revalidator.revalidate();
         } catch (error) {
             console.error('Error:', error);
             toast.error('Failed to add service staff member.');
@@ -264,6 +270,27 @@ export default function ManageEvent() {
                                             onChange={(e) => setNewServiceStaffPhone(e.target.value)}
                                             className="flex-1 rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
                                         />
+                                        <select
+                                            value={newServiceStaffRole}
+                                            onChange={(e) => setNewServiceStaffRole(e.target.value)}
+                                            className="flex-1 rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                                        >
+                                            <option value="" disabled>
+                                                Select a service...
+                                            </option>
+                                            <option value="Catering & Bar Services">Catering & Bar Services</option>
+                                            <option value="Audio, Visual & Lighting">Audio, Visual & Lighting</option>
+                                            <option value="Photography & Videography">Photography & Videography</option>
+                                            <option value="Decor & Floral Design">Decor & Floral Design</option>
+                                            <option value="Security & Crowd Control">Security & Crowd Control</option>
+                                            <option value="Cleaning & Waste Management">Cleaning & Waste Management</option>
+                                            <option value="Entertainment & DJs">Entertainment & DJs</option>
+                                            <option value="Logistics & Venue Coordination">Logistics & Venue Coordination</option>
+                                            <option value="Equipment & Furniture Rentals">Equipment & Furniture Rentals</option>
+                                            <option value="Event Staffing & Ushers">Event Staffing & Ushers</option>
+                                            <option value="Transportation & Valet">Transportation & Valet</option>
+                                            <option value="Ticketing & Promotion">Ticketing & Promotion</option>
+                                        </select>
                                         <button
                                             type="button"
                                             onClick={handleAddServiceStaff}
@@ -284,6 +311,7 @@ export default function ManageEvent() {
                                                 <div>
                                                     <p className="font-medium text-gray-900">{staff.staff_or_company_name}</p>
                                                     <p className="text-xs text-gray-500">{staff.phone}</p>
+                                                    <p className="text-xs text-gray-500">{staff.role}</p>
                                                 </div>
                                                 <button
                                                     type="button"
