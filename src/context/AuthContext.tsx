@@ -510,6 +510,17 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         toast.success('Service staff removed.');
     }
 
+    async function handleRemoveAccessStaff(staffId: string): Promise<void> {
+        toast.loading('Removing access staff...', { duration: 500 });
+        const { error } = await supabase
+            .from('event_access_staff')
+            .delete()
+            .eq('id', staffId);
+
+        if (error) throw error;
+        toast.success('Access staff removed.');
+    }
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -544,7 +555,8 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
             HandleAddEventAccessStaff,
             getServiceStaff,
             getAccessStaff,
-            handleRemoveServiceStaff
+            handleRemoveServiceStaff,
+            handleRemoveAccessStaff
         }}>
             {children}
         </AuthContext.Provider>

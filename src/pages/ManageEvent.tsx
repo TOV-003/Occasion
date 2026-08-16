@@ -15,8 +15,7 @@ export default function ManageEvent() {
         tickets: Tickets[];
         profiles: Profile[];
     };
-
-    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff, handleRemoveAccessStaff } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff'>('tickets');
@@ -135,6 +134,17 @@ export default function ManageEvent() {
         } catch (error) {
             console.error('Error:', error);
             toast.error('Failed to remove service staff member.');
+        }
+    };
+
+    const handleRemoveEventAccessStaff = async (staffId: string) => {
+        try {
+            await handleRemoveAccessStaff(staffId);
+            revalidator.revalidate();
+            await fetchAccessStaff();
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Failed to remove access staff member.');
         }
     };
 
@@ -517,6 +527,7 @@ export default function ManageEvent() {
                                                     <button
                                                         type="button"
                                                         className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                                        onClick={() => handleRemoveEventAccessStaff(staff.id)}
                                                     >
                                                         Remove
                                                     </button>
