@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { useRevalidator } from "react-router-dom";
 
 export default function Home() {
-    const [selectedCategory, setSelectedCategory] = useState('All');
     const [filter, setFilter] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [query, setQuery] = useState('');
@@ -22,7 +21,7 @@ export default function Home() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [searching, setSearching] = useState(false);
     const [visibleCount, setVisibleCount] = useState(10);
-    const [randomNumber] = useState(() => Math.floor(Math.random() * 0) + 0);
+    const randomNumber = 0; // Always show first featured event
     const [allEvents, setAllEvents] = useState<Event[]>([]);
     const [collectives, setCollectives] = useState<CollectiveWithRelations[]>([]);
     const { featuredEvents = [], bookmarks = [] } = useLoaderData();
@@ -181,13 +180,11 @@ export default function Home() {
     }, [allEvents]);
 
     const showCategory = (category: string) => {
-        setSelectedCategory(category);
         setFilter(category);
         setVisibleCount(10);
     }
 
     const showAll = () => {
-        setSelectedCategory('All');
         setFilter('');
         setVisibleCount(10);
     }
@@ -269,7 +266,7 @@ export default function Home() {
                                         showCategory(cat);
                                     }}
                                 className={
-                                    selectedCategory === cat
+                                    (filter === cat || (cat === 'All' && filter === ''))
                                         ? 'bg-accent text-white px-2 py-0.5 rounded-2xl border border-accent-dark text-sm cursor-pointer'
                                         : ' text-inputaccent px-2 py-0.5 rounded-2xl border border-inputaccent text-sm cursor-pointer font-light'
                                 }
@@ -314,179 +311,123 @@ export default function Home() {
                 <div className="flex flex-col items-center justify-center gap-4 w-full lg:items-start">
                     <h2 className="text-xl">All {filter || ""} Events</h2>
                     <div className="flex flex-wrap gap-6 w-full justify-center">
-                        {!filter && results.slice(0, visibleCount).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent relative" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
-                                <div className="relative w-full aspect-square overflow-hidden">
-                                    <img
-                                        src={ev.banner_url}
-                                        alt={ev.title}
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                    />
-                                </div>
-                                <div className="flex relative flex-col gap-2 p-4">
-                                    <div className={`
-                                        rounded-full px-3 py-1 text-xs font-medium w-fit
-                                            ${categoryStyles[ev.category]
-                                            ? `${categoryStyles[ev.category].bg} ${categoryStyles[ev.category].text}`
-                                            : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
-                                        }
-                                        `}>
-                                        {ev.category}
-                                    </div>
-                                    <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{ev.title}</h2>
-                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                        <MapPin size={15} />
-                                        <span>{ev.location}, {ev.city}</span>
-                                    </p>
-                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                        <CalendarDays size={15} />
-                                        {
-                                            ev.event_dates.map((el, index, array) => (
-                                                <span key={index}>
-                                                    {new Date(el.date).toLocaleDateString('en-US', {
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC',
-                                                    })}
-                                                    {index < array.length - 1 && ' / '}
-                                                </span>
-                                            ))
-                                        }
-                                    </p>
-                                    {(() => {
-                                        const registered = ev.approved_ticket_count;
-                                        const maxAttendees = ev.max_attendees || 0;
-                                        const percentage = maxAttendees
-                                            ? Math.min((registered / maxAttendees) * 100, 100)
-                                            : 0;
+                        {(() => {
+                            const filteredResults = filter && filter.length > 0
+                                ? results.filter((ev: Event) => ev.category === filter)
+                                : results;
 
-                                        return (
-                                            <div className="flex flex-col gap-1.5">
-                                                <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
-                                                    <Users size={15} />
-                                                    <span>{registered} / {ev.max_attendees}</span>
+                            return (
+                                <>
+                                    {filteredResults.slice(0, visibleCount).map((ev: Event) => (
+                                        <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent relative" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
+                                            <div className="relative w-full aspect-square overflow-hidden">
+                                                <img
+                                                    src={ev.banner_url}
+                                                    alt={ev.title}
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                />
+                                            </div>
+                                            <div className="flex relative flex-col gap-2 p-4">
+                                                <div className={`
+                                                    rounded-full px-3 py-1 text-xs font-medium w-fit
+                                                        ${categoryStyles[ev.category]
+                                                        ? `${categoryStyles[ev.category].bg} ${categoryStyles[ev.category].text}`
+                                                        : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
+                                                    }
+                                                    `}>
+                                                    {ev.category}
+                                                </div>
+                                                <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{ev.title}</h2>
+                                                <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                                    <MapPin size={15} />
+                                                    <span>{ev.location}, {ev.city}</span>
+                                                </p>
+                                                <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
+                                                    <CalendarDays size={15} />
                                                     {
-                                                        registered === ev.max_attendees &&
-                                                        <span className="text-xs bg-red-200 rounded-xl font-bold py-1 px-4 text-red-700">Full</span>
+                                                        ev.event_dates.map((el, index, array) => (
+                                                            <span key={index}>
+                                                                {new Date(el.date).toLocaleDateString('en-US', {
+                                                                    month: 'long',
+                                                                    day: 'numeric',
+                                                                    year: 'numeric',
+                                                                    timeZone: 'UTC',
+                                                                })}
+                                                                {index < array.length - 1 && ' / '}
+                                                            </span>
+                                                        ))
                                                     }
                                                 </p>
-                                                <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full bg-accent transition-all duration-300"
-                                                        style={{ width: `${percentage}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                                {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 ? (
-                                    <div
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            HandleBookMark(ev.id);
-                                        }}
-                                        className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
-                                    >
-                                        <BookmarkCheck color="var(--color-accent)" size={20} />
-                                    </div>
-                                ) : (
-                                    <div
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            HandleBookMark(ev.id);
-                                        }}
-                                        className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
-                                    >
-                                        <BookmarkOff color="var(--color-accent)" size={20} />
-                                    </div>
-                                )}
-                            </Link>
-                        ))}
-                        {searching && results.length === 0 && (
-                            <p className="text-center text-sm text-gray-500">Loading events...</p>
-                        )}
-                        {!searching && results.length === 0 && (
-                            <p className="text-center text-sm text-gray-500">No events found</p>
-                        )}
-                        {filter && filter.length > 0 && results.filter((ev: Event) => ev.category === filter).slice(0, visibleCount).map((ev: Event) => (
-                            <Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={() => toast.loading("Loading Event...", { duration: 1500 })}>
-                                <div className="relative w-full aspect-square overflow-hidden">
-                                    <img
-                                        src={ev.banner_url}
-                                        alt={ev.title}
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2 p-4">
-                                    <div className={`
-                                        rounded-full px-3 py-1 text-xs font-medium w-fit
-                                            ${categoryStyles[ev.category]
-                                            ? `${categoryStyles[ev.category].bg} ${categoryStyles[ev.category].text}`
-                                            : `${categoryStyles.All.bg} ${categoryStyles.All.text}`
-                                        }
-                                        `}>
-                                        {ev.category}
-                                    </div>
-                                    <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">{ev.title}</h2>
-                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                        <MapPin size={15} />
-                                        <span>{ev.location}, {ev.city}</span>
-                                    </p>
-                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                        <CalendarDays size={15} />
-                                        {
-                                            ev.event_dates.map((el, index, array) => (
-                                                <span key={index}>
-                                                    {new Date(el.date).toLocaleDateString('en-US', {
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC',
-                                                    })}
-                                                    {index < array.length - 1 && ' / '}
-                                                </span>
-                                            ))
-                                        }
-                                    </p>
-                                    {(() => {
-                                        const registered = ev.approved_ticket_count;
-                                        const maxAttendees = ev.max_attendees || 0;
-                                        const percentage = maxAttendees
-                                            ? Math.min((registered / maxAttendees) * 100, 100)
-                                            : 0;
+                                                {(() => {
+                                                    const registered = ev.approved_ticket_count;
+                                                    const maxAttendees = ev.max_attendees || 0;
+                                                    const percentage = maxAttendees
+                                                        ? Math.min((registered / maxAttendees) * 100, 100)
+                                                        : 0;
 
-                                        return (
-                                            <div className="flex flex-col gap-1.5">
-                                                <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
-                                                    <Users size={15} />
-                                                    <span>{registered} / {ev.max_attendees}</span>
-                                                </p>
-                                                <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full bg-accent transition-all duration-300"
-                                                        style={{ width: `${percentage}%` }}
-                                                    />
-                                                </div>
+                                                    return (
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <p className="text-sm font-light text-inputaccent flex flex-row items-center gap-2">
+                                                                <Users size={15} />
+                                                                <span>{registered} / {ev.max_attendees}</span>
+                                                                {
+                                                                    registered === ev.max_attendees &&
+                                                                    <span className="text-xs bg-red-200 rounded-xl font-bold py-1 px-4 text-red-700">Full</span>
+                                                                }
+                                                            </p>
+                                                            <div className="w-full h-1.5 rounded-full bg-inputaccent/15 overflow-hidden">
+                                                                <div
+                                                                    className="h-full rounded-full bg-accent transition-all duration-300"
+                                                                    style={{ width: `${percentage}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
-                                        );
-                                    })()}
-                                </div>
-                            </Link>
-                        ))}
-                        {filter && results.filter((ev: Event) => ev.category === filter).length === 0 && <p className="text-center text-sm text-gray-500 hover:text-accent transition-colors">No events found</p>}
-                        {hasMore && (
-                            <button
-                                onClick={loadMore}
-                                disabled={isLoadingMore}
-                                className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full"
-                            >
-                                {isLoadingMore ? 'Loading...' : 'Load more'}
-                            </button>
-                        )}
+                                            {bookmarks.filter((b: Bookmarks) => b.event_id === ev.id).length > 0 ? (
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        HandleBookMark(ev.id);
+                                                    }}
+                                                    className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
+                                                >
+                                                    <BookmarkCheck color="var(--color-accent)" size={20} />
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        HandleBookMark(ev.id);
+                                                    }}
+                                                    className="absolute top-4 right-4 z-0 cursor-pointer hover:scale-110 transition-transform duration-300 p-2 bg-inputbg rounded-md"
+                                                >
+                                                    <BookmarkOff color="var(--color-accent)" size={20} />
+                                                </div>
+                                            )}
+                                        </Link>
+                                    ))}
+                                    {searching && filteredResults.length === 0 && (
+                                        <p className="text-center text-sm text-gray-500">Loading events...</p>
+                                    )}
+                                    {!searching && filteredResults.length === 0 && (
+                                        <p className="text-center text-sm text-gray-500">No events found</p>
+                                    )}
+                                    {hasMore && (
+                                        <button
+                                            onClick={loadMore}
+                                            disabled={isLoadingMore}
+                                            className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full"
+                                        >
+                                            {isLoadingMore ? 'Loading...' : 'Load more'}
+                                        </button>
+                                    )}
+                                </>
+                            );
+                        })()}
                     </div>
 
                 </div>

@@ -112,3 +112,21 @@ export interface EventFormDataNoDates {
     max_attendees: number | null;
     auto_approve: boolean;
 }
+
+export interface EventAccessStaff {
+    id: string;
+    event_id: string;
+    user_id: string;
+    creator_id: string;
+    created_at: string;
+}
+
+export interface EventServiceStaff {
+    id: string;
+    event_id: string;
+    staff_or_company_name: string;
+    phone: string;
+    role: string;
+    creator_id: string;
+    created_at: string;
+}
