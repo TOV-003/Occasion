@@ -317,19 +317,23 @@ const router = createBrowserRouter([
       },
       {
         path: '/collectives',
-        element: <Collectives />
+        element: <Collectives />,
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/new-event',
-        element: <NewEvent />
+        element: <NewEvent />,
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/new-collective',
-        element: <NewCollective />
+        element: <NewCollective />,
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/upload-image-test',
-        element: <UploadImageTest />
+        element: <UploadImageTest />,
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/manage-event/:id',
@@ -395,7 +399,8 @@ const router = createBrowserRouter([
       },
       {
         path: '/manage-collective',
-        element: <ManageCollective />
+        element: <ManageCollective />,
+        hydrateFallbackElement: <LoadingFallback />
       },
       {
         path: '/manage-collective/:id',

@@ -1,8 +1,8 @@
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
-import { useMemo, useState } from 'react';
-import type { Event, Tickets, Profile } from '../interfaces';
+import { useMemo, useState, useEffect } from 'react';
+import type { Event, Tickets, Profile, EventServiceStaff } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 
@@ -15,10 +15,26 @@ export default function ManageEvent() {
         profiles: Profile[];
     };
 
-    const { approveTicket, rejectTicket } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleAddEventServiceStaff, getServiceStaff } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
-    const [activeTab, setActiveTab] = useState<'tickets' | 'details'>('tickets');
+    const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff'>('tickets');
+    const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
+    const [newServiceStaffName, setNewServiceStaffName] = useState('');
+    const [newServiceStaffPhone, setNewServiceStaffPhone] = useState('');
+    console.log("Event ID:", event.id);
+    console.log("Event Creator ID:", event.creator_id);
+    console.log("User ID:", user?.id);
+    console.log("Event Name:", event.title);
+
+    useEffect(() => {
+        const fetchServiceStaff = async () => {
+            const serviceStaff = await getServiceStaff(event.id);
+            setServiceStaff(serviceStaff);
+            console.log("Service Staff:", serviceStaff);
+        }
+        fetchServiceStaff();
+    }, [])
 
     const handleBack = () => {
         if (window.history.length > 1) {
@@ -48,6 +64,30 @@ export default function ManageEvent() {
             toast.error('Failed to update ticket status.');
         }
     };
+
+    const handleAddServiceStaff = async () => {
+        if (!newServiceStaffName.trim() || !newServiceStaffPhone.trim()) {
+            toast.error('Please enter both name and phone.');
+            return;
+        }
+
+        try {
+            await HandleAddEventServiceStaff(
+                event.id,
+                newServiceStaffName.trim(),
+                newServiceStaffPhone.trim(),
+                'service'
+            );
+
+            revalidator.revalidate();
+            setNewServiceStaffName('');
+            setNewServiceStaffPhone('');
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Failed to add service staff member.');
+        }
+    };
+
 
     const renderTicketCard = (ticket: Tickets, status: 'approved' | 'pending') => {
         const profile = profileMap.get(ticket.user_id);
@@ -179,6 +219,15 @@ export default function ManageEvent() {
                         </button>
                         <button
                             type="button"
+                            onClick={() => setActiveTab('staff')}
+                            className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'staff'
+                                ? 'bg-accent text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                        >
+                            Staff
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => setActiveTab('details')}
                             className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'details'
                                 ? 'bg-accent text-white'
@@ -188,7 +237,83 @@ export default function ManageEvent() {
                         </button>
                     </div>
 
-                    {activeTab === 'tickets' ? (
+                    {activeTab === 'staff' ? (
+                        <div className="space-y-6">
+                            <div>
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold text-gray-900">Service Staff</h2>
+                                    <span className="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                                        {serviceStaff.length}
+                                    </span>
+                                </div>
+
+                                <div className="mb-4 rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
+                                    <p className="mb-3 text-sm font-medium text-gray-700">Add Service Staff Member</p>
+                                    <div className="flex flex-col gap-3 sm:flex-row">
+                                        <input
+                                            type="text"
+                                            placeholder="Staff/Company name"
+                                            value={newServiceStaffName}
+                                            onChange={(e) => setNewServiceStaffName(e.target.value)}
+                                            className="flex-1 rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                                        />
+                                        <input
+                                            type="tel"
+                                            placeholder="Phone number"
+                                            value={newServiceStaffPhone}
+                                            onChange={(e) => setNewServiceStaffPhone(e.target.value)}
+                                            className="flex-1 rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleAddServiceStaff}
+                                            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {serviceStaff.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {serviceStaff.map((staff, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between rounded-lg border border-inputaccent/20 bg-white p-4"
+                                            >
+                                                <div>
+                                                    <p className="font-medium text-gray-900">{staff.staff_or_company_name}</p>
+                                                    <p className="text-xs text-gray-500">{staff.phone}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    className="rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                        No service staff added yet.
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className="mb-4 flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold text-gray-900">Access Staff</h2>
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
+                                        Coming soon
+                                    </span>
+                                </div>
+                                <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                    Access staff management will be available soon.
+                                </div>
+                            </div>
+                        </div>
+                    ) : activeTab === 'tickets' ? (
                         <div className="space-y-4">
                             {pendingTickets.length > 0 && (
                                 <div>

@@ -1,7 +1,7 @@
 import { AuthContext } from './AuthContextObject';
 import { supabase } from '../api/SupabaseClient';
 import type { User } from '@supabase/supabase-js';
-import type { Profile, Event, EventFormData, Collective } from '../interfaces';
+import type { Profile, Event, EventFormData, Collective, EventServiceStaff, EventAccessStaff } from '../interfaces';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-hot-toast';
 
@@ -455,6 +455,50 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
         toast.success('Ticket rejected.');
     }
 
+    async function HandleAddEventServiceStaff(eventId: string, staffOrCompanyName: string, phone: string, role: string): Promise<void> {
+        const { error } = await supabase
+            .from('event_service_staff')
+            .insert({ event_id: eventId, staff_or_company_name: staffOrCompanyName, phone, role, creator_id: user?.id })
+            .select()
+            .maybeSingle();
+
+        if (error) throw error;
+        toast.success('Event service staff added.');
+    }
+
+    async function HandleAddEventAccessStaff(eventId: string, userId: string): Promise<void> {
+        const { error } = await supabase
+            .from('event_access_staff')
+            .insert({ event_id: eventId, user_id: userId, creator_id: user?.id })
+            .select()
+            .maybeSingle();
+
+        if (error) throw error;
+        toast.success('Event access staff added.');
+    }
+
+    async function getServiceStaff(eventId: string): Promise<EventServiceStaff[]> {
+        const { data, error } = await supabase
+            .from('event_service_staff')
+            .select('*')
+            .eq('event_id', eventId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data ?? [];
+    }
+
+    async function getAccessStaff(eventId: string): Promise<EventAccessStaff[]> {
+        const { data, error } = await supabase
+            .from('event_access_staff')
+            .select('*')
+            .eq('event_id', eventId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data ?? [];
+    }
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -484,7 +528,11 @@ export default function AuthContextProvider({ children }: { children: ReactNode 
             approveCollectiveEvent,
             rejectCollectiveEvent,
             approveTicket,
-            rejectTicket
+            rejectTicket,
+            HandleAddEventServiceStaff,
+            HandleAddEventAccessStaff,
+            getServiceStaff,
+            getAccessStaff
         }}>
             {children}
         </AuthContext.Provider>
