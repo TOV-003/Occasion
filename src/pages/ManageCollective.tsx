@@ -1,4 +1,3 @@
-
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
@@ -6,7 +5,6 @@ import { useMemo, useState } from 'react';
 import type { CollectiveMember, CollectiveWithRelations, Event, Profile } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
-
 export default function ManageCollective() {
     const { collective, approvedEvents, pendingEvents, approvedMembers, pendingMembers, memberProfiles } = useLoaderData() as {
         collective: CollectiveWithRelations;
@@ -20,73 +18,66 @@ export default function ManageCollective() {
     const revalidator = useRevalidator();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
-
-    const handleBack = () => {
+    function handleBack() {
         if (window.history.length > 1) {
             navigate(-1);
             return;
         }
         navigate(`/collective/${collective.id}`);
-    };
-
+    }
     const approvalMode = collective.auto_approve ? 'Auto-approve' : 'Manual approval';
     const approvalTone = collective.auto_approve
         ? 'bg-green-100 text-green-800 border border-green-200'
         : 'bg-amber-100 text-amber-800 border border-amber-200';
-
-    const memberMap = useMemo(() => {
-        return new Map(memberProfiles.map((profile) => [profile.id, profile]));
+    const memberMap = useMemo(function () {
+        return new Map(memberProfiles.map(function (profile) {
+            return [profile.id, profile];
+        }));
     }, [memberProfiles]);
-
-    const handleEventDecision = async (eventId: string, status: 'approved' | 'rejected') => {
+    async function handleEventDecision(eventId: string, status: 'approved' | 'rejected') {
         try {
             if (status === 'approved') {
                 await approveCollectiveEvent(eventId, collective.id);
-            } else {
+            }
+            else {
                 await rejectCollectiveEvent(eventId, collective.id);
             }
             revalidator.revalidate();
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Error updating event status:', error);
             toast.error('Failed to update event status.');
         }
-    };
-
-    const handleMemberDecision = async (memberId: string, status: 'approved' | 'rejected') => {
+    }
+    async function handleMemberDecision(memberId: string, status: 'approved' | 'rejected') {
         try {
             if (status === 'approved') {
                 await approveMember(memberId);
-            } else {
+            }
+            else {
                 await rejectMember(memberId);
             }
             revalidator.revalidate();
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Error updating member status:', error);
             toast.error('Failed to update member status.');
         }
-    };
-
-    const renderEventCard = (event: Event, status: 'approved' | 'pending') => (
-        <Link
-            to={`/event/${event.id}`}
-            key={event.id}
-            className="group block rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md"
-        >
+    }
+    function renderEventCard(event: Event, status: 'approved' | 'pending') {
+        return (<Link to={`/event/${event.id}`} key={event.id} className="group block rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md">
             <div className="flex flex-col sm:flex-row">
                 <div className="h-32 w-full shrink-0 overflow-hidden sm:w-40">
-                    <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"/>
                 </div>
 
                 <div className="flex-1 p-4">
                     <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                        <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${status === 'approved'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-amber-100 text-amber-700'
-                                }`}
-                        >
-                            {status === 'approved' ? <CheckCircle2 size={14} /> : <Clock3 size={14} />}
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${status === 'approved'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-amber-100 text-amber-700'}`}>
+                            {status === 'approved' ? <CheckCircle2 size={14}/> : <Clock3 size={14}/>}
                             {status === 'approved' ? 'Approved' : 'Pending'}
                         </span>
                     </div>
@@ -95,67 +86,54 @@ export default function ManageCollective() {
 
                     <div className="flex flex-wrap gap-4 text-sm text-inputaccent">
                         <span className="inline-flex items-center gap-2">
-                            <MapPin size={15} />
+                            <MapPin size={15}/>
                             {event.location}, {event.city}
                         </span>
                         <span className="inline-flex items-center gap-2">
-                            <CalendarDays size={15} />
+                            <CalendarDays size={15}/>
                             {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                            })}
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            })}
                             {event.event_dates && event.event_dates.length > 1 && ` + ${event.event_dates.length - 1} more`}
                         </span>
                     </div>
 
-                    {status === 'pending' && (
-                        <div className="mt-4 flex flex-wrap gap-2" onClick={(eventClick) => eventClick.stopPropagation()}>
-                            <button
-                                type="button"
-                                onClick={(eventClick) => {
-                                    eventClick.preventDefault();
-                                    eventClick.stopPropagation();
-                                    handleEventDecision(event.id, 'approved');
-                                }}
-                                className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark"
-                            >
+                    {status === 'pending' && (<div className="mt-4 flex flex-wrap gap-2" onClick={function (eventClick) {
+                    return eventClick.stopPropagation();
+                }}>
+                            <button type="button" onClick={function (eventClick) {
+                    eventClick.preventDefault();
+                    eventClick.stopPropagation();
+                    handleEventDecision(event.id, 'approved');
+                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark">
                                 Approve
                             </button>
-                            <button
-                                type="button"
-                                onClick={(eventClick) => {
-                                    eventClick.preventDefault();
-                                    eventClick.stopPropagation();
-                                    handleEventDecision(event.id, 'rejected');
-                                }}
-                                className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600"
-                            >
+                            <button type="button" onClick={function (eventClick) {
+                    eventClick.preventDefault();
+                    eventClick.stopPropagation();
+                    handleEventDecision(event.id, 'rejected');
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600">
                                 Reject
                             </button>
-                        </div>
-                    )}
+                        </div>)}
                 </div>
             </div>
-        </Link>
-    );
-
-    const renderMemberCard = (member: CollectiveMember, status: 'approved' | 'pending') => {
+        </Link>);
+    }
+    function renderMemberCard(member: CollectiveMember, status: 'approved' | 'pending') {
         const profile = memberMap.get(member.user_id);
         const fullName = profile?.full_name || 'Unknown user';
         const initials = fullName
             .split(' ')
-            .map((part) => part[0])
+            .map(function (part) {
+            return part[0];
+        })
             .join('')
             .slice(0, 2)
             .toUpperCase();
-
-        return (
-            <Link
-                to={`/profile/${member.user_id}`}
-                key={member.id}
-                className="flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-4 shadow-sm transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between"
-            >
+        return (<Link to={`/profile/${member.user_id}`} key={member.id} className="flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-4 shadow-sm transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
                         {initials}
@@ -167,56 +145,36 @@ export default function ManageCollective() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${status === 'approved'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-amber-100 text-amber-700'
-                            }`}
-                    >
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${status === 'approved'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-amber-100 text-amber-700'}`}>
                         {status === 'approved' ? 'Approved' : 'Pending'}
                     </span>
 
-                    {status === 'pending' && (
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    handleMemberDecision(member.id, 'approved');
-                                }}
-                                className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark"
-                            >
+                    {status === 'pending' && (<div className="flex gap-2">
+                            <button type="button" onClick={function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleMemberDecision(member.id, 'approved');
+                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark">
                                 Approve
                             </button>
-                            <button
-                                type="button"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    handleMemberDecision(member.id, 'rejected');
-                                }}
-                                className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600"
-                            >
+                            <button type="button" onClick={function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleMemberDecision(member.id, 'rejected');
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600">
                                 Reject
                             </button>
-                        </div>
-                    )}
+                        </div>)}
                 </div>
-            </Link>
-        );
-    };
-
-    return (
-        <Layout>
+            </Link>);
+    }
+    return (<Layout>
             <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:px-8 lg:py-12">
                 <div className="flex flex-col gap-4">
-                    <button
-                        type="button"
-                        onClick={handleBack}
-                        className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors"
-                    >
-                        <ArrowLeft size={16} />
+                    <button type="button" onClick={handleBack} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors">
+                        <ArrowLeft size={16}/>
                         Back to previous page
                     </button>
 
@@ -234,7 +192,7 @@ export default function ManageCollective() {
                             </div>
 
                             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${approvalTone}`}>
-                                {collective.auto_approve ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
+                                {collective.auto_approve ? <ShieldCheck size={16}/> : <ShieldAlert size={16}/>}
                                 {approvalMode}
                             </span>
                         </div>
@@ -243,7 +201,7 @@ export default function ManageCollective() {
                             <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Members</p>
                                 <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
-                                    <Users size={18} className="text-accent" />
+                                    <Users size={18} className="text-accent"/>
                                     {approvedMembers.length + pendingMembers.length}
                                 </p>
                             </div>
@@ -251,7 +209,7 @@ export default function ManageCollective() {
                             <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Approved Events</p>
                                 <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
-                                    <CheckCircle2 size={18} className="text-green-600" />
+                                    <CheckCircle2 size={18} className="text-green-600"/>
                                     {approvedEvents.length}
                                 </p>
                             </div>
@@ -259,7 +217,7 @@ export default function ManageCollective() {
                             <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Pending Events</p>
                                 <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
-                                    <Clock3 size={18} className="text-amber-600" />
+                                    <Clock3 size={18} className="text-amber-600"/>
                                     {pendingEvents.length}
                                 </p>
                             </div>
@@ -280,33 +238,28 @@ export default function ManageCollective() {
 
                     <div className="rounded-xl border border-dashed border-inputaccent/30 bg-inputbg/20 p-4 text-sm text-gray-700">
                         {collective.auto_approve
-                            ? 'New members and event submissions are approved automatically by default.'
-                            : 'New members and event submissions must be reviewed before they are accepted.'}
+            ? 'New members and event submissions are approved automatically by default.'
+            : 'New members and event submissions must be reviewed before they are accepted.'}
                     </div>
                 </div>
 
                 <div className="rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
                     <div className="mb-4 flex items-center gap-2 rounded-lg bg-gray-100 p-1">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('events')}
-                            className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'events' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
-                        >
-                            <CalendarDays size={16} />
+                        <button type="button" onClick={function () {
+            return setActiveTab('events');
+        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'events' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <CalendarDays size={16}/>
                             Events
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('members')}
-                            className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'members' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
-                        >
-                            <Users size={16} />
+                        <button type="button" onClick={function () {
+            return setActiveTab('members');
+        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'members' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                            <Users size={16}/>
                             Members
                         </button>
                     </div>
 
-                    {activeTab === 'events' ? (
-                        <div className="space-y-8">
+                    {activeTab === 'events' ? (<div className="space-y-8">
                             <section>
                                 <div className="mb-4 flex items-center justify-between gap-3">
                                     <h2 className="text-xl font-semibold text-gray-900">Approved events</h2>
@@ -315,15 +268,13 @@ export default function ManageCollective() {
                                     </span>
                                 </div>
 
-                                {approvedEvents.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                {approvedEvents.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
                                         No approved events yet.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {approvedEvents.map((event) => renderEventCard(event, 'approved'))}
-                                    </div>
-                                )}
+                                    </div>) : (<div className="space-y-4">
+                                        {approvedEvents.map(function (event) {
+                    return renderEventCard(event, 'approved');
+                })}
+                                    </div>)}
                             </section>
 
                             <section>
@@ -334,19 +285,15 @@ export default function ManageCollective() {
                                     </span>
                                 </div>
 
-                                {pendingEvents.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                {pendingEvents.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
                                         No pending events at the moment.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {pendingEvents.map((event) => renderEventCard(event, 'pending'))}
-                                    </div>
-                                )}
+                                    </div>) : (<div className="space-y-4">
+                                        {pendingEvents.map(function (event) {
+                    return renderEventCard(event, 'pending');
+                })}
+                                    </div>)}
                             </section>
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
+                        </div>) : (<div className="space-y-8">
                             <section>
                                 <div className="mb-4 flex items-center justify-between gap-3">
                                     <h2 className="text-xl font-semibold text-gray-900">Approved members</h2>
@@ -355,15 +302,13 @@ export default function ManageCollective() {
                                     </span>
                                 </div>
 
-                                {approvedMembers.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                {approvedMembers.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
                                         No approved members yet.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {approvedMembers.map((member) => renderMemberCard(member, 'approved'))}
-                                    </div>
-                                )}
+                                    </div>) : (<div className="space-y-3">
+                                        {approvedMembers.map(function (member) {
+                    return renderMemberCard(member, 'approved');
+                })}
+                                    </div>)}
                             </section>
 
                             <section>
@@ -374,22 +319,16 @@ export default function ManageCollective() {
                                     </span>
                                 </div>
 
-                                {pendingMembers.length === 0 ? (
-                                    <div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                                {pendingMembers.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
                                         No pending member requests.
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {pendingMembers.map((member) => renderMemberCard(member, 'pending'))}
-                                    </div>
-                                )}
+                                    </div>) : (<div className="space-y-3">
+                                        {pendingMembers.map(function (member) {
+                    return renderMemberCard(member, 'pending');
+                })}
+                                    </div>)}
                             </section>
-                        </div>
-                    )}
+                        </div>)}
                 </div>
             </main>
-        </Layout>
-    );
+        </Layout>);
 }
-
-
