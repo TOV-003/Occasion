@@ -130,36 +130,25 @@ export default function Collectives() {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-6 w-full justify-center">
+                    <div className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {collectives.map(function (collective) {
-            return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group relative rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent" onClick={function () {
+            return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md" onClick={function () {
                     return toast.loading("Loading Collective...", { duration: 1500 });
                 }}>
-                                <div className="flex flex-col gap-2 p-4">
-                                    <div className="flex items-center justify-center p-6 bg-accent/10 rounded-lg h-14 w-14 aspect-square">
-                                        <span className="text-3xl font-light text-accent">{collective.name[0]}</span>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
+                                        {collective.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <h2 className="text-lg font-semibold group-hover:text-accent transition-colors duration-300">
-                                        {collective.name}
-                                    </h2>
-                                    <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                        {collective.description || 'No description'}
-                                    </p>
-                                    <div className="flex gap-2">
-                                        <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                            <Users size={15}/>
-                                            <span>{collective.collective_members?.length || 0}</span>
-                                            Members
-                                        </p>
-                                        <p className="text-sm font-light text-inputaccent flex flex-row gap-2">
-                                            <Users size={15}/>
-                                            <span>{collective.collective_followers?.length || 0}</span>
-                                            Followers
-                                        </p>
-                                    </div>
-                                    <div className="absolute top-4 right-4 group-hover:scale-140 transition-transform duration-300">
-                                        <ChevronRight color="var(--color-inputaccent)" size={15}/>
-                                    </div>
+                                    <ChevronRight size={18} className="mt-1 text-inputaccent transition-transform duration-300 group-hover:translate-x-1 group-hover:text-accent" />
+                                </div>
+                                <div className="mt-4">
+                                    <p className="text-xs font-medium uppercase tracking-wide text-inputaccent">Collective</p>
+                                    <h2 className="mt-1 text-lg font-semibold text-gray-900 transition-colors group-hover:text-accent">{collective.name}</h2>
+                                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600">{collective.description || 'A community bringing people together through shared events.'}</p>
+                                </div>
+                                <div className="mt-auto flex items-center gap-4 border-t border-inputaccent/15 pt-4 text-sm text-inputaccent">
+                                    <span className="inline-flex items-center gap-1.5"><Users size={15}/>{collective.collective_members?.length || 0} members</span>
+                                    <span>{collective.collective_followers?.length || 0} followers</span>
                                 </div>
                             </Link>);
         })}
