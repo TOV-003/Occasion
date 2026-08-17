@@ -32,7 +32,6 @@ export default function AuthContextProvider({ children }: {
             throw error;
         return data;
     }
-    ;
     async function loginWithGoogle() {
         toast.loading("Logging in with Google...", { duration: 1500 });
         const { error } = await supabase.auth.signInWithOAuth({
@@ -42,12 +41,10 @@ export default function AuthContextProvider({ children }: {
         if (error)
             throw error;
     }
-    ;
     async function logout() {
         await supabase.auth.signOut();
         setProfile(null);
     }
-    ;
     async function deleteAccount(): Promise<void> {
         if (!user)
             throw new Error('No user logged in');
@@ -81,7 +78,6 @@ export default function AuthContextProvider({ children }: {
         setProfile(data);
         return data;
     }
-    ;
     async function updateProfile(bio: string): Promise<Profile> {
         const { data, error } = await supabase
             .from('profiles')
@@ -108,7 +104,6 @@ export default function AuthContextProvider({ children }: {
         const { data } = supabase.storage.from('Banners').getPublicUrl(filePath);
         return data.publicUrl;
     }
-    ;
     async function createCollective(collective: {
         name: string;
         description: string;
@@ -159,7 +154,6 @@ export default function AuthContextProvider({ children }: {
         }
         return data;
     }
-    ;
     async function HandleEditEvent(eventId: string, event: EventFormData): Promise<Event> {
         const { event_dates, ...eventPayload } = event;
         const { data, error } = await supabase

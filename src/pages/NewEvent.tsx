@@ -38,6 +38,7 @@ export default function NewEvent() {
             navigate("/");
         }
     }, [user, authloading]);
+    
     useEffect(function () {
         if (authloading)
             return;
