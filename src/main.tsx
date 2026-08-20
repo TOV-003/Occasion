@@ -207,11 +207,13 @@ const router = createBrowserRouter([
                     const { id } = params;
                     if (!id)
                         throw new Error('Profile ID required');
-                    const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }] = await Promise.all([
+                    const today = new Date().toLocaleDateString('en-CA');
+                    const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }, { data: tickets, error: ticketsError }] = await Promise.all([
                         supabase.from('profiles').select('*').eq('id', id).single(),
                         supabase.from('events').select('*, event_dates(*)').eq('creator_id', id).order('created_at', { ascending: false }),
                         supabase.from('collectives').select('*, collective_members (*), collective_followers (*)').eq('owner_id', id).order('created_at', { ascending: false }),
-                        supabase.from('collective_members').select('collective_id').eq('user_id', id).eq('status', 'approved')
+                        supabase.from('collective_members').select('collective_id').eq('user_id', id).eq('status', 'approved'),
+                        supabase.from('tickets').select('event_id').eq('user_id', id).eq('status', 'approved')
                     ]);
                     if (profileError)
                         throw profileError;
@@ -221,6 +223,8 @@ const router = createBrowserRouter([
                         throw ownedError;
                     if (memberRowsError)
                         throw memberRowsError;
+                    if (ticketsError)
+                        throw ticketsError;
                     let memberCollectives: Collective[] = [];
                     const memberIds = (memberRows ?? []).map(function (row) {
                         return row.collective_id;
@@ -235,11 +239,29 @@ const router = createBrowserRouter([
                             throw collectivesError;
                         memberCollectives = collectives ?? [];
                     }
+                    let attendingEvents: Event[] = [];
+                    const eventIds = (tickets ?? []).map(function (ticket) {
+                        return ticket.event_id;
+                    });
+                    if (eventIds.length > 0) {
+                        const { data: events, error: eventsError } = await supabase
+                            .from('events')
+                            .select('*, event_dates(*)')
+                            .in('id', eventIds)
+                            .gte('event_dates.date', today)
+                            .order('created_at', { ascending: false });
+                        if (eventsError)
+                            throw eventsError;
+                        attendingEvents = (events ?? []).filter(function (event) {
+                            return event.creator_id !== id;
+                        });
+                    }
                     return {
                         profile,
                         createdEvents: createdEvents ?? [],
                         ownedCollectives: ownedCollectives ?? [],
                         memberCollectives,
+                        attendingEvents,
                     };
                 },
                 hydrateFallbackElement: <LoadingFallback />
