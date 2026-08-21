@@ -5,7 +5,7 @@ import './index.css';
 import App from './App.tsx';
 import { supabase } from './api/SupabaseClient';
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
-import type { Event, Collective, CollectiveWithRelations, Bookmarks } from './interfaces';
+import type { Event, Collective, CollectiveWithRelations } from './interfaces';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import About from './pages/About.tsx';

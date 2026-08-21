@@ -2,7 +2,7 @@ import { CalendarDays, MapPin, Users, Plus, QrCode, X, Bookmark, Eye } from 'luc
 import { Link, useLoaderData } from 'react-router-dom';
 import { useState } from 'react';
 import Layout from '../Layout';
-import type { Collective, Event, Profile as ProfileType, Tickets } from '../interfaces';
+import type { Collective, Event, Profile as ProfileType, Tickets, Bookmarks } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import QrCodeDisplay from '../components/QrCodeDisplay';
 export default function ProfilePage() {
@@ -13,6 +13,7 @@ export default function ProfilePage() {
         memberCollectives: Collective[];
         attendingEvents: Event[];
         tickets: Tickets[];
+        bookmarks: Bookmarks[];
         bookmarkedEvents: Event[];
         followedCollectives: Collective[];
     };
