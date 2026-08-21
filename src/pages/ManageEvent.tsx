@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users, QrCode, CheckSquare } from 'lucide-react';
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -6,6 +6,7 @@ import type { Event, EventFormData, Tickets, Profile, EventAccessStaff, EventSer
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../api/SupabaseClient';
+import QrCodeScanner from '../components/QrCodeScanner';
 export default function ManageEvent() {
     const { event, approvedTickets, pendingTickets, tickets, profiles } = useLoaderData() as {
         event: Event;
@@ -14,10 +15,11 @@ export default function ManageEvent() {
         tickets: Tickets[];
         profiles: Profile[];
     };
-    const { approveTicket, rejectTicket, user, HandleEditEvent, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff, handleRemoveAccessStaff } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleEditEvent, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff, handleRemoveAccessStaff, checkInTicket } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
-    const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff'>('tickets');
+    const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff' | 'checkin'>('tickets');
+    const [recentCheckIns, setRecentCheckIns] = useState<any[]>([]);
     const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
     const [accessStaff, setAccessStaff] = useState<EventAccessStaff[]>([]);
     const [accessStaffProfiles, setAccessStaffProfiles] = useState<Record<string, Profile>>({});
@@ -89,9 +91,27 @@ export default function ManageEvent() {
     useEffect(function () {
         function fetchData() {
             fetchStaff();
+            if (activeTab === 'checkin') {
+                fetchRecentCheckIns();
+            }
         }
         fetchData();
-    }, [event.id]);
+    }, [event.id, activeTab]);
+
+    async function fetchRecentCheckIns() {
+        const { data, error } = await supabase
+            .from('tickets')
+            .select('*, profiles(*), check_in_data')
+            .eq('event_id', event.id)
+            .eq('checked_in', true)
+            .order('check_in_data->time', { ascending: false })
+            .limit(20);
+
+        if (!error) {
+            setRecentCheckIns(data || []);
+        }
+    }
+
     function handleBack() {
         if (window.history.length > 1) {
             navigate(-1);
@@ -412,9 +432,84 @@ export default function ManageEvent() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Event details
                     </button>
+                    <button type="button" onClick={function () {
+                        return setActiveTab('checkin');
+                    }} className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'checkin'
+                        ? 'bg-accent text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                        <QrCode size={14} className="inline mr-1" />
+                        Check-In
+                    </button>
                 </div>
 
-                {activeTab === 'staff' ? (<div className="space-y-6">
+                {activeTab === 'checkin' ? (
+                    <div className="space-y-6">
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <QrCode size={20} className="text-blue-600 mt-0.5" />
+                                <div>
+                                    <h3 className="font-semibold text-blue-800">Check-In Mode</h3>
+                                    <p className="text-sm text-blue-700 mt-1">
+                                        Scan attendee QR codes to check them in. Only approved tickets for this event will be accepted.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <QrCodeScanner
+                                    eventId={event.id}
+                                    onCheckIn={async function(ticket) {
+                                        await checkInTicket(ticket.id, user!.id);
+                                        await fetchRecentCheckIns();
+                                        revalidator.revalidate();
+                                    }}
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900">Recent Check-Ins</h3>
+                                    <span className="text-xs text-gray-500">
+                                        {recentCheckIns.length} total
+                                    </span>
+                                </div>
+
+                                <div className="bg-white rounded-xl border border-inputaccent/20 p-4 space-y-3 max-h-[400px] overflow-y-auto">
+                                    {recentCheckIns.length > 0 ? (
+                                        recentCheckIns.map(function(checkIn) {
+                                            return (
+                                                <div key={checkIn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                    <div className="min-w-0">
+                                                        <p className="font-medium text-gray-900 truncate">
+                                                            {checkIn.profiles?.full_name || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(checkIn.check_in_data?.time).toLocaleTimeString()}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckSquare className="text-green-600" size={18} />
+                                                        {checkIn.check_in_data?.staffId === user?.id && (
+                                                            <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                                                                You
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-sm text-gray-500 text-center py-4">
+                                            No check-ins yet
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : activeTab === 'staff' ? (<div className="space-y-6">
                     {isStaffLoading && <p className="text-sm text-gray-500">Loading staff...</p>}
                     {staffLoadError && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{staffLoadError}</p>}
                     <div>

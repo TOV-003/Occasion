@@ -536,6 +536,60 @@ export default function AuthContextProvider({ children }: {
             throw error;
         toast.success('Access staff removed.');
     }
+
+    // QR CODE CHECK-IN FUNCTIONS
+    async function checkInTicket(ticketId: string, staffId: string): Promise<void> {
+        const { error } = await supabase
+            .from('tickets')
+            .update({
+                checked_in: true,
+                check_in_data: {
+                    time: new Date().toISOString(),
+                    staffId: staffId
+                }
+            })
+            .eq('id', ticketId)
+            .eq('status', 'approved');
+
+        if (error) {
+            toast.error('Failed to check in ticket');
+            throw error;
+        }
+        toast.success('Ticket checked in!');
+    }
+
+    async function undoCheckIn(ticketId: string): Promise<void> {
+        const { error } = await supabase
+            .from('tickets')
+            .update({
+                checked_in: false,
+                check_in_data: null
+            })
+            .eq('id', ticketId);
+
+        if (error) {
+            toast.error('Failed to undo check-in');
+            throw error;
+        }
+        toast.success('Check-in undone');
+    }
+
+    async function getTicketCheckInStatus(ticketId: string): Promise<{ checkedIn: boolean; time?: string; staffId?: string }> {
+        const { data: ticket, error } = await supabase
+            .from('tickets')
+            .select('checked_in, check_in_data')
+            .eq('id', ticketId)
+            .single();
+
+        if (error) throw error;
+
+        return {
+            checkedIn: ticket.checked_in || false,
+            time: ticket.check_in_data?.time,
+            staffId: ticket.check_in_data?.staffId
+        };
+    }
+
     return (<AuthContext.Provider value={{
             user,
             authloading,
@@ -571,7 +625,10 @@ export default function AuthContextProvider({ children }: {
             getServiceStaff,
             getAccessStaff,
             handleRemoveServiceStaff,
-            handleRemoveAccessStaff
+            handleRemoveAccessStaff,
+            checkInTicket,
+            undoCheckIn,
+            getTicketCheckInStatus
         }}>
             {children}
         </AuthContext.Provider>);

@@ -7,6 +7,7 @@ import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import type { Tickets, Event_collective, CollectiveWithRelations, Bookmarks } from '../interfaces';
 import { useNavigate } from 'react-router-dom';
+import QrCodeDisplay from '../components/QrCodeDisplay';
 export default function EventPage() {
     const { event, tickets, eventCollective, bookmarks } = useLoaderData() as {
         event: Event;
@@ -241,6 +242,13 @@ export default function EventPage() {
             : 'bg-accent text-white hover:bg-accent-dark cursor-pointer'}`}>
                                 {isFull ? 'Fully Occupied' : userHasTicket ? 'You have Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
+
+                            {userHasTicket && (
+                                <QrCodeDisplay
+                                    ticketId={tickets.find(t => t.user_id === user?.id && t.event_id === event.id && t.status === 'approved')!.id}
+                                    className="mt-4"
+                                />
+                            )}
 
                             <p className="text-sm text-gray-500 flex items-start gap-2">
                                 {event.auto_approve ? (<>

@@ -68,7 +68,7 @@ const router = createBrowserRouter([
                     const userId = session?.user.id;
                     const [eventResult, ticketsResult, collectiveLinkResult, bookmarksResult] = await Promise.all([
                         supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
-                        supabase.from('tickets').select('*').eq('event_id', id).in('status', ['approved', 'pending']),
+                        supabase.from('tickets').select('*, check_in_data').eq('event_id', id).in('status', ['approved', 'pending']),
                         supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle(),
                         userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
                     ]);
@@ -213,7 +213,7 @@ const router = createBrowserRouter([
                         supabase.from('events').select('*, event_dates(*)').eq('creator_id', id).order('created_at', { ascending: false }),
                         supabase.from('collectives').select('*, collective_members (*), collective_followers (*)').eq('owner_id', id).order('created_at', { ascending: false }),
                         supabase.from('collective_members').select('collective_id').eq('user_id', id).eq('status', 'approved'),
-                        supabase.from('tickets').select('event_id').eq('user_id', id).eq('status', 'approved')
+                        supabase.from('tickets').select('event_id, status, checked_in, check_in_data').eq('user_id', id).eq('status', 'approved')
                     ]);
                     if (profileError)
                         throw profileError;
@@ -289,7 +289,7 @@ const router = createBrowserRouter([
                             .single(),
                         supabase
                             .from('tickets')
-                            .select('*')
+                            .select('*, check_in_data')
                             .eq('user_id', userId),
                         supabase
                             .from('events')
@@ -390,7 +390,7 @@ const router = createBrowserRouter([
                     }
                     const { data: ticketRows, error: ticketRowsError } = await supabase
                         .from('tickets')
-                        .select('*')
+                        .select('*, check_in_data, profiles(id, full_name, avatar_url)')
                         .eq('event_id', id)
                         .order('created_at', { ascending: false });
                     if (ticketRowsError)

@@ -5,6 +5,8 @@ import {
     Plus,
     Ticket,
     Users,
+    QrCode,
+    X
 } from "lucide-react";
 import { UseAuth } from "../context/UseAuth";
 import Layout from "../Layout";
@@ -18,6 +20,7 @@ import type {
     Profile,
     Tickets,
 } from "../interfaces";
+import QrCodeDisplay from "../components/QrCodeDisplay";
 
 type DashboardView = "attending" | "hosting" | "collectives" | "history";
 
@@ -34,6 +37,7 @@ export default function Dashboard() {
         };
     const navigate = useNavigate();
     const [view, setView] = useState<DashboardView>("attending");
+    const [showingQrFor, setShowingQrFor] = useState<string | null>(null);
 
     const pastTickets = Tickets.filter(function (ticket) {
         const event = Attending.find(function (attendingEvent) {
@@ -115,15 +119,17 @@ export default function Dashboard() {
                     });
                     if (!event) return null;
                     return (
-                        <Link
+                        <div
                             key={ticket.id}
-                            to={`/event/${event.id}`}
-                            onClick={function () {
-                                toast.loading("Loading event...", { duration: 1200 });
-                            }}
                             className="group flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-3 transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between"
                         >
-                            <div className="flex min-w-0 items-center gap-3">
+                            <Link
+                                to={`/event/${event.id}`}
+                                onClick={function () {
+                                    toast.loading("Loading event...", { duration: 1200 });
+                                }}
+                                className="flex min-w-0 items-center gap-3"
+                            >
                                 <img
                                     src={event.banner_url}
                                     alt={event.title}
@@ -145,17 +151,33 @@ export default function Dashboard() {
                                             .join(" • ")}
                                     </p>
                                 </div>
+                            </Link>
+
+                            <div className="flex items-center gap-2">
+                                {ticket.status === 'approved' && !isPast && (
+                                    <button
+                                        onClick={function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setShowingQrFor(ticket.id);
+                                        }}
+                                        className="p-2 rounded-lg hover:bg-gray-100 text-accent transition-colors"
+                                        title="View QR Code"
+                                    >
+                                        <QrCode size={18} />
+                                    </button>
+                                )}
+                                <span
+                                    className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${isPast ? "bg-gray-100 text-gray-600" : ticket.status === "approved" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}
+                                >
+                                    {isPast
+                                        ? "Attended"
+                                        : ticket.status === "approved"
+                                            ? "Attending"
+                                            : "Pending"}
+                                </span>
                             </div>
-                            <span
-                                className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${isPast ? "bg-gray-100 text-gray-600" : ticket.status === "approved" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}
-                            >
-                                {isPast
-                                    ? "Attended"
-                                    : ticket.status === "approved"
-                                        ? "Attending"
-                                        : "Pending"}
-                            </span>
-                        </Link>
+                        </div>
                     );
                 })}
             </div>
@@ -413,6 +435,28 @@ export default function Dashboard() {
                         ))}
                 </section>
             </main>
+            {showingQrFor && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Ticket QR Code</h3>
+                            <button
+                                onClick={() => setShowingQrFor(null)}
+                                className="text-gray-400 hover:text-gray-600 p-1"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <QrCodeDisplay ticketId={showingQrFor} />
+                        <button
+                            onClick={() => setShowingQrFor(null)}
+                            className="mt-4 w-full py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 }

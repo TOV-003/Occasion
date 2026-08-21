@@ -45,5 +45,8 @@ interface AuthContextType {
     getAccessStaff(eventId: string): Promise<EventAccessStaff[]>;
     handleRemoveServiceStaff(staffId: string): Promise<void>;
     handleRemoveAccessStaff(staffId: string): Promise<void>;
+    checkInTicket(ticketId: string, staffId: string): Promise<void>;
+    undoCheckIn(ticketId: string): Promise<void>;
+    getTicketCheckInStatus(ticketId: string): Promise<{ checkedIn: boolean; time?: string; staffId?: string }>;
 }
 export const AuthContext = createContext<AuthContextType | null>(null);

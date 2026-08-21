@@ -34,6 +34,11 @@ export interface Tickets {
     user_id: string;
     status: string;
     created_at: string;
+    checked_in: boolean;
+    check_in_data: {
+        time?: string;
+        staffId?: string;
+    } | null;
 }
 export interface Collective {
     id: string;
