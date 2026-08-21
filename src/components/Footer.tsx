@@ -7,15 +7,15 @@ function Footer() {
                     <p>© {currentYear} Occasion. All rights reserved.</p>
                     <p className="mt-1">
                         Developed by{' '}
-                        <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="text-gray-800 hover:text-black font-medium">
+                        <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="text-gray-800 hover:text-black font-medium cursor-pointer">
                             Victor Toba-Ogunleye
                         </a>
                     </p>
                 </div>
                 <div className="flex gap-6">
-                    <Link to="/about" className="hover:text-black transition">About</Link>
-                    <a href="mailto:victortoba03@gmail.com" className="hover:text-black transition">Contact</a>
-                    <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="hover:text-black transition">
+                    <Link to="/about" className="hover:text-black transition cursor-pointer">About</Link>
+                    <a href="mailto:victortoba03@gmail.com" className="hover:text-black transition cursor-pointer">Contact</a>
+                    <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="hover:text-black transition cursor-pointer">
                         GitHub
                     </a>
                 </div>

@@ -237,7 +237,7 @@ export default function Home() {
                             showCategory(cat);
                         }} className={(filter === cat || (cat === 'All' && filter === ''))
                             ? 'bg-accent text-white px-2 py-0.5 rounded-2xl border border-accent-dark text-sm cursor-pointer'
-                            : ' text-inputaccent px-2 py-0.5 rounded-2xl border border-inputaccent text-sm cursor-pointer font-light'}>
+                            : 'text-inputaccent px-2 py-0.5 rounded-2xl border border-inputaccent text-sm cursor-pointer font-light'}>
                             {cat}
                         </button>);
                     })}
@@ -245,7 +245,7 @@ export default function Home() {
             </div>
             <hr className="border-b-1/2 w-full self-center border-inputaccent/50" />
             {filter === '' && query === '' &&
-                <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start" onClick={function () {
+                <Link to={`/event/${featuredEvents[randomNumber].event_id}`} className="flex flex-col items-center justify-center gap-4 w-full lg:items-start cursor-pointer" onClick={function () {
                     return toast.loading("Loading Event...", { duration: 1500 });
                 }}>
                     <h2 className="text-xl">Featured</h2>
@@ -281,7 +281,7 @@ export default function Home() {
                             : results;
                         return (<>
                             {filteredResults.slice(0, visibleCount).map(function (ev: Event) {
-                                return (<Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent relative" onClick={function () {
+                                return (<Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl w-84 overflow-hidden border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent relative cursor-pointer" onClick={function () {
                                     return toast.loading("Loading Event...", { duration: 1500 });
                                 }}>
                                     <div className="relative w-full aspect-square overflow-hidden">
@@ -353,7 +353,7 @@ export default function Home() {
                             })}
                             {searching && filteredResults.length === 0 && (<p className="text-center text-sm text-gray-500">Loading events...</p>)}
                             {!searching && filteredResults.length === 0 && (<p className="text-center text-sm text-gray-500">No events found</p>)}
-                            {hasMore && (<button onClick={loadMore} disabled={isLoadingMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full">
+                            {hasMore && (<button onClick={loadMore} disabled={isLoadingMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full cursor-pointer">
                                 {isLoadingMore ? 'Loading...' : 'Load more'}
                             </button>)}
                         </>);
@@ -368,7 +368,7 @@ export default function Home() {
                 </div>
                 <div className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {collectives.map(function (collective: CollectiveWithRelations) {
-                        return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md" onClick={function () {
+                        return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md cursor-pointer" onClick={function () {
                             return toast.loading("Loading Collective...", { duration: 1500 });
                         }}>
                             <div className="flex items-start justify-between gap-3">
@@ -388,7 +388,7 @@ export default function Home() {
                             </div>
                         </Link>);
                     })}
-                    <Link to="/collectives" className="text-center text-sm text-gray-500 hover:text-accent transition-colors w-full">View all Collectives</Link>
+                    <Link to="/collectives" className="text-center text-sm text-gray-500 hover:text-accent transition-colors w-full cursor-pointer">View all Collectives</Link>
                 </div>
             </div>
         </main>

@@ -38,12 +38,12 @@ function MiniCalendar({ events }: {
                 <div className="flex gap-1">
                     <button onClick={function () {
             return setViewDate(new Date(year, month - 1, 1));
-        }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors text-xs">
+        }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors text-xs cursor-pointer">
                         ‹
                     </button>
                     <button onClick={function () {
             return setViewDate(new Date(year, month + 1, 1));
-        }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors text-xs">
+        }} className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors text-xs cursor-pointer">
                         ›
                     </button>
                 </div>
@@ -193,7 +193,7 @@ export default function CollectivePage() {
     return (<Layout>
             <div className="container mx-auto px-4 py-8 lg:px-8 lg:py-12">
                 <div>
-                    <button type="button" onClick={handleBack} className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6">
+                    <button type="button" onClick={handleBack} className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6 cursor-pointer">
                         <ChevronLeft size={16}/>
                         {fromEventId ? 'Back to previous event' : 'Back to previous page'}
                     </button>
@@ -227,7 +227,7 @@ export default function CollectivePage() {
                     <div className="flex gap-2 shrink-0">
                         {(isOwner || isMember) && (<button type="button" onClick={function () {
                 return navigate('/new-event', { state: { collectiveId: collective.id } });
-            }} className="flex cursor-pointer items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm hover:bg-accent-dark transition-colors shadow-sm">
+            }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-sm hover:bg-accent-dark transition-colors shadow-sm cursor-pointer">
                                 <Plus size={16}/>
                                 New event
                             </button>)}
@@ -251,12 +251,12 @@ export default function CollectivePage() {
                             <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
                                 <button onClick={function () {
             return setView("grid");
-        }} className={`p-1.5 rounded transition-colors ${view === "grid" ? "bg-white shadow-sm text-accent" : "text-gray-500 hover:text-gray-700"}`}>
+        }} className={`p-1.5 rounded transition-colors ${view === "grid" ? "bg-white shadow-sm text-accent" : "text-gray-500 hover:text-gray-700"} cursor-pointer`}>
                                     <Grid3X3 size={16}/>
                                 </button>
                                 <button onClick={function () {
             return setView("list");
-        }} className={`p-1.5 rounded transition-colors ${view === "list" ? "bg-white shadow-sm text-accent" : "text-gray-500 hover:text-gray-700"}`}>
+        }} className={`p-1.5 rounded transition-colors ${view === "list" ? "bg-white shadow-sm text-accent" : "text-gray-500 hover:text-gray-700"} cursor-pointer`}>
                                     <List size={16}/>
                                 </button>
                             </div>
@@ -270,7 +270,7 @@ export default function CollectivePage() {
                     return t.event_id === ev.id && t.status === "approved";
                 }).length;
                 const isFull = registered === ev.max_attendees;
-                return (<Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:shadow-lg hover:border-accent">
+                return (<Link to={`/event/${ev.id}`} key={ev.id} className="group rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:shadow-lg hover:border-accent cursor-pointer">
                                             <div className="relative w-full aspect-square overflow-hidden">
                                                 <img src={ev.banner_url} alt={ev.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"/>
                                                 {bookmarks.filter(function (b: Bookmarks) {
@@ -350,7 +350,7 @@ export default function CollectivePage() {
                 const registered = tickets.filter(function (t) {
                     return t.event_id === ev.id && t.status === "approved";
                 }).length;
-                return (<Link to={`/event/${ev.id}`} key={ev.id} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-inputaccent/20 hover:shadow-md hover:border-accent transition-all group">
+                return (<Link to={`/event/${ev.id}`} key={ev.id} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-inputaccent/20 hover:shadow-md hover:border-accent transition-all group cursor-pointer">
                                             <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
                                                 <img src={ev.banner_url} alt={ev.title} className="w-full h-full object-cover"/>
                                             </div>
@@ -387,7 +387,7 @@ export default function CollectivePage() {
                             e.preventDefault();
                             e.stopPropagation();
                             handleBookMark(ev.id);
-                        }} className="z-0 group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
+                        }} className="z-0 cursor-pointer group-hover:scale-140 transition-transform duration-300 p-2 bg-inputbg rounded-md">
                                                 <BookmarkOff color="var(--color-accent)" size={20}/>
                                             </div>}
                                             <div className="text-xs text-gray-500">
@@ -409,7 +409,7 @@ export default function CollectivePage() {
             const fullName = profile?.full_name || 'Member';
             const initial = fullName.charAt(0).toUpperCase();
             const isOwnerMember = collective.owner_id === member.user_id;
-            return (<Link key={member.id} to={`/profile/${member.user_id}`} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent/5">
+            return (<Link key={member.id} to={`/profile/${member.user_id}`} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-accent/5 cursor-pointer">
                                             <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center text-xs font-bold shrink-0">
                                                 {initial}
                                             </div>
@@ -426,7 +426,7 @@ export default function CollectivePage() {
                 return setShowAllMembers(function (s) {
                     return !s;
                 });
-            }} className="text-xs text-gray-400 mt-3 hover:underline">
+            }} className="text-xs text-gray-400 mt-3 hover:underline cursor-pointer">
                                     {showAllMembers ? 'Show less' : `+${collectiveMembers.length - 5} more members`}
                                 </button>)}
                         </div>

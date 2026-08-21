@@ -132,7 +132,7 @@ export default function Collectives() {
 
                     <div className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {collectives.map(function (collective) {
-            return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md" onClick={function () {
+            return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md cursor-pointer" onClick={function () {
                     return toast.loading("Loading Collective...", { duration: 1500 });
                 }}>
                                 <div className="flex items-start justify-between gap-3">
@@ -157,7 +157,7 @@ export default function Collectives() {
                                 No collectives found
                             </p>)}
 
-                        {hasMore && (<button onClick={loadMore} disabled={isLoadingMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full">
+                        {hasMore && (<button onClick={loadMore} disabled={isLoadingMore} className="text-center text-sm text-gray-500 hover:text-accent transition-colors disabled:opacity-50 w-full cursor-pointer">
                                 {isLoadingMore ? 'Loading...' : 'Load more'}
                             </button>)}
                     </div>

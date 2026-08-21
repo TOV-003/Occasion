@@ -89,7 +89,7 @@ export default function NewCollective() {
                     <div>
                         <button type="button" onClick={function () {
             return setFormData({ ...formData, auto_approve: !formData.auto_approve });
-        }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors">
+        }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors cursor-pointer">
                             {!formData.auto_approve ? (<CheckSquare size={18} className="text-accent"/>) : (<Square size={18}/>)}
                             Auto-approve new members
                         </button>
@@ -99,10 +99,10 @@ export default function NewCollective() {
                     </div>
 
                     <div className="flex flex-wrap gap-4 pt-4 border-t border-inputaccent/20">
-                        <button type="submit" className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium">
+                        <button type="submit" className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium cursor-pointer">
                             Create Collective
                         </button>
-                        <button type="button" className="border border-inputaccent text-inputaccent px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors" onClick={function () {
+                        <button type="button" className="border border-inputaccent text-inputaccent px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors cursor-pointer" onClick={function () {
             return navigate('/collectives');
         }}>
                             Cancel

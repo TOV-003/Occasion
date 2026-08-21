@@ -37,13 +37,13 @@ export default function ErrorPage() {
                     <h1 className="text-3xl font-bold text-gray-900 mb-3">{title}</h1>
                     <p className="text-lg text-gray-600 mb-8 leading-relaxed">{description}</p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <Link to="/" className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-dark transition-colors">
+                        <Link to="/" className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-dark transition-colors cursor-pointer">
                             <Home size={18}/>
                             Go Home
                         </Link>
                         <button onClick={function () {
             return window.location.reload();
-        }} className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors">
+        }} className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer">
                             <RefreshCw size={18}/>
                             Try Again
                         </button>

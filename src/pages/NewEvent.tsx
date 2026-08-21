@@ -253,7 +253,7 @@ export default function NewEvent() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                         {categories.map(function (cat) {
-                            return (<button key={cat} type="button" className={formData.category !== cat ? "px-3 py-1 rounded-full border border-inputaccent text-inputaccent text-sm font-light hover:border-accent hover:text-accent transition-colors" : "px-3 py-1 rounded-full border border-inputaccent bg-accent text-white text-sm font-light transition-colors"} onClick={function () {
+                            return (<button key={cat} type="button" className={formData.category !== cat ? "px-3 py-1 rounded-full border border-inputaccent text-inputaccent text-sm font-light hover:border-accent hover:text-accent transition-colors cursor-pointer" : "px-3 py-1 rounded-full border border-inputaccent bg-accent text-white text-sm font-light transition-colors cursor-pointer"} onClick={function () {
                                 return changeCategory(cat);
                             }}>
                                 {cat}
@@ -300,7 +300,7 @@ export default function NewEvent() {
                         <input type="date" value={selectedDate} onChange={function (e) {
                             return setSelectedDate(e.target.value);
                         }} className="bg-inputbg/30 border border-inputaccent rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" />
-                        <button type="button" onClick={addDate} disabled={!selectedDate} className={`flex items-center gap-1 text-sm transition-colors ${selectedDate ? 'text-accent hover:underline' : 'text-inputaccent/50 cursor-not-allowed'}`}>
+                        <button type="button" onClick={addDate} disabled={!selectedDate} className={`flex items-center gap-1 text-sm transition-colors cursor-pointer ${selectedDate ? 'text-accent hover:underline' : 'text-inputaccent/50 cursor-not-allowed'}`}>
                             <Plus size={16} /> Add date
                         </button>
                     </div>
@@ -311,7 +311,7 @@ export default function NewEvent() {
                                 {formatDate(date)}
                                 <button type="button" onClick={function () {
                                     return removeDate(date);
-                                }} className="hover:text-red-500 transition-colors">
+                                }} className="hover:text-red-500 transition-colors cursor-pointer">
                                     x
                                 </button>
                             </span>);
@@ -341,7 +341,7 @@ export default function NewEvent() {
                                 ...formData,
                                 max_attendees: null
                             });
-                        }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors">
+                        }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors cursor-pointer">
                             {unlimitedAttendees ? (<CheckSquare size={18} className="text-accent" />) : (<Square size={18} />)}
                             Unlimited
                         </button>
@@ -367,7 +367,7 @@ export default function NewEvent() {
                 <div>
                     <button type="button" onClick={function () {
                         return setFormData({ ...formData, auto_approve: !formData.auto_approve });
-                    }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors">
+                    }} className="flex items-center gap-2 text-sm text-inputaccent hover:text-accent transition-colors cursor-pointer">
                         {!formData.auto_approve ? (<CheckSquare size={18} className="text-accent" />) : (<Square size={18} />)}
                         Require manual approval for ticket purchases
                     </button>
@@ -381,11 +381,11 @@ export default function NewEvent() {
 
                     {!bannerPreview ? (<div onClick={function () {
                         return fileInputRef.current?.click();
-                    }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${isDragging
-                        ? 'border-accent bg-accent/10'
+                    }} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
+                        ? 'border-accent bg-accent/10 cursor-pointer'
                         : bannerError
-                            ? 'border-red-400 bg-red-50'
-                            : 'border-inputaccent/50 hover:border-accent'}`}>
+                            ? 'border-red-400 bg-red-50 cursor-pointer'
+                            : 'border-inputaccent/50 hover:border-accent cursor-pointer'}`}>
                         <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleFileInput} className="hidden" />
                         <Upload size={32} className="mx-auto text-inputaccent" />
                         <p className="text-sm text-inputaccent mt-2">Click or drag to upload a banner image</p>
@@ -393,17 +393,17 @@ export default function NewEvent() {
                         {bannerError && (<p className="text-sm text-red-500 mt-2">{bannerError}</p>)}
                     </div>) : (<div className="relative rounded-lg overflow-hidden border border-inputaccent/20">
                         <img src={bannerPreview} alt="Banner preview" className="w-full aspect-square object-cover" />
-                        <button type="button" onClick={removeImage} className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors">
+                        <button type="button" onClick={removeImage} className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors cursor-pointer">
                             <X size={18} />
                         </button>
                     </div>)}
                 </div>
 
                 <div className="flex flex-wrap gap-4 pt-4 border-t border-inputaccent/20">
-                    <button type="submit" className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium">
+                    <button type="submit" className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium cursor-pointer">
                         Create Event
                     </button>
-                    <button type="button" className="border border-inputaccent text-inputaccent px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors" onClick={function () {
+                    <button type="button" className="border border-inputaccent text-inputaccent px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors cursor-pointer" onClick={function () {
                         return navigate('/');
                     }}>
                         Cancel

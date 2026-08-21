@@ -120,7 +120,7 @@ export default function EventPage() {
     }
     return (<Layout>
             <div className="container mx-auto px-4 py-8 lg:px-8 lg:py-12">
-                <button type="button" onClick={handleBack} className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6">
+                <button type="button" onClick={handleBack} className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors mb-6 cursor-pointer">
                     <ChevronLeft size={16}/>
                     Back to previous page
                 </button>
@@ -202,7 +202,7 @@ export default function EventPage() {
                                 </div>)}
                         </div>
 
-                        {eventCollective && (<Link to={`/collective/${eventCollective.id}`} state={{ fromEvent: event.id }} className="mt-4" onClick={function () {
+                        {eventCollective && (<Link to={`/collective/${eventCollective.id}`} state={{ fromEvent: event.id }} className="mt-4 cursor-pointer" onClick={function () {
                 return toast.loading("Loading Collective...", { duration: 1500 });
             }}>
                                 <h3 className="text-xl font-semibold text-gray-800 mb-3">Part of</h3>
@@ -237,9 +237,9 @@ export default function EventPage() {
 
                             <button onClick={function () {
             return handleCreateTicket(event.id);
-        }} disabled={isFull || isCreator || userHasTicket || userTicketIsPendingCheck} className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md ${isFull || isCreator || userHasTicket || userTicketIsPendingCheck
+        }} disabled={isFull || isCreator || userHasTicket || userTicketIsPendingCheck} className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md cursor-pointer ${isFull || isCreator || userHasTicket || userTicketIsPendingCheck
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-accent text-white hover:bg-accent-dark cursor-pointer'}`}>
+            : 'bg-accent text-white hover:bg-accent-dark'}`}>
                                 {isFull ? 'Fully Occupied' : userHasTicket ? 'You have Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
                             </button>
 

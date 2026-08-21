@@ -91,10 +91,10 @@ export default function About() {
                         <h3 className="mt-4 text-xl font-semibold">Victor Toba-Ogunleye</h3>
                         <p className="text-sm text-inputaccent">Developer</p>
                         <div className="mt-4 flex gap-4">
-                            <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-inputaccent/20 px-4 py-2 text-sm text-inputaccent transition hover:border-accent hover:text-accent">
+                            <a href="https://github.com/TOV-003" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-inputaccent/20 px-4 py-2 text-sm text-inputaccent transition hover:border-accent hover:text-accent cursor-pointer">
                                 GitHub
                             </a>
-                            <a href="mailto:victortoba03@gmail.com" className="flex items-center gap-2 rounded-full border border-inputaccent/20 px-4 py-2 text-sm text-inputaccent transition hover:border-accent hover:text-accent">
+                            <a href="mailto:victortoba03@gmail.com" className="flex items-center gap-2 rounded-full border border-inputaccent/20 px-4 py-2 text-sm text-inputaccent transition hover:border-accent hover:text-accent cursor-pointer">
                                 <Mail size={16}/>
                                 Contact
                             </a>

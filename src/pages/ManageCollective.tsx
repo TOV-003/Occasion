@@ -65,7 +65,7 @@ export default function ManageCollective() {
         }
     }
     function renderEventCard(event: Event, status: 'approved' | 'pending') {
-        return (<Link to={`/event/${event.id}`} key={event.id} className="group block rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md">
+        return (<Link to={`/event/${event.id}`} key={event.id} className="group block rounded-xl overflow-hidden border border-inputaccent/20 bg-white transition-all duration-300 hover:border-accent hover:shadow-md cursor-pointer">
             <div className="flex flex-col sm:flex-row">
                 <div className="h-32 w-full shrink-0 overflow-hidden sm:w-40">
                     <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"/>
@@ -107,14 +107,14 @@ export default function ManageCollective() {
                     eventClick.preventDefault();
                     eventClick.stopPropagation();
                     handleEventDecision(event.id, 'approved');
-                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark">
+                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
                                 Approve
                             </button>
                             <button type="button" onClick={function (eventClick) {
                     eventClick.preventDefault();
                     eventClick.stopPropagation();
                     handleEventDecision(event.id, 'rejected');
-                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600">
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600 cursor-pointer">
                                 Reject
                             </button>
                         </div>)}
@@ -133,7 +133,7 @@ export default function ManageCollective() {
             .join('')
             .slice(0, 2)
             .toUpperCase();
-        return (<Link to={`/profile/${member.user_id}`} key={member.id} className="flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-4 shadow-sm transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between">
+        return (<Link to={`/profile/${member.user_id}`} key={member.id} className="flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-4 shadow-sm transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between cursor-pointer">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
                         {initials}
@@ -156,14 +156,14 @@ export default function ManageCollective() {
                     event.preventDefault();
                     event.stopPropagation();
                     handleMemberDecision(member.id, 'approved');
-                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark">
+                }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
                                 Approve
                             </button>
                             <button type="button" onClick={function (event) {
                     event.preventDefault();
                     event.stopPropagation();
                     handleMemberDecision(member.id, 'rejected');
-                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600">
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600 cursor-pointer">
                                 Reject
                             </button>
                         </div>)}
@@ -173,7 +173,7 @@ export default function ManageCollective() {
     return (<Layout>
             <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:px-8 lg:py-12">
                 <div className="flex flex-col gap-4">
-                    <button type="button" onClick={handleBack} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors">
+                    <button type="button" onClick={handleBack} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors cursor-pointer">
                         <ArrowLeft size={16}/>
                         Back to previous page
                     </button>
@@ -247,13 +247,13 @@ export default function ManageCollective() {
                     <div className="mb-4 flex items-center gap-2 rounded-lg bg-gray-100 p-1">
                         <button type="button" onClick={function () {
             return setActiveTab('events');
-        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'events' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'events' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                             <CalendarDays size={16}/>
                             Events
                         </button>
                         <button type="button" onClick={function () {
             return setActiveTab('members');
-        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'members' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+        }} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'members' ? 'bg-white text-accent shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
                             <Users size={16}/>
                             Members
                         </button>

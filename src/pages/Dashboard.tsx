@@ -103,7 +103,7 @@ export default function Dashboard() {
                     {!isPast && (
                         <Link
                             to="/"
-                            className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                            className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                         >
                             Browse events
                         </Link>
@@ -161,7 +161,7 @@ export default function Dashboard() {
                                             e.stopPropagation();
                                             setShowingQrFor(ticket.id);
                                         }}
-                                        className="p-2 rounded-lg hover:bg-gray-100 text-accent transition-colors"
+                                        className="p-2 rounded-lg hover:bg-gray-100 text-accent transition-colors cursor-pointer"
                                         title="View QR Code"
                                     >
                                         <QrCode size={18} />
@@ -191,7 +191,7 @@ export default function Dashboard() {
             action: (
                 <Link
                     to="/"
-                    className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                    className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                 >
                     Browse events
                 </Link>
@@ -203,7 +203,7 @@ export default function Dashboard() {
             action: (
                 <Link
                     to="/new-event"
-                    className="inline-flex items-center gap-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                    className="inline-flex items-center gap-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                 >
                     <Plus size={16} /> New event
                 </Link>
@@ -215,7 +215,7 @@ export default function Dashboard() {
             action: (
                 <Link
                     to="/new-collective"
-                    className="inline-flex items-center gap-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+                    className="inline-flex items-center gap-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                 >
                     <Plus size={16} /> New collective
                 </Link>
@@ -253,7 +253,7 @@ export default function Dashboard() {
                     </div>
                     <Link
                         to="/settings"
-                        className="w-fit rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-accent hover:text-accent"
+                        className="w-fit rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer"
                     >
                         Edit profile
                     </Link>
@@ -349,7 +349,7 @@ export default function Dashboard() {
                                         <Link
                                             to={`/manage-event/${event.id}`}
                                             key={event.id}
-                                            className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-all hover:border-accent hover:shadow-md"
+                                            className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-all hover:border-accent hover:shadow-md cursor-pointer"
                                         >
                                             <div className="h-40 overflow-hidden">
                                                 <img
@@ -400,7 +400,7 @@ export default function Dashboard() {
                                         <Link
                                             to={`/collective/${collective.id}`}
                                             key={collective.id}
-                                            className="group relative rounded-xl border border-inputaccent/20 bg-white p-4 transition-all hover:border-accent hover:shadow-md"
+                                            className="group relative rounded-xl border border-inputaccent/20 bg-white p-4 transition-all hover:border-accent hover:shadow-md cursor-pointer"
                                         >
                                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
                                                 {collective.name.charAt(0).toUpperCase()}
@@ -442,7 +442,7 @@ export default function Dashboard() {
                             <h3 className="text-lg font-semibold">Ticket QR Code</h3>
                             <button
                                 onClick={() => setShowingQrFor(null)}
-                                className="text-gray-400 hover:text-gray-600 p-1"
+                                className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
                             >
                                 <X size={20} />
                             </button>
@@ -450,7 +450,7 @@ export default function Dashboard() {
                         <QrCodeDisplay ticketId={showingQrFor} />
                         <button
                             onClick={() => setShowingQrFor(null)}
-                            className="mt-4 w-full py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
+                            className="mt-4 w-full py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
                         >
                             Close
                         </button>

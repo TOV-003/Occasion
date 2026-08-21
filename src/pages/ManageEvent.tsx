@@ -323,7 +323,7 @@ export default function ManageEvent() {
             .slice(0, 2)
             .toUpperCase();
         return (<div key={ticket.id} className="flex flex-col gap-3 rounded-xl border border-inputaccent/20 bg-white p-4 shadow-sm transition-colors hover:border-accent hover:bg-accent/5 sm:flex-row sm:items-center sm:justify-between">
-            <Link to={`/profile/${ticket.user_id}`} className="flex items-center gap-3">
+            <Link to={`/profile/${ticket.user_id}`} className="flex items-center gap-3 cursor-pointer">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
                     {initials}
                 </div>
@@ -343,12 +343,12 @@ export default function ManageEvent() {
                 {status === 'pending' && (<div className="flex gap-2">
                     <button type="button" onClick={function () {
                         return handleTicketDecision(ticket.id, 'approved');
-                    }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark">
+                    }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
                         Approve
                     </button>
                     <button type="button" onClick={function () {
                         return handleTicketDecision(ticket.id, 'rejected');
-                    }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600">
+                    }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600 cursor-pointer">
                         Reject
                     </button>
                 </div>)}
@@ -358,7 +358,7 @@ export default function ManageEvent() {
     return (<Layout>
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:px-8 lg:py-12">
             <div className="flex flex-col gap-4">
-                <button type="button" onClick={handleBack} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors">
+                <button type="button" onClick={handleBack} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-gray-500 hover:text-accent transition-colors cursor-pointer">
                     <ArrowLeft size={16} />
                     Back to previous page
                 </button>
@@ -413,28 +413,28 @@ export default function ManageEvent() {
                 <div className="mb-5 flex gap-2 border-b border-inputaccent/20 pb-3">
                     <button type="button" onClick={function () {
                         return setActiveTab('tickets');
-                    }} className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'tickets'
+                    }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'tickets'
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Tickets
                     </button>
                     <button type="button" onClick={function () {
                         return setActiveTab('staff');
-                    }} className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'staff'
+                    }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'staff'
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Staff
                     </button>
                     <button type="button" onClick={function () {
                         return setActiveTab('details');
-                    }} className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'details'
+                    }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'details'
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Event details
                     </button>
                     <button type="button" onClick={function () {
                         return setActiveTab('checkin');
-                    }} className={`cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === 'checkin'
+                    }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'checkin'
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         <QrCode size={14} className="inline mr-1" />
@@ -548,7 +548,7 @@ export default function ManageEvent() {
                                     <option value="Transportation & Valet">Transportation & Valet</option>
                                     <option value="Ticketing & Promotion">Ticketing & Promotion</option>
                                 </select>
-                                <button type="button" onClick={handleAddServiceStaff} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark">
+                                <button type="button" onClick={handleAddServiceStaff} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
                                     Add
                                 </button>
                             </div>
@@ -562,7 +562,7 @@ export default function ManageEvent() {
                                         <p className="text-xs text-gray-500">{staff.phone}</p>
                                         <p className="text-xs text-gray-500">{staff.role}</p>
                                     </div>
-                                    <button type="button" className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50" onClick={function () {
+                                    <button type="button" className="rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 cursor-pointer" onClick={function () {
                                         return handleRemoveEventServiceStaff(staff.id);
                                     }}>
                                         Remove
@@ -594,7 +594,7 @@ export default function ManageEvent() {
                                     {isAccessStaffSearching ? (<p className="px-3 py-2 text-sm text-gray-500">Searching accounts...</p>) : (accessStaffSearchResults.map(function (profile) {
                                         return (<button key={profile.id} type="button" onClick={function () {
                                             return handleSelectAccessStaff(profile);
-                                        }} className="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-accent/10">
+                                        }} className="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-accent/10 cursor-pointer">
                                             {profile.full_name}
                                         </button>);
                                     }))}
@@ -606,7 +606,7 @@ export default function ManageEvent() {
                                 <p className="text-sm text-gray-600">
                                     {selectedAccessStaff ? `Selected: ${selectedAccessStaff.full_name}` : 'Choose an account to give event access.'}
                                 </p>
-                                <button type="button" onClick={handleAssignAccessStaff} disabled={!selectedAccessStaff || isAssigningAccessStaff} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50">
+                                <button type="button" onClick={handleAssignAccessStaff} disabled={!selectedAccessStaff || isAssigningAccessStaff} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
                                     {isAssigningAccessStaff ? 'Assigning...' : 'Assign'}
                                 </button>
                             </div>
@@ -625,7 +625,7 @@ export default function ManageEvent() {
                                     .slice(0, 2)
                                     .toUpperCase();
                                 return (<div key={staff.id} className="flex items-center justify-between rounded-lg border border-inputaccent/20 bg-white p-4">
-                                    <Link to={`/profile/${staff.user_id}`} className="flex items-center gap-3 transition-opacity hover:opacity-75">
+                                    <Link to={`/profile/${staff.user_id}`} className="flex items-center gap-3 transition-opacity hover:opacity-75 cursor-pointer">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">
                                             {initials}
                                         </div>
@@ -634,7 +634,7 @@ export default function ManageEvent() {
                                             <p className="text-xs text-gray-500">Access staff</p>
                                         </div>
                                     </Link>
-                                    <button type="button" className="cursor-pointer rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50" onClick={function () {
+                                    <button type="button" className="rounded-lg border border-red-300 px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 cursor-pointer" onClick={function () {
                                         return handleRemoveEventAccessStaff(staff.id);
                                     }}>
                                         Remove
@@ -653,12 +653,12 @@ export default function ManageEvent() {
                         {pendingTickets.length > 0 && (<div className="flex gap-2">
                             <button type="button" onClick={function () {
                                 return handleBulkTicketDecision('approved');
-                            }} disabled={isBulkUpdatingTickets} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+                            }} disabled={isBulkUpdatingTickets} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
                                 Approve all
                             </button>
                             <button type="button" onClick={function () {
                                 return handleBulkTicketDecision('rejected');
-                            }} disabled={isBulkUpdatingTickets} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 disabled:cursor-not-allowed disabled:opacity-50">
+                            }} disabled={isBulkUpdatingTickets} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
                                 Reject all
                             </button>
                         </div>)}
@@ -718,13 +718,13 @@ export default function ManageEvent() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        <Link to={`/event/${event.id}`} className="rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:text-accent">
+                        <Link to={`/event/${event.id}`} className="rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
                             View public event
                         </Link>
-                        <Link to={`/dashboard`} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
+                        <Link to={`/dashboard`} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark cursor-pointer">
                             Back to dashboard
                         </Link>
-                        <button type="button" onClick={openEditEventModal} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
+                        <button type="button" onClick={openEditEventModal} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark cursor-pointer">
                             Edit event
                         </button>
                     </div>
@@ -737,7 +737,7 @@ export default function ManageEvent() {
                     <h2 id="edit-event-title" className="text-xl font-bold text-gray-900">Edit event</h2>
                     <button type="button" onClick={function () {
                         return setIsEditModalOpen(false);
-                    }} className="text-sm font-medium text-gray-500 hover:text-gray-900">Cancel</button>
+                    }} className="text-sm font-medium text-gray-500 hover:text-gray-900 cursor-pointer">Cancel</button>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <label className="text-sm font-medium text-gray-700 sm:col-span-2">Title
@@ -789,7 +789,7 @@ export default function ManageEvent() {
                         <input type="date" value={editDate} onChange={function (event) {
                             return setEditDate(event.target.value);
                         }} className="rounded-lg border border-inputaccent/30 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
-                        <button type="button" onClick={addEditDate} disabled={!editDate} className="rounded-lg border border-inputaccent/30 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50">Add date</button>
+                        <button type="button" onClick={addEditDate} disabled={!editDate} className="rounded-lg border border-inputaccent/30 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">Add date</button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                         {editForm.event_dates.map(function (date) {
@@ -803,7 +803,7 @@ export default function ManageEvent() {
                                             })
                                         });
                                     });
-                                }} aria-label={`Remove ${date}`}>×</button>
+                                }} aria-label={`Remove ${date}`} className="cursor-pointer">×</button>
                             </span>);
                         })}
                     </div>
@@ -819,8 +819,8 @@ export default function ManageEvent() {
                 <div className="mt-6 flex justify-end gap-3">
                     <button type="button" onClick={function () {
                         return setIsEditModalOpen(false);
-                    }} className="rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700">Cancel</button>
-                    <button type="submit" disabled={isSavingEvent} className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{isSavingEvent ? 'Saving...' : 'Save changes'}</button>
+                    }} className="rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer">Cancel</button>
+                    <button type="submit" disabled={isSavingEvent} className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">{isSavingEvent ? 'Saving...' : 'Save changes'}</button>
                 </div>
             </form>
         </div>)}

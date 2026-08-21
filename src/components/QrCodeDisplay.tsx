@@ -29,14 +29,14 @@ export default function QrCodeDisplay({ ticketId, className = '' }: QrCodeDispla
                 <div className="flex gap-1">
                     <button
                         onClick={() => setShowQr(!showQr)}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 cursor-pointer"
                         title={showQr ? 'Hide' : 'Show'}
                     >
                         {showQr ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                     <button
                         onClick={downloadQrCode}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 cursor-pointer"
                         title="Download"
                     >
                         <Download size={16} />

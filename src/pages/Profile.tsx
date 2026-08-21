@@ -40,7 +40,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {isOwnProfile && (<Link to="/settings" className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:bg-accent hover:text-white">
+                    {isOwnProfile && (<Link to="/settings" className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:bg-accent hover:text-white cursor-pointer">
                         <Plus size={15} />
                         View settings
                     </Link>)}
@@ -112,7 +112,7 @@ export default function ProfilePage() {
                         No {showPast ? 'past' : 'future'} events created yet.
                     </div>) : (<div className="grid gap-4 md:grid-cols-2">
                         {filteredCreatedEvents.map(function (event) {
-                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent cursor-pointer">
                                 <div className="h-36 overflow-hidden">
                                     <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                 </div>
@@ -153,7 +153,7 @@ export default function ProfilePage() {
                             const userTicket = tickets?.find(t => t.user_id === profile.id && t.event_id === event.id);
                             return (
                                 <div key={event.id} className="group rounded-xl border border-inputaccent/20 bg-white overflow-hidden transition-colors duration-300 hover:border-accent">
-                                    <Link to={`/event/${event.id}`} className="block">
+                                    <Link to={`/event/${event.id}`} className="block cursor-pointer">
                                         <div className="h-36 overflow-hidden">
                                             <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                         </div>
@@ -182,7 +182,7 @@ export default function ProfilePage() {
                                                     e.preventDefault();
                                                     setShowingQrFor(userTicket.id);
                                                 }}
-                                                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                                                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors cursor-pointer"
                                             >
                                                 <QrCode size={16} />
                                                 <span className="text-sm font-medium">Show QR Code</span>
@@ -207,7 +207,7 @@ export default function ProfilePage() {
                         No bookmarked events yet.
                     </div>) : (<div className="grid gap-4 md:grid-cols-2">
                         {bookmarkedEvents.map(function (event) {
-                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent cursor-pointer">
                                 <div className="h-36 overflow-hidden">
                                     <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                 </div>
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                             <h3 className="mb-3 text-lg font-semibold text-gray-900">Created By Me</h3>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {ownedCollectives.map(function (collective) {
-                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
+                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent cursor-pointer">
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
@@ -271,7 +271,7 @@ export default function ProfilePage() {
                             <h3 className="mb-3 text-lg font-semibold text-gray-900">Joined</h3>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {memberCollectives.map(function (collective) {
-                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
+                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent cursor-pointer">
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
@@ -305,7 +305,7 @@ export default function ProfilePage() {
                         No followed collectives yet.
                     </div>) : (<div className="grid gap-4 md:grid-cols-2">
                         {followedCollectives.map(function (collective) {
-                            return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
+                            return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent cursor-pointer">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
@@ -333,7 +333,7 @@ export default function ProfilePage() {
                         <h3 className="text-lg font-semibold">Your Ticket</h3>
                         <button
                             onClick={() => setShowingQrFor(null)}
-                            className="text-gray-400 hover:text-gray-600 p-1"
+                            className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
                         >
                             <X size={20} />
                         </button>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                     <QrCodeDisplay ticketId={showingQrFor} />
                     <button
                         onClick={() => setShowingQrFor(null)}
-                        className="mt-4 w-full py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
+                        className="mt-4 w-full py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
                     >
                         Close
                     </button>

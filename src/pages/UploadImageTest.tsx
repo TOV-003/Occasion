@@ -109,20 +109,20 @@ export default function UploadImageTest() {
                             {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
                         </div>) : (<div className="relative rounded-lg overflow-hidden border border-inputaccent/20">
                             <img src={preview} alt="Preview" className="w-full aspect-square object-cover"/>
-                            <button type="button" onClick={clearSelection} className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors">
+                            <button type="button" onClick={clearSelection} className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors cursor-pointer">
                                 <X size={18}/>
                             </button>
                         </div>)}
 
                     {/* Upload button */}
                     {preview && (<div className="mt-4 flex gap-3">
-                            <button onClick={handleUpload} disabled={uploading} className="flex-1 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            <button onClick={handleUpload} disabled={uploading} className="flex-1 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
                                 {uploading ? (<>
                                         <Loader2 size={18} className="animate-spin"/>
                                         Uploading...
                                     </>) : ('Upload to Supabase')}
                             </button>
-                            <button onClick={clearSelection} className="px-4 py-2 rounded-lg border border-inputaccent text-inputaccent hover:border-accent hover:text-accent transition-colors">
+                            <button onClick={clearSelection} className="px-4 py-2 rounded-lg border border-inputaccent text-inputaccent hover:border-accent hover:text-accent transition-colors cursor-pointer">
                                 Cancel
                             </button>
                         </div>)}
@@ -136,7 +136,7 @@ export default function UploadImageTest() {
                                     <p className="text-xs text-green-700 break-all mt-1">
                                         <span className="font-mono">{uploadedUrl}</span>
                                     </p>
-                                    <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline mt-2 inline-block">
+                                    <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline mt-2 inline-block cursor-pointer">
                                         Open in new tab →
                                     </a>
                                 </div>

@@ -28,7 +28,7 @@ export default function Login() {
     }
     return (<main className="flex min-h-screen w-full">
             <div className="hidden lg:flex lg:w-1/2 lg:justify-end bg-inputaccent text-white flex-col justify-center px-12 py-16">
-                <NavLink to="/" className="text-3xl font-bold text-accent mb-4">
+                <NavLink to="/" className="text-3xl font-bold text-accent mb-4 cursor-pointer">
                     Occasion
                 </NavLink>
                 <p className="text-lg font-light text-gray-300 max-w-md">
@@ -94,7 +94,7 @@ export default function Login() {
 
                     <p className="text-center text-sm text-gray-500">
                         Don't have an account?{' '}
-                        <NavLink to="/signup" className="text-accent hover:underline font-medium">
+                        <NavLink to="/signup" className="text-accent hover:underline font-medium cursor-pointer">
                             Sign up
                         </NavLink>
                     </p>

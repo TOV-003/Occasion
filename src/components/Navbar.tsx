@@ -19,7 +19,7 @@ export default function Navbar() {
     }, [profile]);
     return (<header className="fixed bg-background/20 backdrop-blur-2xl w-full z-20">
             <nav className="relative z-20 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
-                <NavLink to="/" className="flex items-center justify-between gap-2">
+                <NavLink to="/" className="flex items-center justify-between gap-2 cursor-pointer">
                     <img src={logo} alt="logo" className="h-6 w-6"/>
                     <h2 className="text-xl text-accent-dark">Occasion</h2>
                 </NavLink>
@@ -27,7 +27,7 @@ export default function Navbar() {
                     <NavLink to="/" onClick={function () {
             return toast.loading("Loading Explore Page...", { duration: 500 });
         }} className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 cursor-pointer";
         }}>
                         {function ({ isActive }) {
             return (<>
@@ -39,7 +39,7 @@ export default function Navbar() {
                     <NavLink to="/dashboard" onClick={function () {
             return toast.loading("Loading Dashboard...", { duration: 1500 });
         }} className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 cursor-pointer";
         }}>
                         {function ({ isActive }) {
             return (<>
@@ -51,7 +51,7 @@ export default function Navbar() {
                     <NavLink to="/collectives" onClick={function () {
             return toast.loading("Loading Collectives...", { duration: 500 });
         }} className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 cursor-pointer";
         }}>
                         {function ({ isActive }) {
             return (<>
@@ -77,7 +77,7 @@ export default function Navbar() {
                 <div className={`${dropdown ? "block md:hidden" : "md:hidden hidden"} absolute top-full left-0 right-0 px-4 w-full bg-background border-t border-inputaccent/50`}>
                     <div className="flex  flex-col items-end gap-4 w-full mt-8 h-screen">
                         <NavLink to="/" className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full cursor-pointer";
         }}>
                             {function ({ isActive }) {
             return (<>
@@ -87,7 +87,7 @@ export default function Navbar() {
         }}
                         </NavLink>
                         <NavLink to="/dashboard" className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full cursor-pointer";
         }}>
                             {function ({ isActive }) {
             return (<>
@@ -97,7 +97,7 @@ export default function Navbar() {
         }}
                         </NavLink>
                         <NavLink to="/collectives" className={function ({ isActive }) {
-            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full";
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full cursor-pointer";
         }}>
                             {function ({ isActive }) {
             return (<>
@@ -106,11 +106,11 @@ export default function Navbar() {
                                 </>);
         }}
                         </NavLink>
-                        <Link to="/new-collective" className="border border-accent text-accent rounded-md px-4 py-2 w-full text-center">+ New Collective</Link>
-                        <Link to="/new-event" className="bg-accent text-white rounded-md px-4 py-2 w-full text-center">+ New Event</Link>
-                        <div className="flex items-center gap-4 w-full">
-                            {profile ? <NavLink to="/settings" onClick={function () { toast.loading("Loading Settings...", { duration: 1500 }); }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full"/></NavLink> : <NavLink to="/login" onClick={function () { toast.loading("Loading Login...", { duration: 1500 }); }}><div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div></NavLink>}
-                            <NavLink to={profile ? "/settings" : "/login"} onClick={function () { toast.loading(`Loading ${profile ? "Settings" : "Login"}...`, { duration: 1500 }); }}><span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span></NavLink>
+                        <Link to="/new-collective" className="border border-accent text-accent rounded-md px-4 py-2 w-full text-center cursor-pointer">+ New Collective</Link>
+                        <Link to="/new-event" className="bg-accent text-white rounded-md px-4 py-2 w-full text-center cursor-pointer">+ New Event</Link>
+                        <div className="flex items-center gap-4 w-full cursor-pointer">
+                            {profile ? <NavLink to="/settings" onClick={function () { toast.loading("Loading Settings...", { duration: 1500 }); }}><img src={profile.avatar_url} alt="profile" className="h-8 w-8 rounded-full cursor-pointer"/></NavLink> : <NavLink to="/login" onClick={function () { toast.loading("Loading Login...", { duration: 1500 }); }}><div className="bg-inputaccent rounded-full w-8 h-8 cursor-pointer"></div></NavLink>}
+                            <NavLink to={profile ? "/settings" : "/login"} onClick={function () { toast.loading(`Loading ${profile ? "Settings" : "Login"}...`, { duration: 1500 }); }} className="cursor-pointer"><span className="w-full">{profile ? profile.full_name : "Login/SignUp"}</span></NavLink>
                         </div>
                     </div>
                 </div>
