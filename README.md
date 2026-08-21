@@ -27,12 +27,7 @@ Occasion is a comprehensive event discovery and management platform that connect
 - **Event Organization**: Host events under your collective banner
 - **Auto-Approval Settings**: Configure automatic ticket approval for members
 
-## 📍 Locations
 
-Currently serving major Nigerian cities:
-- Lagos
-- Abuja  
-- Port Harcourt
 
 ## 🏷️ Event Categories
 
