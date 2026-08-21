@@ -5,7 +5,7 @@ import './index.css';
 import App from './App.tsx';
 import { supabase } from './api/SupabaseClient';
 import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
-import type { Event, Collective, CollectiveWithRelations } from './interfaces';
+import type { Event, Collective, CollectiveWithRelations, Bookmarks } from './interfaces';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import About from './pages/About.tsx';
@@ -208,12 +208,14 @@ const router = createBrowserRouter([
                     if (!id)
                         throw new Error('Profile ID required');
                     const today = new Date().toLocaleDateString('en-CA');
-                    const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }, { data: tickets, error: ticketsError }] = await Promise.all([
+                    const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }, { data: tickets, error: ticketsError }, { data: bookmarks, error: bookmarksError }, { data: followedRows, error: followedError }] = await Promise.all([
                         supabase.from('profiles').select('*').eq('id', id).single(),
                         supabase.from('events').select('*, event_dates(*)').eq('creator_id', id).order('created_at', { ascending: false }),
                         supabase.from('collectives').select('*, collective_members (*), collective_followers (*)').eq('owner_id', id).order('created_at', { ascending: false }),
                         supabase.from('collective_members').select('collective_id').eq('user_id', id).eq('status', 'approved'),
-                        supabase.from('tickets').select('event_id, status, checked_in, check_in_data').eq('user_id', id).eq('status', 'approved')
+                        supabase.from('tickets').select('event_id, status, checked_in, check_in_data').eq('user_id', id).eq('status', 'approved'),
+                        supabase.from('bookmarks').select('*').eq('user_id', id),
+                        supabase.from('collective_followers').select('collective_id').eq('user_id', id)
                     ]);
                     if (profileError)
                         throw profileError;
@@ -225,6 +227,10 @@ const router = createBrowserRouter([
                         throw memberRowsError;
                     if (ticketsError)
                         throw ticketsError;
+                    if (bookmarksError)
+                        throw bookmarksError;
+                    if (followedError)
+                        throw followedError;
                     let memberCollectives: Collective[] = [];
                     const memberIds = (memberRows ?? []).map(function (row) {
                         return row.collective_id;
@@ -256,12 +262,43 @@ const router = createBrowserRouter([
                             return event.creator_id !== id;
                         });
                     }
+                    let bookmarkedEvents: Event[] = [];
+                    const bookmarkEventIds = (bookmarks ?? []).map(function (bookmark) {
+                        return bookmark.event_id;
+                    });
+                    if (bookmarkEventIds.length > 0) {
+                        const { data: bookmarkedEventsData, error: bookmarkedError } = await supabase
+                            .from('events')
+                            .select('*, event_dates(*)')
+                            .in('id', bookmarkEventIds)
+                            .order('created_at', { ascending: false });
+                        if (bookmarkedError)
+                            throw bookmarkedError;
+                        bookmarkedEvents = bookmarkedEventsData ?? [];
+                    }
+                    let followedCollectives: Collective[] = [];
+                    const followedIds = (followedRows ?? []).map(function (row) {
+                        return row.collective_id;
+                    });
+                    if (followedIds.length > 0) {
+                        const { data: followedData, error: followedCollectivesError } = await supabase
+                            .from('collectives')
+                            .select('*, collective_members (*), collective_followers (*)')
+                            .in('id', followedIds)
+                            .order('created_at', { ascending: false });
+                        if (followedCollectivesError)
+                            throw followedCollectivesError;
+                        followedCollectives = followedData ?? [];
+                    }
                     return {
                         profile,
                         createdEvents: createdEvents ?? [],
                         ownedCollectives: ownedCollectives ?? [],
                         memberCollectives,
                         attendingEvents,
+                        bookmarks: bookmarks ?? [],
+                        bookmarkedEvents,
+                        followedCollectives
                     };
                 },
                 hydrateFallbackElement: <LoadingFallback />

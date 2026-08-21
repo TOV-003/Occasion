@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Users, Plus, QrCode, X } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Plus, QrCode, X, Bookmark, Eye } from 'lucide-react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { useState } from 'react';
 import Layout from '../Layout';
@@ -6,13 +6,15 @@ import type { Collective, Event, Profile as ProfileType, Tickets } from '../inte
 import { UseAuth } from '../context/UseAuth';
 import QrCodeDisplay from '../components/QrCodeDisplay';
 export default function ProfilePage() {
-    const { profile, createdEvents, ownedCollectives, memberCollectives, attendingEvents, tickets } = useLoaderData() as {
+    const { profile, createdEvents, ownedCollectives, memberCollectives, attendingEvents, tickets, bookmarkedEvents, followedCollectives } = useLoaderData() as {
         profile: ProfileType;
         createdEvents: Event[];
         ownedCollectives: Collective[];
         memberCollectives: Collective[];
         attendingEvents: Event[];
         tickets: Tickets[];
+        bookmarkedEvents: Event[];
+        followedCollectives: Collective[];
     };
     const { user } = UseAuth();
     const isOwnProfile = user?.id === profile.id;
@@ -25,11 +27,6 @@ export default function ProfilePage() {
         const eventDate = new Date(event.event_dates[0].date);
         return showPast ? eventDate < today : eventDate >= today;
     });
-    const allCollectives = [...ownedCollectives, ...memberCollectives.filter(function (collective) {
-        return !ownedCollectives.some(function (owned) {
-            return owned.id === collective.id;
-        });
-    })];
     return (<Layout>
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 lg:px-8 lg:py-12">
             <div className="rounded-2xl border border-inputaccent/20 bg-white p-6 shadow-sm">
@@ -49,7 +46,7 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3 md:grid-cols-5">
                 <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Created events</p>
                     <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
@@ -67,6 +64,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Bookmarked</p>
+                    <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
+                        <Bookmark size={18} className="text-accent" />
+                        {bookmarkedEvents.length}
+                    </p>
+                </div>
+
+                <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Owned collectives</p>
                     <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
                         <Users size={18} className="text-accent" />
@@ -75,10 +80,10 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Member collectives</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Followed</p>
                     <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
-                        <Users size={18} className="text-accent" />
-                        {memberCollectives.length}
+                        <Eye size={18} className="text-accent" />
+                        {followedCollectives.length}
                     </p>
                 </div>
             </div>
@@ -191,19 +196,114 @@ export default function ProfilePage() {
 
                 <section className="rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
-                        <h2 className="text-xl font-semibold text-gray-900">Collectives</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Bookmarked events</h2>
                         <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
-                            {allCollectives.length}
+                            {bookmarkedEvents.length}
                         </span>
                     </div>
 
-                    {allCollectives.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                        No collectives to show.
+                    {bookmarkedEvents.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                        No bookmarked events yet.
                     </div>) : (<div className="grid gap-4 md:grid-cols-2">
-                        {allCollectives.map(function (collective) {
-                            const isOwner = ownedCollectives.some(function (owned) {
-                                return owned.id === collective.id;
-                            });
+                        {bookmarkedEvents.map(function (event) {
+                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent">
+                                <div className="h-36 overflow-hidden">
+                                    <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                </div>
+                                <div className="space-y-2 p-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-accent transition-colors">
+                                        {event.title}
+                                    </h3>
+                                    <p className="flex items-center gap-2 text-sm text-gray-600">
+                                        <MapPin size={14} />
+                                        {event.location}, {event.city}
+                                    </p>
+                                    <p className="flex items-center gap-2 text-sm text-gray-600">
+                                        <CalendarDays size={14} />
+                                        {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                        })}
+                                    </p>
+                                </div>
+                            </Link>);
+                        })}
+                    </div>)}
+                </section>
+
+                <section className="rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <h2 className="text-xl font-semibold text-gray-900">Collectives</h2>
+                        <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                            {ownedCollectives.length + memberCollectives.length}
+                        </span>
+                    </div>
+
+                    {(ownedCollectives.length === 0 && memberCollectives.length === 0) ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                        No collectives to show.
+                    </div>) : (<div className="space-y-6">
+                        {ownedCollectives.length > 0 && (<div>
+                            <h3 className="mb-3 text-lg font-semibold text-gray-900">Created By Me</h3>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {ownedCollectives.map(function (collective) {
+                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
+                                                {collective.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900 group-hover:text-accent transition-colors">
+                                                    {collective.name}
+                                                </h3>
+                                                <p className="text-xs text-gray-500">Owner</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-sm text-gray-600 line-clamp-2">{collective.description}</p>
+                                </Link>);
+                                })}
+                            </div>
+                        </div>)}
+                        {memberCollectives.length > 0 && (<div>
+                            <h3 className="mb-3 text-lg font-semibold text-gray-900">Joined</h3>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {memberCollectives.map(function (collective) {
+                                    return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-lg font-bold text-accent">
+                                                {collective.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900 group-hover:text-accent transition-colors">
+                                                    {collective.name}
+                                                </h3>
+                                                <p className="text-xs text-gray-500">Member</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-sm text-gray-600 line-clamp-2">{collective.description}</p>
+                                </Link>);
+                                })}
+                            </div>
+                        </div>)}
+                    </div>)}
+                </section>
+
+                <section className="rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <h2 className="text-xl font-semibold text-gray-900">Followed collectives</h2>
+                        <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                            {followedCollectives.length}
+                        </span>
+                    </div>
+
+                    {followedCollectives.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                        No followed collectives yet.
+                    </div>) : (<div className="grid gap-4 md:grid-cols-2">
+                        {followedCollectives.map(function (collective) {
                             return (<Link key={collective.id} to={`/collective/${collective.id}`} className="group rounded-xl border border-inputaccent/20 bg-white p-4 transition-colors duration-300 hover:border-accent">
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
@@ -214,7 +314,7 @@ export default function ProfilePage() {
                                             <h3 className="font-semibold text-gray-900 group-hover:text-accent transition-colors">
                                                 {collective.name}
                                             </h3>
-                                            <p className="text-xs text-gray-500">{isOwner ? 'Owner' : 'Member'}</p>
+                                            <p className="text-xs text-gray-500">Follower</p>
                                         </div>
                                     </div>
                                 </div>
