@@ -101,12 +101,17 @@ export default function Dashboard() {
                             : "Discover an event and reserve your place."}
                     </p>
                     {!isPast && (
-                        <Link
-                            to="/"
+                        <button
+                            onClick={() => {
+                                toast.loading("Loading Events...", { duration: 500 });
+                                setTimeout(() => {
+                                    navigate("/");
+                                }, 500);
+                            }}
                             className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                         >
                             Browse events
-                        </Link>
+                        </button>
                     )}
                 </div>
             );
@@ -156,7 +161,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-2">
                                 {ticket.status === 'approved' && !isPast && (
                                     <button
-                                        onClick={function(e) {
+                                        onClick={function (e) {
                                             e.preventDefault();
                                             e.stopPropagation();
                                             setShowingQrFor(ticket.id);
@@ -189,12 +194,17 @@ export default function Dashboard() {
             title: "Your tickets",
             description: "",
             action: (
-                <Link
-                    to="/"
-                    className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
+                <button
+                    onClick={() => {
+                        toast.loading("Loading Events...", { duration: 500 });
+                        setTimeout(() => {
+                            navigate("/");
+                        }, 500);
+                    }}
+                    className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer"
                 >
                     Browse events
-                </Link>
+                </button>
             ),
         },
         hosting: {
@@ -251,12 +261,17 @@ export default function Dashboard() {
                             )}
                         </div>
                     </div>
-                    <Link
-                        to="/settings"
+                    <button
+                        onClick={() => {
+                            toast.loading("Loading Settings...", { duration: 500 });
+                            setTimeout(() => {
+                                navigate("/settings");
+                            }, 500);
+                        }}
                         className="w-fit rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer"
                     >
                         Edit profile
-                    </Link>
+                    </button>
                 </section>
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
