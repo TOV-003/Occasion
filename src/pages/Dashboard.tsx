@@ -12,7 +12,7 @@ import { UseAuth } from "../context/UseAuth";
 import Layout from "../Layout";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import { Link, useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import type {
     CollectiveMember,
     CollectiveWithRelations,
@@ -25,7 +25,7 @@ import QrCodeDisplay from "../components/QrCodeDisplay";
 type DashboardView = "attending" | "hosting" | "collectives" | "history";
 
 export default function Dashboard() {
-    const { user } = UseAuth();
+    const { user, delistEvent, relistEvent } = UseAuth();
     const { Profile, Tickets, Events, Collectives, Attending, CollectiveList } =
         useLoaderData() as {
             Profile: Profile;
@@ -36,6 +36,7 @@ export default function Dashboard() {
             CollectiveList: CollectiveWithRelations[];
         };
     const navigate = useNavigate();
+    const revalidator = useRevalidator();
     const [view, setView] = useState<DashboardView>("attending");
     const [showingQrFor, setShowingQrFor] = useState<string | null>(null);
 
@@ -86,6 +87,32 @@ export default function Dashboard() {
             .join("")
             .slice(0, 2)
             .toUpperCase();
+    }
+
+    async function handleDelist(eventId: string) {
+        try {
+            await delistEvent(eventId);
+            toast.success("Event delisted");
+        } catch (error) {
+            console.error("Error delisting event:", error);
+            toast.error("Failed to delist event. Please try again.");
+        } finally {
+            revalidator.revalidate();
+        }
+    }
+
+    async function handleRelist(eventId: string) {
+        try {
+            const event = await relistEvent(eventId);
+            if (event) {
+                toast.success("Event relisted successfully");
+            }
+        } catch (error) {
+            console.error("Error relisting event:", error);
+            toast.error("Failed to relist event. Please try again.");
+        } finally {
+            revalidator.revalidate();
+        }
     }
 
     function renderTicketList(ticketList: Tickets[], isPast = false) {
@@ -392,6 +419,23 @@ export default function Dashboard() {
                                                         : ""}{" "}
                                                     approved
                                                 </p>
+                                                <button
+                                                    onClick={function (e) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (event.isActive) {
+                                                            handleDelist(event.id);
+                                                        }
+                                                        else {
+                                                            handleRelist(event.id);
+                                                        }
+                                                    }}
+                                                    className={`mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer ${event.isActive
+                                                        ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                                        : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"}`}
+                                                >
+                                                    {event.isActive ? "Delist" : "Relist"}
+                                                </button>
                                             </div>
                                         </Link>
                                     );

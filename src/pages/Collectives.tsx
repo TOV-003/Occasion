@@ -11,6 +11,7 @@ export default function Collectives() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [inputValue, setInputValue] = useState('');
+    const [sortOption, setSortOption] = useState<'newest' | 'popular'>('newest');
     const [cursor, setCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -100,6 +101,11 @@ export default function Collectives() {
             fetchCollectives(false);
         }
     }
+    const displayCollectives = sortOption === 'popular'
+        ? [...collectives].sort(function (a, b) {
+            return (b.collective_followers?.length || 0) - (a.collective_followers?.length || 0);
+        })
+        : collectives;
     if (loading && collectives.length === 0) {
         return <Layout><Skeleton variant="collectives"/></Layout>;
     }
@@ -115,6 +121,12 @@ export default function Collectives() {
                             <Search color="var(--color-inputaccent)" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                             <input type="text" placeholder="Search collectives by name or description..." className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground" value={inputValue} onChange={handleSearchChange}/>
                         </div>
+                        <select value={sortOption} onChange={function (e) {
+                            setSortOption(e.target.value as 'newest' | 'popular');
+                        }} className="rounded-lg border border-inputaccent bg-inputbg/30 px-3 py-2 text-sm text-inputaccent focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer">
+                            <option value="newest">Newest first</option>
+                            <option value="popular">Most popular</option>
+                        </select>
                     </div>
                 </div>
 
@@ -131,7 +143,7 @@ export default function Collectives() {
                     </div>
 
                     <div className="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {collectives.map(function (collective) {
+                        {displayCollectives.map(function (collective) {
             return (<Link to={`/collective/${collective.id}`} key={collective.id} className="group flex min-h-56 flex-col rounded-xl border border-inputaccent/20 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:shadow-md cursor-pointer" onClick={function () {
                     return toast.loading("Loading Collective...", { duration: 1500 });
                 }}>
@@ -153,7 +165,7 @@ export default function Collectives() {
                             </Link>);
         })}
 
-                        {collectives.length === 0 && !loading && (<p className="text-center text-sm text-gray-500 w-full">
+                        {displayCollectives.length === 0 && !loading && (<p className="text-center text-sm text-gray-500 w-full">
                                 No collectives found
                             </p>)}
 

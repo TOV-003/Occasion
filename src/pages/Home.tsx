@@ -13,7 +13,11 @@ export default function Home() {
     const [filter, setFilter] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [query, setQuery] = useState('');
+    const [cityInput, setCityInput] = useState('');
+    const [cityQuery, setCityQuery] = useState('');
+    const [sortOption, setSortOption] = useState<'date' | 'newest' | 'popular'>('date');
     const debounceTimeoutRef = useRef<number | null>(null);
+    const cityDebounceTimeoutRef = useRef<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [cursor, setCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
@@ -61,6 +65,9 @@ export default function Home() {
         }
         if (query.trim()) {
             supabaseQuery = supabaseQuery.or(`title.ilike.%${query.trim()}%, city.ilike.%${query.trim()}%, location.ilike.%${query.trim()}%`);
+        }
+        if (cityQuery.trim()) {
+            supabaseQuery = supabaseQuery.ilike('city', `%${cityQuery.trim()}%`);
         }
         if (!reset && cursor) {
             supabaseQuery = supabaseQuery.lt('created_at', cursor);
@@ -142,7 +149,7 @@ export default function Home() {
         return function () {
             isMounted = false;
         };
-    }, [query, filter]);
+    }, [query, filter, cityQuery]);
     useEffect(function () {
         fetchAllCollectives()
             .then(setCollectives)
@@ -150,27 +157,36 @@ export default function Home() {
     }, []);
     const results = useMemo(function () {
         const today = new Date().toISOString().split('T')[0];
-        return [...allEvents]
-            .filter(function (ev: Event) {
-                if (!ev.isActive)
-                    return false;
-                if (!ev.event_dates || ev.event_dates.length === 0)
-                    return false;
-                return ev.event_dates.some(function (d) {
-                    return d.date >= today;
-                });
-            })
-            .sort(function (a: Event, b: Event) {
-                function getEarliest(ev: Event) {
-                    if (!ev.event_dates || ev.event_dates.length === 0)
-                        return '9999-12-31';
-                    return ev.event_dates.map(function (d) {
-                        return d.date;
-                    }).sort()[0];
-                }
-                return getEarliest(a).localeCompare(getEarliest(b));
+        const upcoming = [...allEvents].filter(function (ev: Event) {
+            if (!ev.isActive)
+                return false;
+            if (!ev.event_dates || ev.event_dates.length === 0)
+                return false;
+            return ev.event_dates.some(function (d) {
+                return d.date >= today;
             });
-    }, [allEvents]);
+        });
+        if (sortOption === 'newest') {
+            return upcoming.sort(function (a: Event, b: Event) {
+                return b.created_at.localeCompare(a.created_at);
+            });
+        }
+        if (sortOption === 'popular') {
+            return upcoming.sort(function (a: Event, b: Event) {
+                return (b.approved_ticket_count || 0) - (a.approved_ticket_count || 0);
+            });
+        }
+        return upcoming.sort(function (a: Event, b: Event) {
+            function getEarliest(ev: Event) {
+                if (!ev.event_dates || ev.event_dates.length === 0)
+                    return '9999-12-31';
+                return ev.event_dates.map(function (d) {
+                    return d.date;
+                }).sort()[0];
+            }
+            return getEarliest(a).localeCompare(getEarliest(b));
+        });
+    }, [allEvents, sortOption]);
     function showCategory(category: string) {
         setFilter(category);
         setVisibleCount(10);
@@ -204,10 +220,33 @@ export default function Home() {
             setQuery('');
         }
     }
+    function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const value = e.target.value;
+        setCityInput(value);
+        if (cityDebounceTimeoutRef.current) {
+            clearTimeout(cityDebounceTimeoutRef.current);
+            cityDebounceTimeoutRef.current = null;
+        }
+        if (value.trim() === '') {
+            setCityQuery('');
+            return;
+        }
+        if (value.length >= 2) {
+            cityDebounceTimeoutRef.current = setTimeout(function () {
+                setCityQuery(value.trim());
+            }, 300);
+        }
+        else {
+            setCityQuery('');
+        }
+    }
     useEffect(function () {
         return function () {
             if (debounceTimeoutRef.current) {
                 clearTimeout(debounceTimeoutRef.current);
+            }
+            if (cityDebounceTimeoutRef.current) {
+                clearTimeout(cityDebounceTimeoutRef.current);
             }
         };
     }, []);
@@ -226,6 +265,18 @@ export default function Home() {
                         <Search color="var(--color-inputaccent)" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input type="text" placeholder="Search events,cities,locations..." className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground" value={inputValue} onChange={handleSearchChange} />
                     </div>
+                    <div className="relative w-full sm:w-56">
+                        <MapPin color="var(--color-inputaccent)" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input type="text" placeholder="Filter by city..." className="w-full bg-inputbg/30 border-inputaccent pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-ring placeholder:text-muted-foreground" value={cityInput} onChange={handleCityChange} />
+                    </div>
+                    <select value={sortOption} onChange={function (e) {
+                        setSortOption(e.target.value as 'date' | 'newest' | 'popular');
+                        setVisibleCount(10);
+                    }} className="rounded-lg border border-inputaccent bg-inputbg/30 px-3 py-2 text-sm text-inputaccent focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer">
+                        <option value="date">Sort by date</option>
+                        <option value="newest">Newest first</option>
+                        <option value="popular">Most popular</option>
+                    </select>
                 </div>
                 <div className="flex w-fit flex-wrap justify-center gap-2 mt-4">
                     {categories.map(function (cat) {

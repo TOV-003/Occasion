@@ -267,6 +267,9 @@ export default function NewEvent() {
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                         Description <span className="text-red-500">*</span>
                     </label>
+                    <p className="text-xs text-inputaccent mb-1">
+                        Tell people what the event is and what to expect, and be sure to include the start/end times.
+                    </p>
                     <textarea id="description" rows={4} placeholder="Describe your event – what, when, why, and who it's for…" className="w-full bg-inputbg/30 border border-inputaccent rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-y" value={formData.description} onChange={function (e) {
                         return setFormData({ ...formData, description: e.target.value });
                     }} />

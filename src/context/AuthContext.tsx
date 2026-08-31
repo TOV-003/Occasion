@@ -436,6 +436,24 @@ export default function AuthContextProvider({ children }: {
             throw error;
         toast.success('Member rejected.');
     }
+    async function removeCollectiveMember(memberId: string): Promise<void> {
+        const { error } = await supabase
+            .from('collective_members')
+            .delete()
+            .eq('id', memberId);
+        if (error)
+            throw error;
+        toast.success('Member removed.');
+    }
+    async function updateMemberRole(memberId: string, role: 'member' | 'admin'): Promise<void> {
+        const { error } = await supabase
+            .from('collective_members')
+            .update({ role })
+            .eq('id', memberId);
+        if (error)
+            throw error;
+        toast.success('Member role updated.');
+    }
     async function approveCollectiveEvent(eventId: string, collectiveId: string): Promise<void> {
         const { error } = await supabase
             .from('event_collectives')
@@ -590,6 +608,77 @@ export default function AuthContextProvider({ children }: {
         };
     }
 
+    async function promoteNextWaitlistTicket(eventId: string): Promise<void> {
+        const { data: nextInLine, error: nextError } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('status', 'waitlist')
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle();
+        if (nextError)
+            throw nextError;
+        if (!nextInLine)
+            return;
+        const { data: eventData, error: eventError } = await supabase
+            .from('events_with_counts')
+            .select('auto_approve')
+            .eq('id', eventId)
+            .single();
+        if (eventError)
+            throw eventError;
+        const { error: updateError } = await supabase
+            .from('tickets')
+            .update({ status: eventData.auto_approve ? 'approved' : 'pending' })
+            .eq('id', nextInLine.id);
+        if (updateError)
+            throw updateError;
+    }
+
+    async function cancelTicket(eventId: string): Promise<void> {
+        if (!user)
+            throw new Error('Not authenticated');
+        toast.loading('Cancelling ticket...', { duration: 500 });
+        const { error } = await supabase
+            .from('tickets')
+            .delete()
+            .eq('event_id', eventId)
+            .eq('user_id', user.id);
+        if (error)
+            throw error;
+        toast.success('Ticket cancelled');
+        try {
+            await promoteNextWaitlistTicket(eventId);
+        }
+        catch (promotionError) {
+            console.error('Failed to promote waitlisted user:', promotionError);
+        }
+    }
+
+    async function joinWaitlist(eventId: string): Promise<void> {
+        if (!user)
+            throw new Error('Not authenticated');
+        const { data: existing, error: existingError } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+        if (existingError)
+            throw existingError;
+        if (existing) {
+            toast.error('You already have a ticket or waitlist spot for this event.');
+            return;
+        }
+        const { error } = await supabase
+            .from('tickets')
+            .insert({ event_id: eventId, user_id: user.id, status: 'waitlist' });
+        if (error)
+            throw error;
+        toast.success('You joined the waitlist');
+    }
+
     return (<AuthContext.Provider value={{
             user,
             authloading,
@@ -616,6 +705,8 @@ export default function AuthContextProvider({ children }: {
             addEventToCollective,
             approveMember,
             rejectMember,
+            removeCollectiveMember,
+            updateMemberRole,
             approveCollectiveEvent,
             rejectCollectiveEvent,
             approveTicket,
@@ -628,7 +719,9 @@ export default function AuthContextProvider({ children }: {
             handleRemoveAccessStaff,
             checkInTicket,
             undoCheckIn,
-            getTicketCheckInStatus
+            getTicketCheckInStatus,
+            cancelTicket,
+            joinWaitlist
         }}>
             {children}
         </AuthContext.Provider>);

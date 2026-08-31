@@ -1,6 +1,6 @@
 import { useLoaderData, Link, useParams, useRevalidator } from 'react-router-dom';
 import type { Event } from '../interfaces';
-import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff } from 'lucide-react';
+import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff, CalendarPlus, Navigation, Mail } from 'lucide-react';
 import Layout from '../Layout';
 import ShareButton from '../components/ShareButton';
 import { UseAuth } from '../context/UseAuth';
@@ -16,7 +16,7 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark } = UseAuth();
+    const { user, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark, cancelTicket, joinWaitlist } = UseAuth();
     const { id } = useParams();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
@@ -58,6 +58,34 @@ export default function EventPage() {
         catch (error) {
             console.error("Error creating ticket:", error);
             toast.error("Failed to create ticket. Please try again.");
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
+    async function handleCancelTicket(id: string) {
+        if (!window.confirm('Cancel your ticket for this event?')) {
+            return;
+        }
+        try {
+            await cancelTicket(id);
+            toast.success('Ticket cancelled');
+        }
+        catch (error) {
+            console.error('Error cancelling ticket:', error);
+            toast.error('Failed to cancel ticket. Please try again.');
+        }
+        finally {
+            revalidator.revalidate();
+        }
+    }
+    async function handleJoinWaitlist(id: string) {
+        try {
+            await joinWaitlist(id);
+        }
+        catch (error) {
+            console.error('Error joining waitlist:', error);
+            toast.error('Failed to join waitlist. Please try again.');
         }
         finally {
             revalidator.revalidate();
@@ -109,8 +137,31 @@ export default function EventPage() {
     }
     const userTicketIsPendingCheck = userTicketIsPending();
     console.log("userTicketIsPendingCheck", userTicketIsPendingCheck);
-    const isFull = tickets.length === event.max_attendees;
+    function userOnWaitlistCheck() {
+        return tickets.some(function (t) {
+            return t.user_id === user?.id && t.event_id === event.id && t.status === 'waitlist';
+        });
+    }
+    const userOnWaitlist = userOnWaitlistCheck();
+    const approvedTicketCount = tickets.filter(function (t) {
+        return t.status === 'approved';
+    }).length;
+    const isFull = event.max_attendees ? approvedTicketCount >= event.max_attendees : false;
     const isCreator = user?.id === event.creator_id;
+    function formatCalendarDate(dateStr?: string) {
+        if (!dateStr)
+            return '';
+        const d = new Date(dateStr);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}${month}${day}`;
+    }
+    const firstDate = event.event_dates?.[0]?.date;
+    const lastDate = event.event_dates?.[event.event_dates.length - 1]?.date;
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatCalendarDate(firstDate)}/${formatCalendarDate(lastDate || firstDate)}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(`${event.location}, ${event.city}`)}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.location}, ${event.city}`)}`;
+    const whatsappShareText = `${event.title} - ${event.location}, ${event.city} ${window.location.href}`;
     function handleBack() {
         if (window.history.length > 1) {
             navigate(-1);
@@ -188,18 +239,33 @@ export default function EventPage() {
                             </div>
                         </div>)}
 
-                        {tickets.length > 0 && (<div className="flex items-start gap-3">
+                        {approvedTicketCount > 0 && (<div className="flex items-start gap-3">
                             <Users size={20} className="text-accent mt-0.5 shrink-0" />
                             <div>
                                 <p className="text-sm font-medium text-gray-500">Registered</p>
                                 <p className="text-base text-gray-800">
-                                    {tickets.length}
+                                    {approvedTicketCount}
                                     {isFull && (<span className="ml-2 text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">
                                         Full
                                     </span>)}
                                 </p>
                             </div>
                         </div>)}
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                        <a href={googleCalendarUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
+                            <CalendarPlus size={16} />
+                            Add to calendar
+                        </a>
+                        <a href={mapsUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
+                            <Navigation size={16} />
+                            Directions
+                        </a>
+                        <Link to={`/profile/${event.creator_id}`} className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
+                            <Mail size={16} />
+                            Contact organizer
+                        </Link>
                     </div>
 
                     {eventCollective && (<Link to={`/collective/${eventCollective.id}`} state={{ fromEvent: event.id }} className="mt-4 cursor-pointer" onClick={function () {
@@ -235,19 +301,43 @@ export default function EventPage() {
                             </span>
                         </div>
 
-                        <button onClick={function () {
-                            return handleCreateTicket(event.id);
-                        }} disabled={isFull || isCreator || userHasTicket || userTicketIsPendingCheck} className={`w-full py-3 rounded-lg font-semibold transition-colors shadow-sm hover:shadow-md cursor-pointer ${isFull || isCreator || userHasTicket || userTicketIsPendingCheck
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-accent text-white hover:bg-accent-dark'}`}>
-                            {isFull ? 'Fully Occupied' : userHasTicket ? 'You have Registered for this Event' : userTicketIsPendingCheck ? 'You have a pending ticket for this event' : !isCreator ? 'Register for this event' : 'You are the Host'}
-                        </button>
-
-                        {userHasTicket && (
+                        {userHasTicket ? (<>
+                            <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-500 cursor-not-allowed">
+                                You have Registered for this Event
+                            </button>
                             <QrCodeDisplay
                                 ticketId={tickets.find(t => t.user_id === user?.id && t.event_id === event.id && t.status === 'approved')!.id}
                                 className="mt-4"
                             />
+                            <button type="button" onClick={function () {
+                                handleCancelTicket(event.id);
+                            }} className="w-full py-3 rounded-lg font-semibold border border-red-300 bg-white text-red-600 transition-colors hover:bg-red-50 cursor-pointer">
+                                Cancel ticket
+                            </button>
+                        </>) : userTicketIsPendingCheck ? (
+                            <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-500 cursor-not-allowed">
+                                You have a pending ticket for this event
+                            </button>
+                        ) : isCreator ? (
+                            <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-500 cursor-not-allowed">
+                                You are the Host
+                            </button>
+                        ) : isFull ? (userOnWaitlist ? (
+                            <button disabled className="w-full py-3 rounded-lg font-semibold bg-gray-300 text-gray-500 cursor-not-allowed">
+                                You're on the waitlist
+                            </button>
+                        ) : (
+                            <button type="button" onClick={function () {
+                                handleJoinWaitlist(event.id);
+                            }} className="w-full py-3 rounded-lg font-semibold bg-amber-500 text-white transition-colors shadow-sm hover:shadow-md hover:bg-amber-600 cursor-pointer">
+                                Join waitlist
+                            </button>
+                        )) : (
+                            <button type="button" onClick={function () {
+                                return handleCreateTicket(event.id);
+                            }} className="w-full py-3 rounded-lg font-semibold bg-accent text-white transition-colors shadow-sm hover:shadow-md hover:bg-accent-dark cursor-pointer">
+                                Register for this event
+                            </button>
                         )}
 
                         <p className="text-sm text-gray-500 flex items-start gap-2">
@@ -266,7 +356,7 @@ export default function EventPage() {
                         <hr className="border-inputaccent/20" />
 
                         <div className="flex items-center justify-between">
-                            <ShareButton title={`Join me at ${event.title}!`} text={`${event.title} - ${event.location}, ${event.city}`} url={window.location.href} className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500 cursor-pointer" />
+                            <ShareButton title={`Join me at ${event.title}!`} text={`${event.title} - ${event.location}, ${event.city}`} url={window.location.href} whatsappText={whatsappShareText} className="border-none shadow-none hover:bg-transparent hover:text-accent text-gray-500 cursor-pointer" />
                             {eventCollective && (user?.id === eventCollective.owner_id || eventCollective?.collective_members?.some(function (el) {
                                 return el.user_id === user?.id;
                             })) && (<button className="text-sm text-gray-500 cursor-not-allowed">

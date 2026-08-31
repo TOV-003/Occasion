@@ -1,4 +1,4 @@
-import { CheckSquare, Square } from "lucide-react";
+import { AlertTriangle, CheckSquare, Square } from "lucide-react";
 import Layout from '../Layout';
 import { useEffect, useState } from 'react';
 import { UseAuth } from '../context/UseAuth';
@@ -59,6 +59,13 @@ export default function NewCollective() {
                 </div>
 
                 <form className="w-full space-y-6" onSubmit={handleSubmit}>
+                    <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">
+                        <AlertTriangle size={20} className="mt-0.5 shrink-0 text-amber-600" />
+                        <p className="text-sm text-amber-800">
+                            Collectives are permanent. The name, description, and guidelines cannot be changed after this collective is created, so please double-check everything before submitting.
+                        </p>
+                    </div>
+
                     <div>
                         <label htmlFor="collectiveName" className="block text-sm font-medium text-gray-700 mb-1">
                             Collective Name <span className="text-red-500">*</span>

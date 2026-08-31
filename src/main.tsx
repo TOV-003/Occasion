@@ -16,10 +16,10 @@ import CollectivePage from './pages/CollectivePage.tsx';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings.tsx';
 import Dashboard from './pages/Dashboard';
+import Bookmarks from './pages/Bookmarks';
 import Collectives from './pages/Collectives';
 import NewEvent from './pages/NewEvent';
 import NewCollective from './pages/NewCollective';
-import UploadImageTest from './pages/UploadImageTest';
 import ManageCollective from './pages/ManageCollective';
 import ManageEvent from './pages/ManageEvent';
 const router = createBrowserRouter([
@@ -68,7 +68,7 @@ const router = createBrowserRouter([
                     const userId = session?.user.id;
                     const [eventResult, ticketsResult, collectiveLinkResult, bookmarksResult] = await Promise.all([
                         supabase.from('events').select('*, event_dates(*)').eq('id', id).single(),
-                        supabase.from('tickets').select('*, check_in_data').eq('event_id', id).in('status', ['approved', 'pending']),
+                        supabase.from('tickets').select('*, check_in_data').eq('event_id', id).in('status', ['approved', 'pending', 'waitlist']),
                         supabase.from('event_collectives').select('collective_id').eq('event_id', id).maybeSingle(),
                         userId ? supabase.from('bookmarks').select('*').eq('user_id', userId) : Promise.resolve({ data: [], error: null })
                     ]);
@@ -262,20 +262,6 @@ const router = createBrowserRouter([
                             return event.creator_id !== id;
                         });
                     }
-                    let bookmarkedEvents: Event[] = [];
-                    const bookmarkEventIds = (bookmarks ?? []).map(function (bookmark) {
-                        return bookmark.event_id;
-                    });
-                    if (bookmarkEventIds.length > 0) {
-                        const { data: bookmarkedEventsData, error: bookmarkedError } = await supabase
-                            .from('events')
-                            .select('*, event_dates(*)')
-                            .in('id', bookmarkEventIds)
-                            .order('created_at', { ascending: false });
-                        if (bookmarkedError)
-                            throw bookmarkedError;
-                        bookmarkedEvents = bookmarkedEventsData ?? [];
-                    }
                     let followedCollectives: Collective[] = [];
                     const followedIds = (followedRows ?? []).map(function (row) {
                         return row.collective_id;
@@ -297,9 +283,42 @@ const router = createBrowserRouter([
                         memberCollectives,
                         attendingEvents,
                         bookmarks: bookmarks ?? [],
-                        bookmarkedEvents,
                         followedCollectives
                     };
+                },
+                hydrateFallbackElement: <LoadingFallback />
+            },
+            {
+                path: '/bookmarks',
+                element: <Bookmarks />,
+                loader: async function () {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const userId = session?.user.id;
+                    if (!userId) {
+                        throw redirect('/login');
+                    }
+                    const { data: bookmarks, error: bookmarksError } = await supabase
+                        .from('bookmarks')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .order('created_at', { ascending: false });
+                    if (bookmarksError)
+                        throw bookmarksError;
+                    const bookmarkEventIds = (bookmarks ?? []).map(function (bookmark) {
+                        return bookmark.event_id;
+                    });
+                    let bookmarkedEvents: Event[] = [];
+                    if (bookmarkEventIds.length > 0) {
+                        const { data: events, error: eventsError } = await supabase
+                            .from('events')
+                            .select('*, event_dates(*)')
+                            .in('id', bookmarkEventIds)
+                            .order('created_at', { ascending: false });
+                        if (eventsError)
+                            throw eventsError;
+                        bookmarkedEvents = events ?? [];
+                    }
+                    return { bookmarkedEvents };
                 },
                 hydrateFallbackElement: <LoadingFallback />
             },
@@ -396,11 +415,6 @@ const router = createBrowserRouter([
                 hydrateFallbackElement: <LoadingFallback />
             },
             {
-                path: '/upload-image-test',
-                element: <UploadImageTest />,
-                hydrateFallbackElement: <LoadingFallback />
-            },
-            {
                 path: '/manage-event/:id',
                 element: <ManageEvent />,
                 loader: async function ({ params }) {
@@ -422,7 +436,15 @@ const router = createBrowserRouter([
                         throw eventError;
                     if (!event)
                         throw new Response('Event not found', { status: 404 });
-                    if (event.creator_id !== userId) {
+                    const { data: accessStaffRow } = await supabase
+                        .from('event_access_staff')
+                        .select('id')
+                        .eq('event_id', id)
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    const isCreator = event.creator_id === userId;
+                    const isAccessStaff = Boolean(accessStaffRow);
+                    if (!isCreator && !isAccessStaff) {
                         throw redirect(`/event/${id}`);
                     }
                     const { data: ticketRows, error: ticketRowsError } = await supabase
@@ -456,12 +478,18 @@ const router = createBrowserRouter([
                     const pendingTickets = (ticketRows ?? []).filter(function (ticket) {
                         return ticket.status === 'pending';
                     });
+                    const rejectedTickets = (ticketRows ?? []).filter(function (ticket) {
+                        return ticket.status === 'rejected';
+                    });
                     return {
                         event,
                         tickets: ticketRows ?? [],
                         approvedTickets,
                         pendingTickets,
+                        rejectedTickets,
                         profiles,
+                        isCreator,
+                        isAccessStaff,
                     };
                 },
                 hydrateFallbackElement: <LoadingFallback />

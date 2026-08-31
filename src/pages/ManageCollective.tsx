@@ -14,7 +14,7 @@ export default function ManageCollective() {
         pendingMembers: CollectiveMember[];
         memberProfiles: Profile[];
     };
-    const { approveCollectiveEvent, rejectCollectiveEvent, approveMember, rejectMember } = UseAuth();
+    const { approveCollectiveEvent, rejectCollectiveEvent, approveMember, rejectMember, removeCollectiveMember, updateMemberRole } = UseAuth();
     const revalidator = useRevalidator();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
@@ -62,6 +62,26 @@ export default function ManageCollective() {
         catch (error) {
             console.error('Error updating member status:', error);
             toast.error('Failed to update member status.');
+        }
+    }
+    async function handleRemoveMember(memberId: string) {
+        try {
+            await removeCollectiveMember(memberId);
+            revalidator.revalidate();
+        }
+        catch (error) {
+            console.error('Error removing member:', error);
+            toast.error('Failed to remove member.');
+        }
+    }
+    async function handleRoleChange(memberId: string, role: 'member' | 'admin') {
+        try {
+            await updateMemberRole(memberId, role);
+            revalidator.revalidate();
+        }
+        catch (error) {
+            console.error('Error updating member role:', error);
+            toast.error('Failed to update member role.');
         }
     }
     function renderEventCard(event: Event, status: 'approved' | 'pending') {
@@ -151,6 +171,23 @@ export default function ManageCollective() {
                         {status === 'approved' ? 'Approved' : 'Pending'}
                     </span>
 
+                    {status === 'approved' && (<div className="flex gap-2">
+                            <button type="button" onClick={function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRoleChange(member.id, member.role === 'admin' ? 'member' : 'admin');
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
+                                {member.role === 'admin' ? 'Demote to member' : 'Promote to admin'}
+                            </button>
+                            <button type="button" onClick={function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRemoveMember(member.id);
+                }} className="rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-red-300 hover:text-red-600 cursor-pointer">
+                                Remove
+                            </button>
+                        </div>)}
+
                     {status === 'pending' && (<div className="flex gap-2">
                             <button type="button" onClick={function (event) {
                     event.preventDefault();
@@ -196,6 +233,11 @@ export default function ManageCollective() {
                                 {approvalMode}
                             </span>
                         </div>
+
+                        {collective.guidelines && (<div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
+                            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Guidelines</p>
+                            <p className="mt-1 text-sm leading-6 text-gray-700 whitespace-pre-line">{collective.guidelines}</p>
+                        </div>)}
 
                         <div className="grid gap-4 sm:grid-cols-3">
                             <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">

@@ -35,6 +35,8 @@ interface AuthContextType {
     addEventToCollective(eventId: string, collectiveId: string): Promise<void>;
     approveMember(memberId: string): Promise<void>;
     rejectMember(memberId: string): Promise<void>;
+    removeCollectiveMember(memberId: string): Promise<void>;
+    updateMemberRole(memberId: string, role: 'member' | 'admin'): Promise<void>;
     approveCollectiveEvent(eventId: string, collectiveId: string): Promise<void>;
     rejectCollectiveEvent(eventId: string, collectiveId: string): Promise<void>;
     approveTicket(ticketId: string): Promise<void>;
@@ -48,5 +50,7 @@ interface AuthContextType {
     checkInTicket(ticketId: string, staffId: string): Promise<void>;
     undoCheckIn(ticketId: string): Promise<void>;
     getTicketCheckInStatus(ticketId: string): Promise<{ checkedIn: boolean; time?: string; staffId?: string }>;
+    cancelTicket(eventId: string): Promise<void>;
+    joinWaitlist(eventId: string): Promise<void>;
 }
 export const AuthContext = createContext<AuthContextType | null>(null);

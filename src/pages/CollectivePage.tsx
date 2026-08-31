@@ -95,7 +95,10 @@ export default function CollectivePage() {
         return el.user_id === user?.id;
     });
     const isMember = collectiveMembers.some(function (el) {
-        return el.user_id === user?.id;
+        return el.user_id === user?.id && el.status === 'approved';
+    });
+    const isPendingMember = collectiveMembers.some(function (el) {
+        return el.user_id === user?.id && el.status === 'pending';
     });
     async function handleJoinLeaveCollective() {
         if (!user) {
@@ -237,6 +240,8 @@ export default function CollectivePage() {
                         }
                     }>
                         Manage Collective
+                    </button>) : isPendingMember ? (<button disabled className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-400 bg-gray-50 cursor-not-allowed">
+                        Pending approval
                     </button>) : (<button className="px-4 py-2 rounded-lg border border-inputaccent/30 text-sm text-gray-700 hover:bg-accent hover:text-white hover:border-accent transition-colors cursor-pointer" onClick={handleJoinLeaveCollective}>
                         {isMember ? "Leave collective" : "Join collective"}
                     </button>)}
@@ -245,6 +250,11 @@ export default function CollectivePage() {
                     </button>)}
                 </div>
             </div>
+
+            {collective.guidelines && (<div className="mb-8 rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">
+                <h2 className="mb-2 text-xl font-semibold text-gray-900">Guidelines</h2>
+                <p className="text-sm leading-6 text-gray-700 whitespace-pre-line">{collective.guidelines}</p>
+            </div>)}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">

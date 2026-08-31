@@ -6,7 +6,7 @@ import type { Collective, Event, Profile as ProfileType, Tickets, Bookmarks } fr
 import { UseAuth } from '../context/UseAuth';
 import QrCodeDisplay from '../components/QrCodeDisplay';
 export default function ProfilePage() {
-    const { profile, createdEvents, ownedCollectives, memberCollectives, attendingEvents, tickets, bookmarkedEvents, followedCollectives } = useLoaderData() as {
+    const { profile, createdEvents, ownedCollectives, memberCollectives, attendingEvents, tickets, bookmarks, followedCollectives } = useLoaderData() as {
         profile: ProfileType;
         createdEvents: Event[];
         ownedCollectives: Collective[];
@@ -14,7 +14,6 @@ export default function ProfilePage() {
         attendingEvents: Event[];
         tickets: Tickets[];
         bookmarks: Bookmarks[];
-        bookmarkedEvents: Event[];
         followedCollectives: Collective[];
     };
     const { user } = UseAuth();
@@ -68,7 +67,7 @@ export default function ProfilePage() {
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Bookmarked</p>
                     <p className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-900">
                         <Bookmark size={18} className="text-accent" />
-                        {bookmarkedEvents.length}
+                        {bookmarks.length}
                     </p>
                 </div>
 
@@ -199,38 +198,17 @@ export default function ProfilePage() {
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <h2 className="text-xl font-semibold text-gray-900">Bookmarked events</h2>
                         <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
-                            {bookmarkedEvents.length}
+                            {bookmarks.length}
                         </span>
                     </div>
 
-                    {bookmarkedEvents.length === 0 ? (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
-                        No bookmarked events yet.
-                    </div>) : (<div className="grid gap-4 md:grid-cols-2">
-                        {bookmarkedEvents.map(function (event) {
-                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent cursor-pointer">
-                                <div className="h-36 overflow-hidden">
-                                    <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                                </div>
-                                <div className="space-y-2 p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-accent transition-colors">
-                                        {event.title}
-                                    </h3>
-                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                        <MapPin size={14} />
-                                        {event.location}, {event.city}
-                                    </p>
-                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                        <CalendarDays size={14} />
-                                        {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                        })}
-                                    </p>
-                                </div>
-                            </Link>);
-                        })}
-                    </div>)}
+                    <div className="rounded-xl flex flex-col items-center gap-2 border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                        View and manage your saved events.
+                        <Link to="/bookmarks" className="mt-3 w-48 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
+                            <Bookmark size={15} />
+                            Open bookmarks
+                        </Link>
+                    </div>
                 </section>
 
                 <section className="rounded-2xl border border-inputaccent/20 bg-white p-5 shadow-sm md:p-6">

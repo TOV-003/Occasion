@@ -1,5 +1,5 @@
 import logo from '../assets/Occasion.svg';
-import { Menu, Compass, CircleX, Grid2x2, Boxes } from 'lucide-react';
+import { Menu, Compass, CircleX, Grid2x2, Boxes, Bookmark } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { UseAuth } from '../context/UseAuth';
@@ -60,6 +60,18 @@ export default function Navbar() {
                             </>);
         }}
                     </NavLink>
+                    <NavLink to="/bookmarks" onClick={function () {
+            return toast.loading("Loading Bookmarks...", { duration: 500 });
+        }} className={function ({ isActive }) {
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 cursor-pointer";
+        }}>
+                        {function ({ isActive }) {
+            return (<>
+                                <Bookmark color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"} width={16} height={16}/>
+                                Bookmarks
+                            </>);
+        }}
+                    </NavLink>
                 </div>
                 <div className="hidden md:flex items-center gap-4">
                     <Link to="/new-collective" className="border border-accent text-accent rounded-md px-4 py-2 cursor-pointer text-sm hover:bg-accent/5">+ New Collective</Link>
@@ -103,6 +115,16 @@ export default function Navbar() {
             return (<>
                                     <Boxes color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"} width={16} height={16}/>
                                     Collectives
+                                </>);
+        }}
+                        </NavLink>
+                        <NavLink to="/bookmarks" className={function ({ isActive }) {
+            return isActive ? "text-accent-dark  flex items-center gap-2 py-2 px-4 rounded-md bg-inputaccent/20 w-full cursor-pointer" : "text-inputaccent flex items-center gap-2 py-2 px-4 rounded-md hover:bg-inputaccent/20 w-full cursor-pointer";
+        }}>
+                            {function ({ isActive }) {
+            return (<>
+                                    <Bookmark color={isActive ? "var(--color-accent-dark)" : "var(--color-inputaccent)"} width={16} height={16}/>
+                                    Bookmarks
                                 </>);
         }}
                         </NavLink>

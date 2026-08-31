@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users, QrCode, CheckSquare } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, ShieldCheck, Users, QrCode, CheckSquare, Upload, X, Download } from 'lucide-react';
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -8,14 +8,16 @@ import { toast } from 'react-hot-toast';
 import { supabase } from '../api/SupabaseClient';
 import QrCodeScanner from '../components/QrCodeScanner';
 export default function ManageEvent() {
-    const { event, approvedTickets, pendingTickets, tickets, profiles } = useLoaderData() as {
+    const { event, approvedTickets, pendingTickets, rejectedTickets, tickets, profiles, isCreator } = useLoaderData() as {
         event: Event;
         approvedTickets: Tickets[];
         pendingTickets: Tickets[];
+        rejectedTickets: Tickets[];
         tickets: Tickets[];
         profiles: Profile[];
+        isCreator: boolean;
     };
-    const { approveTicket, rejectTicket, user, HandleEditEvent, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff, handleRemoveAccessStaff, checkInTicket } = UseAuth();
+    const { approveTicket, rejectTicket, user, HandleEditEvent, HandleAddEventServiceStaff, HandleAddEventAccessStaff, getServiceStaff, getAccessStaff, handleRemoveServiceStaff, handleRemoveAccessStaff, checkInTicket, undoCheckIn, uploadBanner } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff' | 'checkin'>('tickets');
@@ -42,6 +44,10 @@ export default function ManageEvent() {
     const [editForm, setEditForm] = useState<EventFormData>({
         title: '', category: '', description: '', city: '', location: '', event_dates: [], max_attendees: null, auto_approve: true, banner_url: '',
     });
+    const [editBannerFile, setEditBannerFile] = useState<File | null>(null);
+    const [editBannerPreview, setEditBannerPreview] = useState<string | null>(null);
+    const [editBannerError, setEditBannerError] = useState<string | null>(null);
+    const editBannerFileInputRef = useRef<HTMLInputElement>(null);
     const accessStaffSearchRequest = useRef(0);
     console.log("Event ID:", event.id);
     console.log("Event Creator ID:", event.creator_id);
@@ -134,6 +140,32 @@ export default function ManageEvent() {
     }
     const filteredPendingTickets = pendingTickets.filter(matchesTicketSearch);
     const filteredApprovedTickets = approvedTickets.filter(matchesTicketSearch);
+    const filteredRejectedTickets = rejectedTickets.filter(matchesTicketSearch);
+    const checkedInCount = approvedTickets.filter(function (ticket) {
+        return ticket.checked_in;
+    }).length;
+    function exportTicketsCsv() {
+        const rows = approvedTickets.map(function (ticket) {
+            const profile = profileMap.get(ticket.user_id);
+            const fullName = profile?.full_name || 'Unknown user';
+            return [fullName, ticket.status, ticket.checked_in ? 'Yes' : 'No', new Date(ticket.created_at).toLocaleString()];
+        });
+        const csv = [['Name', 'Status', 'Checked in', 'Created'], ...rows].map(function (row) {
+            return row.map(function (cell) {
+                const value = String(cell);
+                return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+            }).join(',');
+        }).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${event.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'event'}-attendees.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
     async function handleTicketDecision(ticketId: string, status: 'approved' | 'rejected') {
         try {
             if (status === 'approved') {
@@ -147,6 +179,18 @@ export default function ManageEvent() {
         catch (error) {
             console.error('Error updating ticket status:', error);
             toast.error('Failed to update ticket status.');
+        }
+    }
+    async function handleUndoCheckIn(ticketId: string) {
+        try {
+            await undoCheckIn(ticketId);
+            toast.success('Check-in undone.');
+            await fetchRecentCheckIns();
+            revalidator.revalidate();
+        }
+        catch (error) {
+            console.error('Error undoing check-in:', error);
+            toast.error('Failed to undo check-in.');
         }
     }
     async function handleAddServiceStaff() {
@@ -263,7 +307,63 @@ export default function ManageEvent() {
             banner_url: event.banner_url,
         });
         setEditDate('');
+        setEditBannerFile(null);
+        setEditBannerPreview(null);
+        setEditBannerError(null);
+        if (editBannerFileInputRef.current)
+            editBannerFileInputRef.current.value = '';
         setIsEditModalOpen(true);
+    }
+    function validateEditBanner(file: File): Promise<string | null> {
+        return new Promise(function (resolve) {
+            if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+                resolve('Only JPEG, PNG, WebP, GIF images are allowed.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                resolve('Image must be smaller than 5MB.');
+                return;
+            }
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                const aspectRatio = img.width / img.height;
+                if (aspectRatio >= 0.9 && aspectRatio <= 1.1) {
+                    resolve(null);
+                }
+                else {
+                    resolve('Image must be roughly square (aspect ratio between 0.9:1 and 1.1:1).');
+                }
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                resolve('Failed to load image. Please try again.');
+            };
+            img.src = url;
+        });
+    }
+    async function handleEditBannerChange(file: File) {
+        setEditBannerError(null);
+        const validationError = await validateEditBanner(file);
+        if (validationError) {
+            setEditBannerError(validationError);
+            return;
+        }
+        setEditBannerFile(file);
+        setEditBannerPreview(URL.createObjectURL(file));
+    }
+    function handleEditBannerFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file)
+            handleEditBannerChange(file);
+    }
+    function removeEditBanner() {
+        setEditBannerFile(null);
+        setEditBannerPreview(null);
+        setEditBannerError(null);
+        if (editBannerFileInputRef.current)
+            editBannerFileInputRef.current.value = '';
     }
     function addEditDate() {
         if (editDate && !editForm.event_dates.includes(editDate)) {
@@ -281,7 +381,13 @@ export default function ManageEvent() {
         }
         setIsSavingEvent(true);
         try {
-            await HandleEditEvent(event.id, { ...editForm, title: editForm.title.trim(), category: editForm.category.trim(), description: editForm.description.trim(), city: editForm.city.trim(), location: editForm.location.trim() });
+            let bannerUrl = editForm.banner_url;
+            if (editBannerFile) {
+                const uploadToast = toast.loading('Uploading banner...');
+                bannerUrl = await uploadBanner(editBannerFile);
+                toast.success('Banner uploaded.', { id: uploadToast });
+            }
+            await HandleEditEvent(event.id, { ...editForm, title: editForm.title.trim(), category: editForm.category.trim(), description: editForm.description.trim(), city: editForm.city.trim(), location: editForm.location.trim(), banner_url: bannerUrl });
             setIsEditModalOpen(false);
             revalidator.revalidate();
         }
@@ -311,7 +417,7 @@ export default function ManageEvent() {
             setIsBulkUpdatingTickets(false);
         }
     }
-    function renderTicketCard(ticket: Tickets, status: 'approved' | 'pending') {
+    function renderTicketCard(ticket: Tickets, status: 'approved' | 'pending' | 'rejected') {
         const profile = profileMap.get(ticket.user_id);
         const fullName = profile?.full_name || 'Unknown user';
         const initials = fullName
@@ -336,11 +442,13 @@ export default function ManageEvent() {
             <div className="flex items-center gap-3">
                 <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${status === 'approved'
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-amber-100 text-amber-700'}`}>
-                    {status === 'approved' ? 'Approved' : 'Pending'}
+                    : status === 'rejected'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-amber-100 text-amber-700'}`}>
+                    {status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Pending'}
                 </span>
 
-                {status === 'pending' && (<div className="flex gap-2">
+                {isCreator && status === 'pending' && (<div className="flex gap-2">
                     <button type="button" onClick={function () {
                         return handleTicketDecision(ticket.id, 'approved');
                     }} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent-dark cursor-pointer">
@@ -418,13 +526,13 @@ export default function ManageEvent() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Tickets
                     </button>
-                    <button type="button" onClick={function () {
+                    {isCreator && (<button type="button" onClick={function () {
                         return setActiveTab('staff');
                     }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'staff'
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                         Staff
-                    </button>
+                    </button>)}
                     <button type="button" onClick={function () {
                         return setActiveTab('details');
                     }} className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${activeTab === 'details'
@@ -453,6 +561,16 @@ export default function ManageEvent() {
                                         Scan attendee QR codes to check them in. Only approved tickets for this event will be accepted.
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-inputaccent/20 bg-gray-50 p-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-gray-700">Check-in progress</p>
+                                <p className="text-sm font-semibold text-gray-900">{checkedInCount} of {approvedTickets.length} checked in</p>
+                            </div>
+                            <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+                                <div className="h-2 rounded-full bg-accent transition-all" style={{ width: `${approvedTickets.length > 0 ? Math.round((checkedInCount / approvedTickets.length) * 100) : 0}%` }} />
                             </div>
                         </div>
 
@@ -496,6 +614,9 @@ export default function ManageEvent() {
                                                                 You
                                                             </span>
                                                         )}
+                                                        <button type="button" onClick={function () { handleUndoCheckIn(checkIn.id); }} className="text-xs text-red-600 hover:text-red-700 underline cursor-pointer">
+                                                            Undo
+                                                        </button>
                                                     </div>
                                                 </div>
                                             );
@@ -650,18 +771,24 @@ export default function ManageEvent() {
                         <input type="search" value={ticketSearch} onChange={function (event) {
                             return setTicketSearch(event.target.value);
                         }} placeholder="Search ticket requests by name" className="w-full rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent sm:max-w-sm" />
-                        {pendingTickets.length > 0 && (<div className="flex gap-2">
-                            <button type="button" onClick={function () {
-                                return handleBulkTicketDecision('approved');
-                            }} disabled={isBulkUpdatingTickets} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
-                                Approve all
-                            </button>
-                            <button type="button" onClick={function () {
-                                return handleBulkTicketDecision('rejected');
-                            }} disabled={isBulkUpdatingTickets} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
-                                Reject all
-                            </button>
-                        </div>)}
+                        <div className="flex flex-wrap gap-2">
+                            {isCreator && approvedTickets.length > 0 && (<button type="button" onClick={exportTicketsCsv} className="inline-flex items-center gap-1.5 rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-accent hover:text-accent cursor-pointer">
+                                <Download size={14} />
+                                Export CSV
+                            </button>)}
+                            {isCreator && pendingTickets.length > 0 && (<div className="flex gap-2">
+                                <button type="button" onClick={function () {
+                                    return handleBulkTicketDecision('approved');
+                                }} disabled={isBulkUpdatingTickets} className="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
+                                    Approve all
+                                </button>
+                                <button type="button" onClick={function () {
+                                    return handleBulkTicketDecision('rejected');
+                                }} disabled={isBulkUpdatingTickets} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer">
+                                    Reject all
+                                </button>
+                            </div>)}
+                        </div>
                     </div>
                     {pendingTickets.length > 0 && (<div>
                         <h2 className="mb-3 text-lg font-semibold text-gray-900">Pending approvals</h2>
@@ -681,9 +808,18 @@ export default function ManageEvent() {
                         </div>
                     </div>)}
 
-                    {ticketSearch && filteredPendingTickets.length === 0 && filteredApprovedTickets.length === 0 && (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">No ticket requests match your search.</div>)}
+                    {rejectedTickets.length > 0 && (<div>
+                        <h2 className="mb-3 text-lg font-semibold text-gray-900">Rejected tickets</h2>
+                        <div className="space-y-3">
+                            {filteredRejectedTickets.map(function (ticket) {
+                                return renderTicketCard(ticket, 'rejected');
+                            })}
+                        </div>
+                    </div>)}
 
-                    {pendingTickets.length === 0 && approvedTickets.length === 0 && (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                    {ticketSearch && filteredPendingTickets.length === 0 && filteredApprovedTickets.length === 0 && filteredRejectedTickets.length === 0 && (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">No ticket requests match your search.</div>)}
+
+                    {pendingTickets.length === 0 && approvedTickets.length === 0 && rejectedTickets.length === 0 && (<div className="rounded-xl border border-dashed border-inputaccent/20 bg-gray-50 p-6 text-center text-sm text-gray-500">
                         No ticket requests yet.
                     </div>)}
                 </div>) : (<div className="space-y-5">
@@ -724,9 +860,9 @@ export default function ManageEvent() {
                         <Link to={`/dashboard`} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark cursor-pointer">
                             Back to dashboard
                         </Link>
-                        <button type="button" onClick={openEditEventModal} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark cursor-pointer">
+                        {isCreator && (<button type="button" onClick={openEditEventModal} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark cursor-pointer">
                             Edit event
-                        </button>
+                        </button>)}
                     </div>
                 </div>)}
             </div>
@@ -782,6 +918,25 @@ export default function ManageEvent() {
                             });
                         }} className="mt-1 w-full rounded-lg border border-inputaccent/30 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-accent" />
                     </label>
+                </div>
+                <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-700">Banner image</p>
+                    {(editBannerPreview || editForm.banner_url) && (<div className="relative mt-1 w-40 overflow-hidden rounded-lg border border-inputaccent/20">
+                        <img src={editBannerPreview || editForm.banner_url} alt="Banner preview" className="h-40 w-full object-cover" />
+                        {editBannerPreview && (<button type="button" onClick={removeEditBanner} className="absolute top-2 right-2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 cursor-pointer">
+                            <X size={16} />
+                        </button>)}
+                    </div>)}
+                    <div className="mt-2">
+                        <input ref={editBannerFileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleEditBannerFileInput} className="hidden" id="edit-banner-input" />
+                        <button type="button" onClick={function () {
+                            editBannerFileInputRef.current?.click();
+                        }} className="inline-flex items-center gap-2 rounded-lg border border-inputaccent/30 px-3 py-2 text-sm font-medium text-gray-700 hover:border-accent hover:text-accent cursor-pointer">
+                            <Upload size={16} />
+                            Replace banner
+                        </button>
+                        {editBannerError && <p className="mt-1 text-sm text-red-500">{editBannerError}</p>}
+                    </div>
                 </div>
                 <div className="mt-4">
                     <p className="text-sm font-medium text-gray-700">Event dates</p>
