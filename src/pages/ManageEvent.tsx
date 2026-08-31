@@ -7,6 +7,9 @@ import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../api/SupabaseClient';
 import QrCodeScanner from '../components/QrCodeScanner';
+interface CheckedInTicket extends Tickets {
+    profiles: Profile | null;
+}
 export default function ManageEvent() {
     const { event, approvedTickets, pendingTickets, rejectedTickets, tickets, profiles, isCreator } = useLoaderData() as {
         event: Event;
@@ -21,7 +24,7 @@ export default function ManageEvent() {
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff' | 'checkin'>('tickets');
-    const [recentCheckIns, setRecentCheckIns] = useState<any[]>([]);
+    const [recentCheckIns, setRecentCheckIns] = useState<CheckedInTicket[]>([]);
     const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
     const [accessStaff, setAccessStaff] = useState<EventAccessStaff[]>([]);
     const [accessStaffProfiles, setAccessStaffProfiles] = useState<Record<string, Profile>>({});
@@ -94,15 +97,6 @@ export default function ManageEvent() {
             setIsStaffLoading(false);
         }
     }
-    useEffect(function () {
-        function fetchData() {
-            fetchStaff();
-            if (activeTab === 'checkin') {
-                fetchRecentCheckIns();
-            }
-        }
-        fetchData();
-    }, [event.id, activeTab]);
 
     async function fetchRecentCheckIns() {
         const { data, error } = await supabase
@@ -117,6 +111,15 @@ export default function ManageEvent() {
             setRecentCheckIns(data || []);
         }
     }
+    useEffect(function () {
+        function fetchData() {
+            fetchStaff();
+            if (activeTab === 'checkin') {
+                fetchRecentCheckIns();
+            }
+        }
+        fetchData();
+    }, [event.id, activeTab]);
 
     function handleBack() {
         if (window.history.length > 1) {
@@ -594,7 +597,7 @@ export default function ManageEvent() {
                                     </span>
                                 </div>
 
-                                <div className="bg-white rounded-xl border border-inputaccent/20 p-4 space-y-3 max-h-[400px] overflow-y-auto">
+                                <div className="bg-white rounded-xl border border-inputaccent/20 p-4 space-y-3 max-h-100 overflow-y-auto">
                                     {recentCheckIns.length > 0 ? (
                                         recentCheckIns.map(function(checkIn) {
                                             return (
@@ -604,7 +607,7 @@ export default function ManageEvent() {
                                                             {checkIn.profiles?.full_name || 'Unknown'}
                                                         </p>
                                                         <p className="text-xs text-gray-500">
-                                                            {new Date(checkIn.check_in_data?.time).toLocaleTimeString()}
+                                                            {checkIn.check_in_data?.time ? new Date(checkIn.check_in_data.time).toLocaleTimeString() : '—'}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -768,7 +771,7 @@ export default function ManageEvent() {
                     </div>
                 </div>) : activeTab === 'tickets' ? (<div className="space-y-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <input type="search" value={ticketSearch} onChange={function (event) {
+                        <input id="ticket-search" type="search" value={ticketSearch} onChange={function (event) {
                             return setTicketSearch(event.target.value);
                         }} placeholder="Search ticket requests by name" className="w-full rounded-lg border border-inputaccent/30 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent sm:max-w-sm" />
                         <div className="flex flex-wrap gap-2">
