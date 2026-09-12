@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import type { IDetectedBarcode, IScannerError, IScannerHandle } from '@yudiel/react-qr-scanner';
 import { CheckCircle, XCircle, Loader2, QrCode } from 'lucide-react';
 import { supabase } from '../api/SupabaseClient';
 import { toast } from 'react-hot-toast';
+import type { TicketWithProfile } from '../interfaces';
 
 interface QrCodeScannerProps {
     eventId: string;
-    onCheckIn: (ticket: any) => void;
+    onCheckIn: (ticket: TicketWithProfile) => void;
     className?: string;
 }
 
@@ -14,9 +16,9 @@ export default function QrCodeScanner({ eventId, onCheckIn, className = '' }: Qr
     const [scannedData, setScannedData] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const scannerRef = useRef<any>(null);
+    const scannerRef = useRef<IScannerHandle>(null);
 
-    async function handleScan(detectedCodes: any[]) {
+    async function handleScan(detectedCodes: IDetectedBarcode[]) {
         if (!detectedCodes || detectedCodes.length === 0) return;
 
         const result = detectedCodes[0]?.rawValue;
@@ -55,7 +57,9 @@ export default function QrCodeScanner({ eventId, onCheckIn, className = '' }: Qr
                 return;
             }
 
-            if (ticket.checked_in) {
+            const checkedInTicket = ticket as TicketWithProfile;
+
+            if (checkedInTicket.checked_in) {
                 setError('Already checked in!');
                 setTimeout(() => {
                     setError(null);
@@ -64,8 +68,8 @@ export default function QrCodeScanner({ eventId, onCheckIn, className = '' }: Qr
                 return;
             }
 
-            onCheckIn(ticket);
-            toast.success(`Checked in: ${ticket.profiles?.full_name || 'Attendee'}`);
+            onCheckIn(checkedInTicket);
+            toast.success(`Checked in: ${checkedInTicket.profiles?.full_name || 'Attendee'}`);
 
         } catch (err) {
             setError('Error checking in');
@@ -76,7 +80,7 @@ export default function QrCodeScanner({ eventId, onCheckIn, className = '' }: Qr
         }
     }
 
-    function handleError(err: any) {
+    function handleError(err: IScannerError) {
         console.error('Scanner error:', err);
         setError('Camera error. Check permissions.');
     }

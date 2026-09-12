@@ -28,17 +28,22 @@ export interface EventDate {
     date: string;
     created_at: string;
 }
+export type TicketStatus = 'approved' | 'pending' | 'rejected' | 'waitlist';
+export interface CheckInData {
+    time: string;
+    staffId: string;
+}
 export interface Tickets {
     id: string;
     event_id: string;
     user_id: string;
-    status: string;
+    status: TicketStatus;
     created_at: string;
     checked_in: boolean;
-    check_in_data: {
-        time?: string;
-        staffId?: string;
-    } | null;
+    check_in_data: CheckInData | null;
+}
+export interface TicketWithProfile extends Tickets {
+    profiles: Profile | null;
 }
 export interface Collective {
     id: string;

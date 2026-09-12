@@ -2,14 +2,11 @@ import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, Shi
 import Layout from '../Layout';
 import { Link, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { useMemo, useState, useEffect, useRef } from 'react';
-import type { Event, EventFormData, Tickets, Profile, EventAccessStaff, EventServiceStaff } from '../interfaces';
+import type { Event, EventFormData, Tickets, Profile, EventAccessStaff, EventServiceStaff, TicketWithProfile } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../api/SupabaseClient';
 import QrCodeScanner from '../components/QrCodeScanner';
-interface CheckedInTicket extends Tickets {
-    profiles: Profile | null;
-}
 export default function ManageEvent() {
     const { event, approvedTickets, pendingTickets, rejectedTickets, tickets, profiles, isCreator } = useLoaderData() as {
         event: Event;
@@ -24,7 +21,7 @@ export default function ManageEvent() {
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const [activeTab, setActiveTab] = useState<'tickets' | 'details' | 'staff' | 'checkin'>('tickets');
-    const [recentCheckIns, setRecentCheckIns] = useState<CheckedInTicket[]>([]);
+    const [recentCheckIns, setRecentCheckIns] = useState<TicketWithProfile[]>([]);
     const [serviceStaff, setServiceStaff] = useState<EventServiceStaff[]>([]);
     const [accessStaff, setAccessStaff] = useState<EventAccessStaff[]>([]);
     const [accessStaffProfiles, setAccessStaffProfiles] = useState<Record<string, Profile>>({});
