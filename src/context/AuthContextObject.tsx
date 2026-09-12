@@ -31,7 +31,7 @@ interface AuthContextType {
     followCollective(collectiveId: string): Promise<void>;
     unfollowCollective(collectiveId: string): Promise<void>;
     getUserCollectives(): Promise<Collective[]>;
-    AddBookmark(eventId: string): Promise<void>;
+    toggleBookmark(eventId: string): Promise<void>;
     addEventToCollective(eventId: string, collectiveId: string): Promise<void>;
     approveMember(memberId: string): Promise<void>;
     rejectMember(memberId: string): Promise<void>;

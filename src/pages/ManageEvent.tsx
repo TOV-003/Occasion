@@ -52,14 +52,9 @@ export default function ManageEvent() {
     const [editBannerError, setEditBannerError] = useState<string | null>(null);
     const editBannerFileInputRef = useRef<HTMLInputElement>(null);
     const accessStaffSearchRequest = useRef(0);
-    console.log("Event ID:", event.id);
-    console.log("Event Creator ID:", event.creator_id);
-    console.log("User ID:", user?.id);
-    console.log("Event Name:", event.title);
     async function fetchServiceStaff() {
         const serviceStaff = await getServiceStaff(event.id);
         setServiceStaff(serviceStaff);
-        console.log("Service Staff:", serviceStaff);
     }
     async function fetchAccessStaff() {
         const assignedAccessStaff = await getAccessStaff(event.id);
@@ -111,11 +106,15 @@ export default function ManageEvent() {
             setRecentCheckIns(data || []);
         }
     }
+    const staffLoaders = useRef({ fetchStaff, fetchRecentCheckIns });
+    useEffect(function () {
+        staffLoaders.current = { fetchStaff, fetchRecentCheckIns };
+    });
     useEffect(function () {
         function fetchData() {
-            fetchStaff();
+            void staffLoaders.current.fetchStaff();
             if (activeTab === 'checkin') {
-                fetchRecentCheckIns();
+                void staffLoaders.current.fetchRecentCheckIns();
             }
         }
         fetchData();
@@ -581,7 +580,7 @@ export default function ManageEvent() {
                             <div>
                                 <QrCodeScanner
                                     eventId={event.id}
-                                    onCheckIn={async function(ticket) {
+                                    onCheckIn={async function (ticket) {
                                         await checkInTicket(ticket.id, user!.id);
                                         await fetchRecentCheckIns();
                                         revalidator.revalidate();
@@ -599,7 +598,7 @@ export default function ManageEvent() {
 
                                 <div className="bg-white rounded-xl border border-inputaccent/20 p-4 space-y-3 max-h-100 overflow-y-auto">
                                     {recentCheckIns.length > 0 ? (
-                                        recentCheckIns.map(function(checkIn) {
+                                        recentCheckIns.map(function (checkIn) {
                                             return (
                                                 <div key={checkIn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                                     <div className="min-w-0">

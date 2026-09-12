@@ -64,11 +64,6 @@ export default function NewEvent() {
         }
         void fetchCollectives();
     }, [authloading, user, routeCollectiveId, getUserCollectives]);
-    useEffect(function () {
-        if (bannerFile) {
-            console.log(URL.createObjectURL(bannerFile));
-        }
-    }, [bannerFile]);
     function changeCategory(category: string) {
         setFormData({ ...formData, category });
     }

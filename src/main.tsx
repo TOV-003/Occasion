@@ -22,6 +22,7 @@ import NewEvent from './pages/NewEvent';
 import NewCollective from './pages/NewCollective';
 import ManageCollective from './pages/ManageCollective';
 import ManageEvent from './pages/ManageEvent';
+import { todayISO } from './utils/date';
 const router = createBrowserRouter([
     {
         path: '/',
@@ -110,7 +111,7 @@ const router = createBrowserRouter([
                     const { id } = params;
                     if (!id)
                         throw new Error('Collective ID required');
-                    const today = new Date().toLocaleDateString('en-CA');
+                    const today = todayISO();
                     const { data: { session } } = await supabase.auth.getSession();
                     const userId = session?.user.id;
                     const [collectiveResult, collectiveMembersResult, collectiveFollowersResult, collectiveEventsResult, bookmarksResult] = await Promise.all([
@@ -207,7 +208,7 @@ const router = createBrowserRouter([
                     const { id } = params;
                     if (!id)
                         throw new Error('Profile ID required');
-                    const today = new Date().toLocaleDateString('en-CA');
+                    const today = todayISO();
                     const [{ data: profile, error: profileError }, { data: createdEvents, error: eventsError }, { data: ownedCollectives, error: ownedError }, { data: memberRows, error: memberRowsError }, { data: tickets, error: ticketsError }, { data: bookmarks, error: bookmarksError }, { data: followedRows, error: followedError }] = await Promise.all([
                         supabase.from('profiles').select('*').eq('id', id).single(),
                         supabase.from('events').select('*, event_dates(*)').eq('creator_id', id).order('created_at', { ascending: false }),

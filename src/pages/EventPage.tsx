@@ -1,4 +1,4 @@
-import { useLoaderData, Link, useParams, useRevalidator } from 'react-router-dom';
+import { useLoaderData, Link, useRevalidator } from 'react-router-dom';
 import type { Event } from '../interfaces';
 import { ChevronLeft, Users, MapPin, CalendarDays, CheckCircle, Info, BookmarkCheck, BookmarkOff, CalendarPlus, Navigation, Mail } from 'lucide-react';
 import Layout from '../Layout';
@@ -16,12 +16,9 @@ export default function EventPage() {
         eventCollective: CollectiveWithRelations | null;
         bookmarks: Bookmarks[];
     };
-    const { user, delistEvent, relistEvent, createTicket, joinCollective, AddBookmark, cancelTicket, joinWaitlist } = UseAuth();
-    const { id } = useParams();
+    const { user, delistEvent, relistEvent, createTicket, joinCollective, toggleBookmark, cancelTicket, joinWaitlist } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
-    console.log("eventid", id);
-    console.log("eventCollective", eventCollective);
     async function handleDelist(id: string) {
         try {
             await delistEvent(id);
@@ -105,14 +102,13 @@ export default function EventPage() {
         }
     }
     async function HandleBookMark(id: string | undefined) {
-        console.log("Bookmark Button Clicked!!!!!");
         if (!user) {
             navigate('/login');
             return;
         }
         if (id) {
             try {
-                await AddBookmark(id);
+                await toggleBookmark(id);
             }
             catch (error) {
                 console.error("Error BookMarking event:", error);
@@ -129,14 +125,12 @@ export default function EventPage() {
         });
     }
     const userHasTicket = userHasTicketCheck();
-    console.log("userHasTicket", userHasTicket);
     function userTicketIsPending() {
         return tickets.some(function (t) {
             return t.user_id === user?.id && t.event_id === event.id && t.status === 'pending';
         });
     }
     const userTicketIsPendingCheck = userTicketIsPending();
-    console.log("userTicketIsPendingCheck", userTicketIsPendingCheck);
     function userOnWaitlistCheck() {
         return tickets.some(function (t) {
             return t.user_id === user?.id && t.event_id === event.id && t.status === 'waitlist';

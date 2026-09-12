@@ -1,22 +1,12 @@
 import logo from '../assets/Occasion.svg';
 import { Menu, Compass, CircleX, Grid2x2, Boxes, Bookmark } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 export default function Navbar() {
     const [dropdown, setDropdown] = useState<boolean>(false);
     const { profile } = UseAuth();
-    const [rerender, setRerender] = useState<boolean>(true);
-    useEffect(function () {
-        function set() {
-            setRerender(function (e) {
-                return !e;
-            });
-        }
-        set();
-        console.log(rerender);
-    }, [profile]);
     return (<header className="fixed bg-background/20 backdrop-blur-2xl w-full z-20">
             <nav className="relative z-20 flex items-center justify-between px-2 lg:px-16 py-2 border-b border-inputaccent/50 w-full">
                 <NavLink to="/" className="flex items-center justify-between gap-2 cursor-pointer">
@@ -84,7 +74,6 @@ export default function Navbar() {
             setDropdown(function (prev) {
                 return !prev;
             });
-            console.log(dropdown);
         }}>{!dropdown ? <Menu color={`var(--color-accent-dark)`}/> : <CircleX color={`var(--color-accent-dark)`}/>}</button>
                 <div className={`${dropdown ? "block md:hidden" : "md:hidden hidden"} absolute top-full left-0 right-0 px-4 w-full bg-background border-t border-inputaccent/50`}>
                     <div className="flex  flex-col items-end gap-4 w-full mt-8 h-screen">

@@ -6,6 +6,7 @@ import Layout from '../Layout';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
 import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
+import { todayISO } from '../utils/date';
 import { UseAuth } from "../context/UseAuth";
 import { useNavigate } from "react-router-dom";
 import { useRevalidator } from "react-router-dom";
@@ -28,7 +29,7 @@ export default function Home() {
     const [allEvents, setAllEvents] = useState<Event[]>([]);
     const [collectives, setCollectives] = useState<CollectiveWithRelations[]>([]);
     const { featuredEvents = [], bookmarks = [] } = useLoaderData();
-    const { user, AddBookmark } = UseAuth();
+    const { user, toggleBookmark } = UseAuth();
     const navigate = useNavigate();
     const revalidator = useRevalidator();
     const categories = ['All', 'Nightlife', 'Festival', 'Arts', 'Sports', 'Food', 'Business', 'Education', 'Social', 'Family', 'Wellness', 'Workshop'];
@@ -111,19 +112,17 @@ export default function Home() {
             .select('*, collective_members (*), collective_followers (*)')
             .order('created_at', { ascending: false })
             .limit(10);
-        console.log("fetchded collective data", data);
         if (error)
             throw error;
         return data;
     }
     async function HandleBookMark(id: string | undefined) {
-        console.log("Bookmark Button Clicked!!!!!");
         if (!user) {
             navigate('/login');
         }
         if (id) {
             try {
-                await AddBookmark(id);
+                await toggleBookmark(id);
             }
             catch (error) {
                 console.error("Error BookMarking event:", error);
@@ -156,7 +155,7 @@ export default function Home() {
             .catch(console.error);
     }, []);
     const results = useMemo(function () {
-        const today = new Date().toISOString().split('T')[0];
+        const today = todayISO();
         const upcoming = [...allEvents].filter(function (ev: Event) {
             if (!ev.isActive)
                 return false;

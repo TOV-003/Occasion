@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { UseAuth } from "../context/UseAuth";
 import Layout from "../Layout";
+import { dateOnlyOf, todayISO } from "../utils/date";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Link, useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
@@ -45,10 +46,7 @@ export default function Dashboard() {
             return attendingEvent.id === ticket.event_id;
         });
         return event?.event_dates?.some(function (date) {
-            return (
-                new Date(date.date).toISOString().slice(0, 10) <
-                new Date().toISOString().slice(0, 10)
-            );
+            return dateOnlyOf(date.date) < todayISO();
         });
     });
     const currentTickets = Tickets.filter(function (ticket) {
@@ -56,10 +54,7 @@ export default function Dashboard() {
             return attendingEvent.id === ticket.event_id;
         });
         return event?.event_dates?.some(function (date) {
-            return (
-                new Date(date.date).toISOString().slice(0, 10) >=
-                new Date().toISOString().slice(0, 10)
-            );
+            return dateOnlyOf(date.date) >= todayISO();
         });
     });
 

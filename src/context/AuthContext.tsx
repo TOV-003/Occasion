@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Profile, Event, EventFormData, Collective, EventServiceStaff, EventAccessStaff } from '../interfaces';
 import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-hot-toast';
+import { todayISO } from '../utils/date';
 export default function AuthContextProvider({ children }: {
     children: ReactNode;
 }) {
@@ -53,14 +54,10 @@ export default function AuthContextProvider({ children }: {
         });
         if (error)
             throw error;
-        if (error)
-            console.log(error);
         if (!data?.success)
             throw new Error('Failed to delete account');
-        if (data?.success)
-            toast.success("Account deleted successfully");
-        if (data?.success)
-            setProfile(null);
+        toast.success("Account deleted successfully");
+        setProfile(null);
         await logout();
     }
     async function getProfile(): Promise<Profile> {
@@ -207,7 +204,7 @@ export default function AuthContextProvider({ children }: {
             .single();
         if (fetchError)
             throw fetchError;
-        const today = new Date().toISOString().split('T')[0];
+        const today = todayISO();
         const hasUpcomingDate = eventCheck?.event_dates?.some(function (d: {
             date: string;
         }) {
@@ -353,7 +350,7 @@ export default function AuthContextProvider({ children }: {
             throw error;
         return collectives ?? [];
     }
-    async function AddBookmark(eventId: string): Promise<void> {
+    async function toggleBookmark(eventId: string): Promise<void> {
         if (!user) {
             throw new Error('Not authenticated');
         }
@@ -396,26 +393,12 @@ export default function AuthContextProvider({ children }: {
             toast.error("Failed to find collective");
             throw selectError;
         }
-        ;
-        if (existing.auto_approve === true) {
-            const { error } = await supabase
-                .from('event_collectives')
-                .insert({ event_id: eventId, collective_id: collectiveId, status: 'approved' });
-            if (error) {
-                toast.error("Failed to add event to collective");
-                throw error;
-            }
-            ;
-        }
-        if (existing.auto_approve === false) {
-            const { error } = await supabase
-                .from('event_collectives')
-                .insert({ event_id: eventId, collective_id: collectiveId, status: 'pending' });
-            if (error) {
-                toast.error("Failed to add event to collective");
-                throw error;
-            }
-            ;
+        const { error } = await supabase
+            .from('event_collectives')
+            .insert({ event_id: eventId, collective_id: collectiveId, status: existing.auto_approve ? 'approved' : 'pending' });
+        if (error) {
+            toast.error("Failed to add event to collective");
+            throw error;
         }
     }
     async function approveMember(memberId: string): Promise<void> {
@@ -701,7 +684,7 @@ export default function AuthContextProvider({ children }: {
             followCollective,
             unfollowCollective,
             getUserCollectives,
-            AddBookmark,
+            toggleBookmark,
             addEventToCollective,
             approveMember,
             rejectMember,

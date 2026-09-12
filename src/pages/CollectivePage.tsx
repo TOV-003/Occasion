@@ -80,7 +80,7 @@ export default function CollectivePage() {
         memberProfiles: Profile[];
         bookmarks: Bookmarks[];
     };
-    const { user, joinCollective, leaveCollective, followCollective, unfollowCollective, AddBookmark } = UseAuth();
+    const { user, joinCollective, leaveCollective, followCollective, unfollowCollective, toggleBookmark } = UseAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const fromEventId = location.state?.fromEvent as string | undefined;
@@ -171,7 +171,7 @@ export default function CollectivePage() {
         }
         if (id) {
             try {
-                await AddBookmark(id);
+                await toggleBookmark(id);
             }
             catch (error) {
                 console.error("Error bookmarking event:", error);
