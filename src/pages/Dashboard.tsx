@@ -11,7 +11,7 @@ import {
 import { UseAuth } from "../context/UseAuth";
 import Layout from "../Layout";
 import { dateOnlyOf, formatEventDate, todayISO } from "../utils/date";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Link, useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
 import type {
@@ -26,7 +26,7 @@ import QrCodeDisplay from "../components/QrCodeDisplay";
 type DashboardView = "attending" | "hosting" | "collectives" | "history";
 
 export default function Dashboard() {
-    const { user, delistEvent, relistEvent } = UseAuth();
+    const { delistEvent, relistEvent } = UseAuth();
     const { Profile, Tickets, Events, Collectives, Attending, CollectiveList } =
         useLoaderData() as {
             Profile: Profile;
@@ -57,13 +57,6 @@ export default function Dashboard() {
             return dateOnlyOf(date.date) >= todayISO();
         });
     });
-
-    useEffect(
-        function () {
-            if (!user) navigate("/login");
-        },
-        [user, navigate],
-    );
 
     function getInitials(name: string) {
         return name

@@ -5,7 +5,6 @@ import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { Collective, EventFormData } from '../interfaces';
-import cities from '../assets/cities_12k.json';
 import CityCombobox from '../components/CityCombobox';
 import { formatEventDate } from '../utils/date';
 export default function NewEvent() {
@@ -22,6 +21,17 @@ export default function NewEvent() {
     const [userCollectives, setUserCollectives] = useState<Collective[]>([]);
     const [selectedCollectiveId, setSelectedCollectiveId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [cities, setCities] = useState<string[]>([]);
+    const citiesRequested = useRef(false);
+    // The full city list is ~180 KB, so it is only fetched once the picker is engaged.
+    function loadCities() {
+        if (citiesRequested.current)
+            return;
+        citiesRequested.current = true;
+        void import('../assets/cities_12k.json').then(function (module) {
+            setCities(module.default as string[]);
+        });
+    }
     const [formData, setFormData] = useState<EventFormData>({
         title: '',
         category: '',
@@ -277,9 +287,11 @@ export default function NewEvent() {
                         <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
                             City <span className="text-red-500">*</span>
                         </label>
-                        <CityCombobox cities={cities} onSelect={function (city) {
-                            return setFormData({ ...formData, city });
-                        }} placeholder="Search cities..." />
+                        <div onFocus={loadCities} onMouseDown={loadCities} onTouchStart={loadCities}>
+                            <CityCombobox cities={cities} onSelect={function (city) {
+                                return setFormData({ ...formData, city });
+                            }} placeholder="Search cities..." />
+                        </div>
                     </div>
                 </div>
 

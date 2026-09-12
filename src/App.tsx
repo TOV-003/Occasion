@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import ScrollToTop from './components/ScrollToTop';
+import LoadingFallback from './components/LoadingFallback';
 function App() {
     return (<>
       <ScrollToTop />
@@ -23,7 +25,9 @@ function App() {
                 },
             },
         }}/>
-      <Outlet />
+      <Suspense fallback={<LoadingFallback />}>
+        <Outlet />
+      </Suspense>
     </>);
 }
 export default App;
