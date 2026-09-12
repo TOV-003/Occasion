@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { UseAuth } from '../context/UseAuth';
 import type { CollectiveWithRelations, CollectiveMember, CollectiveFollower, Event, Tickets, Profile, Bookmarks } from '../interfaces';
+import { formatEventDate } from '../utils/date';
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 function MiniCalendar({ events }: {
@@ -316,11 +317,7 @@ export default function CollectivePage() {
                                         <CalendarDays size={14} />
                                         {ev.event_dates?.map(function (d, idx, arr) {
                                             return (<span key={d.date}>
-                                                {new Date(d.date).toLocaleDateString("en-US", {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                    year: "numeric",
-                                                })}
+                                                {formatEventDate(d.date)}
                                                 {idx < arr.length - 1 && " / "}
                                             </span>);
                                         })}
@@ -376,11 +373,7 @@ export default function CollectivePage() {
                                     </p>
                                     <p className="text-sm text-gray-500 flex items-center gap-2">
                                         <CalendarDays size={14} />
-                                        {ev.event_dates?.[0] && new Date(ev.event_dates[0].date).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                        })}
+                                        {ev.event_dates?.[0] && formatEventDate(ev.event_dates[0].date)}
                                         {ev.event_dates && ev.event_dates.length > 1 && ` + ${ev.event_dates.length - 1} more`}
                                     </p>
                                 </div>

@@ -1,10 +1,11 @@
-import { CalendarDays, MapPin, Users, Plus, QrCode, X, Bookmark, Eye } from 'lucide-react';
+import { CalendarDays, Users, Plus, QrCode, X, Bookmark, Eye } from 'lucide-react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { useState } from 'react';
 import Layout from '../Layout';
 import type { Collective, Event, Profile as ProfileType, Tickets, Bookmarks } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import QrCodeDisplay from '../components/QrCodeDisplay';
+import EventCard from '../components/EventCard';
 export default function ProfilePage() {
     const { profile, createdEvents, ownedCollectives, memberCollectives, attendingEvents, tickets, bookmarks, followedCollectives } = useLoaderData() as {
         profile: ProfileType;
@@ -111,28 +112,7 @@ export default function ProfilePage() {
                         No {showPast ? 'past' : 'future'} events created yet.
                     </div>) : (<div className="grid gap-4 md:grid-cols-2">
                         {filteredCreatedEvents.map(function (event) {
-                            return (<Link key={event.id} to={`/event/${event.id}`} className="group overflow-hidden rounded-xl border border-inputaccent/20 bg-white transition-colors duration-300 hover:border-accent cursor-pointer">
-                                <div className="h-36 overflow-hidden">
-                                    <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                                </div>
-                                <div className="space-y-2 p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-accent transition-colors">
-                                        {event.title}
-                                    </h3>
-                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                        <MapPin size={14} />
-                                        {event.location}, {event.city}
-                                    </p>
-                                    <p className="flex items-center gap-2 text-sm text-gray-600">
-                                        <CalendarDays size={14} />
-                                        {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                        })}
-                                    </p>
-                                </div>
-                            </Link>);
+                            return <EventCard key={event.id} event={event} />;
                         })}
                     </div>)}
                 </section>
@@ -151,29 +131,7 @@ export default function ProfilePage() {
                         {attendingEvents.map(function (event) {
                             const userTicket = tickets?.find(t => t.user_id === profile.id && t.event_id === event.id);
                             return (
-                                <div key={event.id} className="group rounded-xl border border-inputaccent/20 bg-white overflow-hidden transition-colors duration-300 hover:border-accent">
-                                    <Link to={`/event/${event.id}`} className="block cursor-pointer">
-                                        <div className="h-36 overflow-hidden">
-                                            <img src={event.banner_url} alt={event.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                                        </div>
-                                        <div className="space-y-2 p-4">
-                                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-accent transition-colors">
-                                                {event.title}
-                                            </h3>
-                                            <p className="flex items-center gap-2 text-sm text-gray-600">
-                                                <MapPin size={14} />
-                                                {event.location}, {event.city}
-                                            </p>
-                                            <p className="flex items-center gap-2 text-sm text-gray-600">
-                                                <CalendarDays size={14} />
-                                                {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric',
-                                                })}
-                                            </p>
-                                        </div>
-                                    </Link>
+                                <EventCard key={event.id} event={event}>
                                     {userTicket?.status === 'approved' && (
                                         <div className="p-3 border-t border-inputaccent/20">
                                             <button
@@ -188,9 +146,9 @@ export default function ProfilePage() {
                                             </button>
                                         </div>
                                     )}
-                                </div>
+                                </EventCard>
                             );
-                        })},
+                        })}
                     </div>)}
                 </section>
 

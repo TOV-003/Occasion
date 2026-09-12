@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { UseAuth } from "../context/UseAuth";
 import Layout from "../Layout";
-import { dateOnlyOf, todayISO } from "../utils/date";
+import { dateOnlyOf, formatEventDate, todayISO } from "../utils/date";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Link, useLoaderData, useNavigate, useRevalidator } from "react-router-dom";
@@ -64,14 +64,6 @@ export default function Dashboard() {
         },
         [user, navigate],
     );
-
-    function formatDate(date: string) {
-        return new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
-    }
 
     function getInitials(name: string) {
         return name
@@ -173,7 +165,7 @@ export default function Dashboard() {
                                         <CalendarDays size={13} />{" "}
                                         {event.event_dates
                                             .map(function (date) {
-                                                return formatDate(date.date);
+                                                return formatEventDate(date.date);
                                             })
                                             .join(" • ")}
                                     </p>

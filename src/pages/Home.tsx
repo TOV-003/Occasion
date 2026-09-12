@@ -6,7 +6,7 @@ import Layout from '../Layout';
 import Skeleton from '../components/Skeleton';
 import { toast } from 'react-hot-toast';
 import type { Event, CollectiveWithRelations, Bookmarks } from '../interfaces';
-import { todayISO } from '../utils/date';
+import { formatEventDate, todayISO } from '../utils/date';
 import { UseAuth } from "../context/UseAuth";
 import { useNavigate } from "react-router-dom";
 import { useRevalidator } from "react-router-dom";
@@ -355,12 +355,7 @@ export default function Home() {
                                             <CalendarDays size={15} />
                                             {ev.event_dates.map(function (el, index, array) {
                                                 return (<span key={index}>
-                                                    {new Date(el.date).toLocaleDateString('en-US', {
-                                                        month: 'long',
-                                                        day: 'numeric',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC',
-                                                    })}
+                                                    {formatEventDate(el.date, 'long')}
                                                     {index < array.length - 1 && ' / '}
                                                 </span>);
                                             })}

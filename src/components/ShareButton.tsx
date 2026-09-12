@@ -76,7 +76,7 @@ export default function ShareButton({ title = "Check out this event!", text = "I
             document.body.removeChild(textArea);
         }
     }
-    return (<>
+    return (<div className="inline-flex items-center gap-3">
         <button onClick={handleShare} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-inputaccent/30 bg-white text-gray-700 hover:bg-accent/10 hover:text-accent hover:border-accent/50 transition-all duration-200 cursor-pointer ${copied ? "bg-green-500 text-white border-green-500" : ""} ${className}`}>
             {copied ? (<>
                     <Check size={18}/>
@@ -90,5 +90,5 @@ export default function ShareButton({ title = "Check out this event!", text = "I
             <MessageCircle size={16}/>
             WhatsApp
         </a>)}
-    </>);
+    </div>);
 }

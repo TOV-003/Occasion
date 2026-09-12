@@ -18,3 +18,15 @@ export function dateOnlyOf(value: string): string {
         return '';
     return formatLocalDate(parsed);
 }
+
+export function formatEventDate(value: string, month: 'short' | 'long' = 'short'): string {
+    const dateOnly = dateOnlyOf(value);
+    if (!dateOnly)
+        return '';
+    const [year, monthIndex, day] = dateOnly.split('-').map(Number);
+    return new Date(year, monthIndex - 1, day).toLocaleDateString('en-US', {
+        month,
+        day: 'numeric',
+        year: 'numeric',
+    });
+}

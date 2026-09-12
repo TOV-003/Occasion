@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import type { CollectiveMember, CollectiveWithRelations, Event, Profile } from '../interfaces';
 import { UseAuth } from '../context/UseAuth';
 import { toast } from 'react-hot-toast';
+import { formatEventDate } from '../utils/date';
 export default function ManageCollective() {
     const { collective, approvedEvents, pendingEvents, approvedMembers, pendingMembers, memberProfiles } = useLoaderData() as {
         collective: CollectiveWithRelations;
@@ -111,11 +112,7 @@ export default function ManageCollective() {
                         </span>
                         <span className="inline-flex items-center gap-2">
                             <CalendarDays size={15}/>
-                            {event.event_dates?.[0] && new Date(event.event_dates[0].date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-            })}
+                            {event.event_dates?.[0] && formatEventDate(event.event_dates[0].date)}
                             {event.event_dates && event.event_dates.length > 1 && ` + ${event.event_dates.length - 1} more`}
                         </span>
                     </div>

@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import type { Tickets, Event_collective, CollectiveWithRelations, Bookmarks } from '../interfaces';
 import { useNavigate } from 'react-router-dom';
 import QrCodeDisplay from '../components/QrCodeDisplay';
+import { formatEventDate } from '../utils/date';
 export default function EventPage() {
     const { event, tickets, eventCollective, bookmarks } = useLoaderData() as {
         event: Event;
@@ -214,11 +215,7 @@ export default function EventPage() {
                                 <div className="flex flex-wrap gap-2 mt-1">
                                     {event.event_dates?.map(function (dateObj) {
                                         return (<span key={dateObj.date} className="bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium">
-                                            {new Date(dateObj.date).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric',
-                                            })}
+                                            {formatEventDate(dateObj.date)}
                                         </span>);
                                     })}
                                 </div>

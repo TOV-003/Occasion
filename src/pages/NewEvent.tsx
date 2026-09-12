@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { Collective, EventFormData } from '../interfaces';
 import cities from '../assets/cities_12k.json';
 import CityCombobox from '../components/CityCombobox';
+import { formatEventDate } from '../utils/date';
 export default function NewEvent() {
     const [unlimitedAttendees, setUnlimitedAttendees] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
@@ -86,13 +87,6 @@ export default function NewEvent() {
                     return d !== date;
                 })
             });
-        });
-    }
-    function formatDate(date: string) {
-        return new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
         });
     }
     function validateImage(file: File): Promise<boolean> {
@@ -306,7 +300,7 @@ export default function NewEvent() {
                     {formData.event_dates.length > 0 && (<div className="flex flex-wrap gap-2 mt-3">
                         {formData.event_dates.map(function (date) {
                             return (<span key={date} className="flex items-center gap-2 bg-accent/10 text-accent px-3 py-1 rounded-full text-sm">
-                                {formatDate(date)}
+                                {formatEventDate(date, 'long')}
                                 <button type="button" onClick={function () {
                                     return removeDate(date);
                                 }} className="hover:text-red-500 transition-colors cursor-pointer">
